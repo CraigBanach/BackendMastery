@@ -7,8 +7,7 @@ public record CreateTransactionDto(
     string Description,
     string? Notes,
     DateTime TransactionDate,
-    int CategoryId,
-    int? AccountId
+    int CategoryId
 );
 
 public record UpdateTransactionDto(
@@ -16,8 +15,7 @@ public record UpdateTransactionDto(
     string Description,
     string? Notes,
     DateTime TransactionDate,
-    int CategoryId,
-    int? AccountId
+    int CategoryId
 );
 
 public record TransactionDto(

@@ -25,7 +25,7 @@ public class TransactionController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<TransactionDto>> GetById(int id)
     {
-        var userId = User.FindFirst("sub")?.Value ?? throw new UnauthorizedAccessException();
+        var userId = User.Identity?.Name ?? throw new UnauthorizedAccessException();
         var transaction = await _transactionService.GetByIdAsync(id, userId);
 
         if (transaction == null)

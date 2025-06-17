@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using PersonifiBackend.Api.Middleware;
 using PersonifiBackend.Application.BackgroundServices;
 using PersonifiBackend.Application.Mapping;
@@ -8,6 +9,7 @@ using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Infrastructure.Data;
 using PersonifiBackend.Infrastructure.Repositories;
 using Serilog;
+using System.Security.Claims;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -33,6 +35,10 @@ try
         {
             options.Authority = builder.Configuration["Auth0:Domain"];
             options.Audience = builder.Configuration["Auth0:Audience"];
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                NameClaimType = ClaimTypes.NameIdentifier
+            };
         });
 
     // Add Database
