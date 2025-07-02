@@ -15,5 +15,7 @@ public class MappingProfile : Profile
 
         // Category mappings
         CreateMap<Category, CategoryDto>();
+        CreateMap<CreateCategoryDto, Category>();
+        CreateMap<UpdateCategoryDto, Category>();
     }
 }

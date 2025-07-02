@@ -5,17 +5,8 @@ namespace PersonifiBackend.Core.Interfaces;
 public interface ICategoryRepository
 {
     Task<Category?> GetByIdAsync(int id, string userId);
-    Task<IEnumerable<Category>> GetUserCategoriesAsync(
-        string userId,
-        DateTime? startDate = null,
-        DateTime? endDate = null
-    );
+    Task<IEnumerable<Category>> GetUserCategoriesAsync(string userId);
     Task<Category> CreateAsync(Category category);
     Task<Category> UpdateAsync(Category category);
     Task<bool> DeleteAsync(int id, string userId);
-    Task<Dictionary<int, decimal>> GetCategoryTotalsAsync(
-        string userId,
-        DateTime startDate,
-        DateTime endDate
-    );
 }

@@ -10,17 +10,10 @@ public record CreateCategoryDto(
 );
 
 public record UpdateCategoryDto(
-    int Id,
     string Name,
     CategoryType Type,
     string? Icon = null,
     string? Color = null
 );
 
-public record CategoryDto(
-    int Id,
-    string Name,
-    CategoryType Type,
-    string? Icon,
-    string? Color
-);
+public record CategoryDto(int Id, string Name, CategoryType Type, string? Icon, string? Color);

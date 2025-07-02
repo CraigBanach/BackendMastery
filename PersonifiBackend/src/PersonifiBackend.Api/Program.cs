@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -9,7 +11,6 @@ using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Infrastructure.Data;
 using PersonifiBackend.Infrastructure.Repositories;
 using Serilog;
-using System.Security.Claims;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -25,19 +26,25 @@ try
     builder.Host.UseSerilog();
 
     // Add services
-    builder.Services.AddControllers();
+    builder
+        .Services.AddControllers()
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
 
     // Add Authentication
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    builder
+        .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
             options.Authority = builder.Configuration["Auth0:Domain"];
             options.Audience = builder.Configuration["Auth0:Audience"];
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                NameClaimType = ClaimTypes.NameIdentifier
+                NameClaimType = ClaimTypes.NameIdentifier,
             };
         });
 
@@ -52,12 +59,12 @@ try
 
     // Add Repositories
     builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
-    //builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+    builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
     //builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
 
     // Add Services
     builder.Services.AddScoped<ITransactionService, TransactionService>();
-    //builder.Services.AddScoped<ICategoryService, CategoryService>();
+    builder.Services.AddScoped<ICategoryService, CategoryService>();
     //builder.Services.AddScoped<IBudgetService, BudgetService>();
 
     // Add Background Services
@@ -66,13 +73,20 @@ try
     // Add CORS
     builder.Services.AddCors(options =>
     {
-        options.AddPolicy("AllowPersonifiApp", policy =>
-        {
-            policy.WithOrigins(builder.Configuration["Cors:AllowedOrigins"]?.Split(',') ?? new[] { "http://localhost:3000" })
-                  .AllowAnyMethod()
-                  .AllowAnyHeader()
-                  .AllowCredentials();
-        });
+        options.AddPolicy(
+            "AllowPersonifiApp",
+            policy =>
+            {
+                policy
+                    .WithOrigins(
+                        builder.Configuration["Cors:AllowedOrigins"]?.Split(',')
+                            ?? new[] { "http://localhost:3000" }
+                    )
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            }
+        );
     });
 
     var app = builder.Build();
