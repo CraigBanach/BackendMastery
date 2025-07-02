@@ -1,6 +1,4 @@
-﻿using PersonifiBackend.Core.Entities;
-
-namespace PersonifiBackend.Core.DTOs;
+﻿namespace PersonifiBackend.Core.DTOs;
 
 public record CreateTransactionDto(
     decimal Amount,
@@ -28,10 +26,3 @@ public record TransactionDto(
     DateTime CreatedAt
 );
 
-public record CategoryDto(
-    int Id,
-    string Name,
-    CategoryType Type,
-    string? Icon,
-    string? Color
-);

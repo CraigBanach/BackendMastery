@@ -39,7 +39,7 @@ public class TransactionController : ControllerBase
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
-        var userId = User.FindFirst("sub")?.Value ?? throw new UnauthorizedAccessException();
+        var userId = User.Identity?.Name ?? throw new UnauthorizedAccessException();
         var transactions = await _transactionService.GetUserTransactionsAsync(
             userId, startDate, endDate);
 
@@ -50,7 +50,7 @@ public class TransactionController : ControllerBase
     public async Task<ActionResult<TransactionDto>> Create(
         [FromBody] CreateTransactionDto dto)
     {
-        var userId = User.FindFirst("sub")?.Value ?? throw new UnauthorizedAccessException();
+        var userId = User.Identity?.Name ?? throw new UnauthorizedAccessException();
 
         _logger.LogInformation(
             "Creating transaction for user {UserId}: {@Transaction}",
@@ -69,7 +69,7 @@ public class TransactionController : ControllerBase
         int id,
         [FromBody] UpdateTransactionDto dto)
     {
-        var userId = User.FindFirst("sub")?.Value ?? throw new UnauthorizedAccessException();
+        var userId = User.Identity?.Name ?? throw new UnauthorizedAccessException();
         var updated = await _transactionService.UpdateAsync(id, dto, userId);
 
         if (updated == null)
@@ -78,10 +78,12 @@ public class TransactionController : ControllerBase
         return Ok(updated);
     }
 
+    // TODO: Add patch endpoint to update only a small part of the transaction
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var userId = User.FindFirst("sub")?.Value ?? throw new UnauthorizedAccessException();
+        var userId = User.Identity?.Name ?? throw new UnauthorizedAccessException();
         var result = await _transactionService.DeleteAsync(id, userId);
 
         if (!result)
