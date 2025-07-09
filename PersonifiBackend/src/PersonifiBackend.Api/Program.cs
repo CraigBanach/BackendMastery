@@ -96,6 +96,8 @@ try
         );
     });
 
+    builder.Services.AddHealthChecks().AddDbContextCheck<PersonifiDbContext>();
+
     var app = builder.Build();
 
     // Configure the HTTP request pipeline
@@ -115,6 +117,7 @@ try
     app.UseMiddleware<UserContextMiddleware>();
 
     app.MapControllers();
+    app.MapHealthChecks("/healthz");
 
     // Ensure database is created and migrations are applied
     using (var scope = app.Services.CreateScope())
