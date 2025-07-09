@@ -8,6 +8,7 @@ using PersonifiBackend.Api.Middleware;
 using PersonifiBackend.Application.BackgroundServices;
 using PersonifiBackend.Application.Mapping;
 using PersonifiBackend.Application.Services;
+using PersonifiBackend.Core.Configuration;
 using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Infrastructure.Data;
 using PersonifiBackend.Infrastructure.Repositories;
@@ -23,6 +24,13 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+
+    builder.Services.Configure<Auth0Options>(
+        builder.Configuration.GetSection(Auth0Options.SectionName)
+    );
+    builder.Services.Configure<CorsOptions>(
+        builder.Configuration.GetSection(CorsOptions.SectionName)
+    );
 
     // Add Serilog
     builder.Host.UseSerilog();
@@ -45,8 +53,18 @@ try
         .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
-            options.Authority = builder.Configuration["Auth0:Domain"];
-            options.Audience = builder.Configuration["Auth0:Audience"];
+            var auth0Options =
+                builder.Configuration.GetSection(Auth0Options.SectionName).Get<Auth0Options>()
+                ?? throw new InvalidOperationException(
+                    "Auth0 configuration is missing or invalid."
+                );
+
+            options.Authority =
+                auth0Options.Domain
+                ?? throw new InvalidOperationException("Auth0 Domain is not configured.");
+            options.Audience =
+                auth0Options.Audience
+                ?? throw new InvalidOperationException("Auth0 Audience is not configured.");
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 NameClaimType = ClaimTypes.NameIdentifier,
@@ -56,7 +74,14 @@ try
     // Add Database
     builder.Services.AddDbContext<PersonifiDbContext>(options =>
     {
-        options.UseNpgsql(builder.Configuration["DbConnectionString"]);
+        var dbConnectionString =
+            builder
+                .Configuration.GetSection(DatabaseOptions.SectionName)
+                .Get<DatabaseOptions>()
+                ?.ConnectionString
+            ?? throw new InvalidOperationException("Database connection string is not configured.");
+
+        options.UseNpgsql(dbConnectionString);
     });
 
     // Add AutoMapper
@@ -84,11 +109,14 @@ try
             "AllowPersonifiApp",
             policy =>
             {
+                var corsOptions =
+                    builder.Configuration.GetSection(CorsOptions.SectionName).Get<CorsOptions>()
+                    ?? throw new InvalidOperationException(
+                        "CORS configuration is missing or invalid."
+                    );
+
                 policy
-                    .WithOrigins(
-                        builder.Configuration["Cors:AllowedOrigins"]?.Split(',')
-                            ?? new[] { "http://localhost:3000" }
-                    )
+                    .WithOrigins(corsOptions.AllowedOrigins ?? new[] { "http://localhost:3000" })
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials();
