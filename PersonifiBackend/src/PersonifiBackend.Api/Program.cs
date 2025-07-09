@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using PersonifiBackend.Api.Filters;
 using PersonifiBackend.Api.Middleware;
 using PersonifiBackend.Application.BackgroundServices;
 using PersonifiBackend.Application.Mapping;
@@ -10,6 +11,7 @@ using PersonifiBackend.Application.Services;
 using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Infrastructure.Data;
 using PersonifiBackend.Infrastructure.Repositories;
+using PersonifiBackend.Infrastructure.Services;
 using Serilog;
 
 // Configure Serilog
@@ -27,7 +29,10 @@ try
 
     // Add services
     builder
-        .Services.AddControllers()
+        .Services.AddControllers(options =>
+        {
+            options.Filters.Add<RequireAuthenticatedUserAttribute>();
+        })
         .AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -56,6 +61,8 @@ try
 
     // Add AutoMapper
     builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+    builder.Services.AddScoped<IUserContext, UserContext>();
 
     // Add Repositories
     builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
@@ -105,7 +112,7 @@ try
     app.UseAuthorization();
 
     app.UseMiddleware<ErrorHandlingMiddleware>();
-    //app.UseMiddleware<UserContextMiddleware>();
+    app.UseMiddleware<UserContextMiddleware>();
 
     app.MapControllers();
 
