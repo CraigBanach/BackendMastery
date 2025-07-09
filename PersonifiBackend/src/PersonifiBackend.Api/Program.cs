@@ -11,6 +11,7 @@ using PersonifiBackend.Application.Services;
 using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Infrastructure.Data;
 using PersonifiBackend.Infrastructure.Repositories;
+using PersonifiBackend.Infrastructure.Services;
 using Serilog;
 
 // Configure Serilog
@@ -60,6 +61,8 @@ try
 
     // Add AutoMapper
     builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+    builder.Services.AddScoped<IUserContext, UserContext>();
 
     // Add Repositories
     builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
