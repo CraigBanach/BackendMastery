@@ -20,7 +20,7 @@ public class UserContextMiddleware
         if (context.User.Identity?.IsAuthenticated == true)
         {
             // Extract user ID from the 'sub' claim (Auth0 standard)
-            var userId = context.User.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+            var userId = context.User.Identity.Name;
 
             if (!string.IsNullOrEmpty(userId))
             {
