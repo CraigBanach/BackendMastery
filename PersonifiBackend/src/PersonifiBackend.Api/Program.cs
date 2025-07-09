@@ -74,7 +74,14 @@ try
     // Add Database
     builder.Services.AddDbContext<PersonifiDbContext>(options =>
     {
-        options.UseNpgsql(builder.Configuration["DbConnectionString"]);
+        var dbConnectionString =
+            builder
+                .Configuration.GetSection(DatabaseOptions.SectionName)
+                .Get<DatabaseOptions>()
+                ?.ConnectionString
+            ?? throw new InvalidOperationException("Database connection string is not configured.");
+
+        options.UseNpgsql(dbConnectionString);
     });
 
     // Add AutoMapper
@@ -109,10 +116,7 @@ try
                     );
 
                 policy
-                    .WithOrigins(
-                        builder.Configuration["Cors:AllowedOrigins"]?.Split(',')
-                            ?? new[] { "http://localhost:3000" }
-                    )
+                    .WithOrigins(corsOptions.AllowedOrigins ?? new[] { "http://localhost:3000" })
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials();
