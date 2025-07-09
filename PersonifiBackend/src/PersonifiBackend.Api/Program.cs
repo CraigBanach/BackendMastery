@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using PersonifiBackend.Api.Filters;
 using PersonifiBackend.Api.Middleware;
 using PersonifiBackend.Application.BackgroundServices;
 using PersonifiBackend.Application.Mapping;
@@ -27,7 +28,10 @@ try
 
     // Add services
     builder
-        .Services.AddControllers()
+        .Services.AddControllers(options =>
+        {
+            options.Filters.Add<RequireAuthenticatedUserAttribute>();
+        })
         .AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -105,7 +109,7 @@ try
     app.UseAuthorization();
 
     app.UseMiddleware<ErrorHandlingMiddleware>();
-    //app.UseMiddleware<UserContextMiddleware>();
+    app.UseMiddleware<UserContextMiddleware>();
 
     app.MapControllers();
 
