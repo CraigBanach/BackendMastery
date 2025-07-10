@@ -32,6 +32,28 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # # For main branch - latest + commit sha
+            type=ref,event=branch,enable={{is_default_branch}}
+            type=sha,prefix={{branch}}-,format=short,enable={{is_default_branch}}
+
+            # For releases
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            
+            # Always add latest for main branch
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=PersonifiBackend
+            org.opencontainers.image.description=Personal Finance Backend API
+            org.opencontainers.image.vendor=Craig Banach
+            org.opencontainers.image.url=https://github.com/${{ github.repository }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ github.ref_name }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+            org.opencontainers.image.revision=${{ github.sha }}
 
       - name: Build and push Docker images
         id: push
