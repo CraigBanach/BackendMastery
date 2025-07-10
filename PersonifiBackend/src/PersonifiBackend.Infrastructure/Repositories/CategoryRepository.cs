@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using PersonifiBackend.Core.Entities;
+using PersonifiBackend.Core.Exceptions;
 using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Infrastructure.Data;
 
@@ -28,10 +30,34 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task<Category> CreateAsync(Category category)
     {
-        _context.Categories.Add(category);
-        await _context.SaveChangesAsync();
-        return await GetByIdAsync(category.Id, category.UserId)
-            ?? throw new InvalidOperationException("Failed to retrieve created category");
+        try
+        {
+            _context.Categories.Add(category);
+            await _context.SaveChangesAsync();
+            return await GetByIdAsync(category.Id, category.UserId)
+                ?? throw new InvalidOperationException("Failed to retrieve created category");
+        }
+        catch (DbUpdateException ex)
+        {
+            // TODO: Move this into some exception handler or middleware
+            if (ex.InnerException is PostgresException pgEx)
+            {
+                if (pgEx.SqlState == "23505")
+                {
+                    throw new CategoryAlreadyExistsException();
+                }
+            }
+            // Handle specific database update exceptions if needed
+            throw new InvalidOperationException("Error creating category", ex);
+        }
+        catch (Exception ex)
+        {
+            // Handle other exceptions
+            throw new InvalidOperationException(
+                "An error occurred while creating the category",
+                ex
+            );
+        }
     }
 
     public async Task<Category> UpdateAsync(Category category)

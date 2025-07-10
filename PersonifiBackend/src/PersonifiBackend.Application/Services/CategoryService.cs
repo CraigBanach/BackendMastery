@@ -48,12 +48,14 @@ public class CategoryService : ICategoryService
     {
         var category = _mapper.Map<Category>(dto);
         category.UserId = userId;
+
         var created = await _repository.CreateAsync(category);
         _logger.LogInformation(
             "Created category {CategoryId} for user {UserId}",
             created.Id,
             userId
         );
+
         return _mapper.Map<CategoryDto>(created);
     }
 
