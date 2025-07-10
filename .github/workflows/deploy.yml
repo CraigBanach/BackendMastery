@@ -74,7 +74,7 @@ jobs:
     steps:
       - name: Deploy to Koyeb
         env:
-          KOYEB_SERVICE_ID: ${{ env.KOYEB_SERVICE_ID }}
+          KOYEB_SERVICE_ID: ${{ vars.KOYEB_SERVICE_ID }}
         run: |
           curl -X POST "https://app.koyeb.com/v1/services/${{env.KOYEB_SERVICE_ID}}/redeploy" \
             -H "Authorization: Bearer ${{secrets.KOYEB_REDEPLOY_KEY}}" \
