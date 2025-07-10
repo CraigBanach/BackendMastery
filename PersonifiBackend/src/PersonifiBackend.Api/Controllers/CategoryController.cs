@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PersonifiBackend.Application.Services;
 using PersonifiBackend.Core.DTOs;
+using PersonifiBackend.Core.Exceptions;
 using PersonifiBackend.Core.Interfaces;
 
 namespace PersonifiBackend.Api.Controllers
@@ -50,8 +51,35 @@ namespace PersonifiBackend.Api.Controllers
                 _userContext.UserId,
                 dto
             );
-            var created = await _categoryService.CreateAsync(dto, _userContext.UserId);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+
+            try
+            {
+                var created = await _categoryService.CreateAsync(dto, _userContext.UserId);
+                return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            }
+            catch (CategoryAlreadyExistsException ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Category creation failed for user {UserId}: {@Category}",
+                    _userContext.UserId,
+                    dto
+                );
+                return Conflict(new { message = "Category already exists." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "An error occurred while creating category for user {UserId}: {@Category}",
+                    _userContext.UserId,
+                    dto
+                );
+                return StatusCode(
+                    500,
+                    new { message = "An error occurred while creating the category." }
+                );
+            }
         }
 
         [HttpPut("{id}")]
