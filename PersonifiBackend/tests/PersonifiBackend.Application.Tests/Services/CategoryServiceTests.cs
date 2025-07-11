@@ -21,6 +21,7 @@ public class CategoryServiceTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task GetByIdAsync_ReturnsCategoryDto_WhenFound()
     {
         var category = new Category { Id = 1, UserId = "user1" };
@@ -35,6 +36,7 @@ public class CategoryServiceTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task GetUserCategoriesAsync_ReturnsMappedDtos()
     {
         var categories = new List<Category>
@@ -54,6 +56,7 @@ public class CategoryServiceTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task UpdateAsync_ReturnsMappedDtos()
     {
         var updateDto = new UpdateCategoryDto(
@@ -78,6 +81,7 @@ public class CategoryServiceTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task CreateAsync_MapsAndCreatesCategory()
     {
         var dto = new CreateCategoryDto("SampleName", CategoryType.Expense, null, null);
@@ -95,6 +99,7 @@ public class CategoryServiceTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task UpdateAsync_ReturnsNull_WhenNotFound()
     {
         var updateDto = new UpdateCategoryDto(
@@ -112,6 +117,7 @@ public class CategoryServiceTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task DeleteAsync_ReturnsTrue_WhenDeleted()
     {
         _repoMock.Setup(r => r.DeleteAsync(1, "user1")).ReturnsAsync(true);

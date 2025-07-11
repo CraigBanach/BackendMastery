@@ -27,6 +27,7 @@ public class CategoryControllerTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task GetById_ReturnsOk_WhenFound()
     {
         _serviceMock
@@ -40,6 +41,7 @@ public class CategoryControllerTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task GetById_ReturnsNotFound_WhenNull()
     {
         _serviceMock.Setup(s => s.GetByIdAsync(1, "user1")).ReturnsAsync((CategoryDto?)null);
@@ -50,6 +52,7 @@ public class CategoryControllerTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task GetUserCategories_ReturnsOk_WhenFound()
     {
         var categories = new List<CategoryDto>
@@ -67,6 +70,7 @@ public class CategoryControllerTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task Create_ReturnsCreatedAtAction()
     {
         var dto = new CreateCategoryDto("NewCategory", CategoryType.Income, null, null);
@@ -80,6 +84,7 @@ public class CategoryControllerTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task Update_ReturnsOk_WhenUpdated()
     {
         var dto = new UpdateCategoryDto("UpdatedCategory", CategoryType.Expense, null, null);
@@ -93,6 +98,7 @@ public class CategoryControllerTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task Update_ReturnsNotFound_WhenNull()
     {
         var dto = new UpdateCategoryDto("UpdatedCategory", CategoryType.Expense, null, null);
@@ -102,6 +108,7 @@ public class CategoryControllerTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task Delete_ReturnsNoContent_WhenDeleted()
     {
         _serviceMock.Setup(s => s.DeleteAsync(1, "user1")).ReturnsAsync(true);
@@ -112,6 +119,7 @@ public class CategoryControllerTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task Delete_ReturnsNotFound_WhenNotFound()
     {
         _serviceMock.Setup(s => s.DeleteAsync(1, "user1")).ReturnsAsync(false);

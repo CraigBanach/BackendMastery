@@ -1,8 +1,8 @@
-﻿using System.Net;
-using System.Net.Http.Json;
-using PersonifiBackend.Api.Tests.Extensions;
+﻿using PersonifiBackend.Api.Tests.Extensions;
 using PersonifiBackend.Api.Tests.Fixtures;
 using PersonifiBackend.Core.DTOs;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace PersonifiBackend.Api.Tests.Integration;
 
@@ -12,6 +12,7 @@ public class TransactionIntegrationTests : IntegrationTestBase
         : base(factory) { }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetTransactions_WithPagination_ReturnsCorrectPage()
     {
         // Act
@@ -37,6 +38,7 @@ public class TransactionIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetTransactions_LastPage_ReturnsPartialResults()
     {
         // Arrange - Create exactly 25 transactions for predictable pagination
@@ -59,6 +61,7 @@ public class TransactionIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetTransactions_InvalidPage_ReturnsEmptyResults()
     {
         // Arrange - Create some test data
@@ -77,6 +80,7 @@ public class TransactionIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetTransactions_WithFilters_ReturnFilteredResults()
     {
         // Arrange - Create test data with known dates
@@ -104,12 +108,13 @@ public class TransactionIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task CreateTransaction_ReturnsCreatedTransaction()
     {
         // Arrange - Ensure categories exist
         await SeedTestTransactionsAsync(1); // This creates categories
         await CleanupTestDataAsync(); // Clean transactions but keep categories
-        
+
         var newTransaction = new CreateTransactionDto(
             Amount: 123.45m,
             Description: "Integration test transaction",
@@ -120,7 +125,7 @@ public class TransactionIntegrationTests : IntegrationTestBase
 
         // Act
         var created = await Client.PostFromJsonAsync<CreateTransactionDto, TransactionDto>(
-            "/api/transaction", 
+            "/api/transaction",
             newTransaction
         );
 
@@ -133,6 +138,7 @@ public class TransactionIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
+    [Trait("Category", "Integration")]
     public async Task GetTransactions_WithoutAuth_ReturnsUnauthorized()
     {
         // Arrange

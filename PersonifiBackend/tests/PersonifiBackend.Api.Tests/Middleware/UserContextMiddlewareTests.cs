@@ -10,6 +10,7 @@ namespace PersonifiBackend.Api.Tests.Middleware;
 public class UserContextMiddlewareTests
 {
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task InvokeAsync_WithAuthenticatedUser_SetsUserContext()
     {
         // Arrange
@@ -43,6 +44,7 @@ public class UserContextMiddlewareTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task InvokeAsync_WithUnauthenticatedUser_DoesNotSetUserContext()
     {
         // Arrange
