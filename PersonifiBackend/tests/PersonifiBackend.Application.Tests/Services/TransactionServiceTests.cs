@@ -21,6 +21,7 @@ public class TransactionServiceTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task GetByIdAsync_ReturnsTransactionDto_WhenFound()
     {
         var transaction = new Transaction { Id = 1, UserId = "user1" };
@@ -43,6 +44,7 @@ public class TransactionServiceTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task GetByIdAsync_ReturnsNull_WhenNotFound()
     {
         _repoMock.Setup(r => r.GetByIdAsync(1, "user1")).ReturnsAsync((Transaction?)null);
@@ -53,6 +55,7 @@ public class TransactionServiceTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task CreateAsync_MapsAndCreatesTransaction()
     {
         var dto = new CreateTransactionDto(
@@ -84,6 +87,7 @@ public class TransactionServiceTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task UpdateAsync_ReturnsMappedDto()
     {
         var updateDto = new UpdateTransactionDto(
@@ -132,6 +136,7 @@ public class TransactionServiceTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task UpdateAsync_ReturnsNull_WhenNotFound()
     {
         var updateDto = new UpdateTransactionDto(
@@ -150,6 +155,7 @@ public class TransactionServiceTests
     }
 
     [Fact]
+    [Trait("Category", "Unit")]
     public async Task DeleteAsync_ReturnsTrue_WhenDeleted()
     {
         _repoMock.Setup(r => r.DeleteAsync(1, "user1")).ReturnsAsync(true);
