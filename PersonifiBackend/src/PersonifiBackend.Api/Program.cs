@@ -1,8 +1,7 @@
-using System.Security.Claims;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using PersonifiBackend.Api.Filters;
 using PersonifiBackend.Api.Middleware;
 using PersonifiBackend.Application.BackgroundServices;
@@ -14,6 +13,8 @@ using PersonifiBackend.Infrastructure.Data;
 using PersonifiBackend.Infrastructure.Repositories;
 using PersonifiBackend.Infrastructure.Services;
 using Serilog;
+using System.Security.Claims;
+using System.Text.Json.Serialization;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -46,7 +47,37 @@ try
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen(options =>
+    {
+        options.AddSecurityDefinition(
+            "Bearer",
+            new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme.",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+            }
+        );
+
+        options.AddSecurityRequirement(
+            new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer",
+                        },
+                    },
+                    new string[] { }
+                },
+            }
+        );
+    });
 
     // Add Authentication
     builder
