@@ -38,16 +38,26 @@ public class TransactionController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TransactionDto>>> GetUserTransactions(
+    public async Task<ActionResult<PagedResponse<TransactionDto>>> GetUserTransactions(
+        [FromQuery] PaginationRequest pagination,
         [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate
+        [FromQuery] DateTime? endDate,
+        [FromQuery] int? categoryId
     )
     {
         var transactions = await _transactionService.GetUserTransactionsAsync(
             _userContext.UserId,
+            pagination,
             startDate,
-            endDate
+            endDate,
+            categoryId
         );
+
+        // Add pagination headers for client convenience
+        Response.Headers.Append("X-Current-Page", transactions.CurrentPage.ToString());
+        Response.Headers.Append("X-Page-Size", transactions.PageSize.ToString());
+        Response.Headers.Append("X-Total-Count", transactions.TotalCount.ToString());
+        Response.Headers.Append("X-Total-Pages", transactions.TotalPages.ToString());
 
         return Ok(transactions);
     }

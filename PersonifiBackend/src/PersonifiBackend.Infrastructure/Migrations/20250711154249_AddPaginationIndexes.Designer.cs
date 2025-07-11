@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PersonifiBackend.Infrastructure.Data;
@@ -11,9 +12,11 @@ using PersonifiBackend.Infrastructure.Data;
 namespace PersonifiBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(PersonifiDbContext))]
-    partial class PersonifiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250711154249_AddPaginationIndexes")]
+    partial class AddPaginationIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

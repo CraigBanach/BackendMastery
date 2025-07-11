@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -24,6 +25,10 @@ public class TransactionControllerTests
             _userContextMock.Object,
             _loggerMock.Object
         );
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext(),
+        };
     }
 
     [Fact]
@@ -83,17 +88,20 @@ public class TransactionControllerTests
                 DateTime.UtcNow
             ),
         };
+        var paginationRequest = new PaginationRequest { Page = 1, PageSize = 20 };
         _serviceMock
-            .Setup(s => s.GetUserTransactionsAsync("user1", null, null))
-            .ReturnsAsync(transactions);
+            .Setup(s => s.GetUserTransactionsAsync("user1", paginationRequest, null, null, null))
+            .ReturnsAsync(new PagedResponse<TransactionDto>(transactions, 2, 1, 20));
 
-        var result = await _controller.GetUserTransactions(null, null);
+        var result = await _controller.GetUserTransactions(paginationRequest, null, null, null);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var returnedTransactions = Assert.IsAssignableFrom<IEnumerable<TransactionDto>>(
-            okResult.Value
-        );
-        Assert.Equal(2, returnedTransactions.Count());
+        var returned = Assert.IsType<PagedResponse<TransactionDto>>(okResult.Value);
+
+        Assert.Equal(2, returned.Items.Count());
+        Assert.Equal(1, returned.CurrentPage);
+        Assert.Equal(20, returned.PageSize);
+        Assert.Equal(2, returned.TotalCount);
     }
 
     [Fact]

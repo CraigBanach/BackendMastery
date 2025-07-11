@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -14,6 +12,8 @@ using PersonifiBackend.Infrastructure.Data;
 using PersonifiBackend.Infrastructure.Repositories;
 using PersonifiBackend.Infrastructure.Services;
 using Serilog;
+using System.Security.Claims;
+using System.Text.Json.Serialization;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -72,17 +72,22 @@ try
         });
 
     // Add Database
-    builder.Services.AddDbContext<PersonifiDbContext>(options =>
+    if (!builder.Environment.IsEnvironment("Testing"))
     {
-        var dbConnectionString =
-            builder
-                .Configuration.GetSection(DatabaseOptions.SectionName)
-                .Get<DatabaseOptions>()
-                ?.ConnectionString
-            ?? throw new InvalidOperationException("Database connection string is not configured.");
+        builder.Services.AddDbContext<PersonifiDbContext>(options =>
+        {
+            var dbConnectionString =
+                builder
+                    .Configuration.GetSection(DatabaseOptions.SectionName)
+                    .Get<DatabaseOptions>()
+                    ?.ConnectionString
+                ?? throw new InvalidOperationException(
+                    "Database connection string is not configured."
+                );
 
-        options.UseNpgsql(dbConnectionString);
-    });
+            options.UseNpgsql(dbConnectionString);
+        });
+    }
 
     // Add AutoMapper
     builder.Services.AddAutoMapper(typeof(MappingProfile));
@@ -151,7 +156,10 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<PersonifiDbContext>();
-        context.Database.Migrate();
+        if (context.Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
+        {
+            context.Database.Migrate();
+        }
     }
 
     app.Run();
@@ -164,3 +172,5 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+public partial class Program { }

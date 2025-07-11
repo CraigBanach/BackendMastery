@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
+using PersonifiBackend.Application.Helpers;
 using PersonifiBackend.Core.DTOs;
 using PersonifiBackend.Core.Entities;
 using PersonifiBackend.Core.Interfaces;
@@ -9,10 +10,13 @@ namespace PersonifiBackend.Application.Services;
 public interface ITransactionService
 {
     Task<TransactionDto?> GetByIdAsync(int id, string userId);
-    Task<IEnumerable<TransactionDto>> GetUserTransactionsAsync(
+    Task<PagedResponse<TransactionDto>> GetUserTransactionsAsync(
         string userId,
+        PaginationRequest pagination,
         DateTime? startDate = null,
-        DateTime? endDate = null);
+        DateTime? endDate = null,
+        int? categoryId = null
+    );
     Task<TransactionDto> CreateAsync(CreateTransactionDto dto, string userId);
     Task<TransactionDto?> UpdateAsync(int id, UpdateTransactionDto dto, string userId);
     Task<bool> DeleteAsync(int id, string userId);
@@ -27,7 +31,8 @@ public class TransactionService : ITransactionService
     public TransactionService(
         ITransactionRepository repository,
         IMapper mapper,
-        ILogger<TransactionService> logger)
+        ILogger<TransactionService> logger
+    )
     {
         _repository = repository;
         _mapper = mapper;
@@ -40,14 +45,27 @@ public class TransactionService : ITransactionService
         return transaction == null ? null : _mapper.Map<TransactionDto>(transaction);
     }
 
-    public async Task<IEnumerable<TransactionDto>> GetUserTransactionsAsync(
+    public async Task<PagedResponse<TransactionDto>> GetUserTransactionsAsync(
         string userId,
+        PaginationRequest pagination,
         DateTime? startDate = null,
-        DateTime? endDate = null)
+        DateTime? endDate = null,
+        int? categoryId = null
+    )
     {
-        var transactions = await _repository.GetUserTransactionsAsync(
-            userId, startDate, endDate);
-        return _mapper.Map<IEnumerable<TransactionDto>>(transactions);
+        var result = await _repository.GetUserTransactionsAsync(
+            userId,
+            pagination,
+            startDate,
+            endDate,
+            categoryId
+        );
+
+        return PaginationHelper.CreatePagedResponse<Transaction, TransactionDto>(
+            result,
+            pagination,
+            _mapper
+        );
     }
 
     public async Task<TransactionDto> CreateAsync(CreateTransactionDto dto, string userId)
@@ -58,15 +76,14 @@ public class TransactionService : ITransactionService
         var created = await _repository.CreateAsync(transaction);
         _logger.LogInformation(
             "Created transaction {TransactionId} for user {UserId}",
-            created.Id, userId);
+            created.Id,
+            userId
+        );
 
         return _mapper.Map<TransactionDto>(created);
     }
 
-    public async Task<TransactionDto?> UpdateAsync(
-        int id,
-        UpdateTransactionDto dto,
-        string userId)
+    public async Task<TransactionDto?> UpdateAsync(int id, UpdateTransactionDto dto, string userId)
     {
         var existing = await _repository.GetByIdAsync(id, userId);
         if (existing == null)
@@ -75,9 +92,7 @@ public class TransactionService : ITransactionService
         _mapper.Map(dto, existing);
         var updated = await _repository.UpdateAsync(existing);
 
-        _logger.LogInformation(
-            "Updated transaction {TransactionId} for user {UserId}",
-            id, userId);
+        _logger.LogInformation("Updated transaction {TransactionId} for user {UserId}", id, userId);
 
         return _mapper.Map<TransactionDto>(updated);
     }
@@ -90,7 +105,9 @@ public class TransactionService : ITransactionService
         {
             _logger.LogInformation(
                 "Deleted transaction {TransactionId} for user {UserId}",
-                id, userId);
+                id,
+                userId
+            );
         }
 
         return result;
