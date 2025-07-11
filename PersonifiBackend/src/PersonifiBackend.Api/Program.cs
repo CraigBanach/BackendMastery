@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using PersonifiBackend.Api.Filters;
 using PersonifiBackend.Api.Middleware;
 using PersonifiBackend.Application.BackgroundServices;
@@ -12,6 +13,7 @@ using PersonifiBackend.Infrastructure.Data;
 using PersonifiBackend.Infrastructure.Repositories;
 using PersonifiBackend.Infrastructure.Services;
 using Serilog;
+using System.Reflection;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 
@@ -46,7 +48,48 @@ try
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         });
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen(options =>
+    {
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "Personifi Backend API",
+            Version = "v1",
+            Description = "A financial management API for tracking transactions and categories"
+        });
+
+        // Include XML documentation
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        if (File.Exists(xmlPath))
+        {
+            options.IncludeXmlComments(xmlPath);
+        }
+
+        // Add JWT authentication to Swagger
+        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+            Name = "Authorization",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer"
+        });
+
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
+    });
 
     // Add Authentication
     builder
@@ -104,6 +147,8 @@ try
     builder.Services.AddScoped<ICategoryService, CategoryService>();
     //builder.Services.AddScoped<IBudgetService, BudgetService>();
 
+    // TODO: Configure FluentValidation in Program.cs with auto-validation
+
     // Add Background Services
     builder.Services.AddHostedService<BudgetAlertService>();
 
@@ -131,6 +176,13 @@ try
 
     builder.Services.AddHealthChecks().AddDbContextCheck<PersonifiDbContext>();
 
+    // Configure Kestrel for security
+    builder.Services.Configure<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions>(options =>
+    {
+        options.Limits.MaxRequestBodySize = 1_048_576; // 1MB limit
+        options.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(30);
+    });
+
     var app = builder.Build();
 
     // Configure the HTTP request pipeline
@@ -148,6 +200,7 @@ try
 
     app.UseMiddleware<ErrorHandlingMiddleware>();
     app.UseMiddleware<UserContextMiddleware>();
+    // TODO: Add validation middleware to handle validation errors
 
     app.MapControllers();
     app.MapHealthChecks("/healthz");

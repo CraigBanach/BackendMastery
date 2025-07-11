@@ -1,5 +1,6 @@
 ﻿namespace PersonifiBackend.Core.DTOs;
 
+// TODO: Create FluentValidation validator for CreateTransactionDto
 public record CreateTransactionDto(
     decimal Amount,
     string Description,
@@ -8,6 +9,7 @@ public record CreateTransactionDto(
     int CategoryId
 );
 
+// TODO: Create FluentValidation validator for UpdateTransactionDto
 public record UpdateTransactionDto(
     decimal Amount,
     string Description,

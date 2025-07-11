@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using PersonifiBackend.Core.Exceptions;
+using System.Net;
 using System.Text.Json;
 
 namespace PersonifiBackend.Api.Middleware;
@@ -33,24 +34,25 @@ public class ErrorHandlingMiddleware
     {
         context.Response.ContentType = "application/json";
 
+        var (statusCode, message) = exception switch
+        {
+            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Access denied"),
+            ArgumentException => (HttpStatusCode.BadRequest, "Invalid request data"),
+            KeyNotFoundException => (HttpStatusCode.NotFound, "Resource not found"),
+            DuplicateResourceException ex => (HttpStatusCode.Conflict, ex.Message),
+            _ => (HttpStatusCode.InternalServerError, "An error occurred while processing your request")
+        };
+
         var response = new
         {
             error = new
             {
-                message = "An error occurred while processing your request.",
-                detail = exception.Message,
+                message = message,
                 type = exception.GetType().Name
             }
         };
 
-        context.Response.StatusCode = exception switch
-        {
-            UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
-            ArgumentException => (int)HttpStatusCode.BadRequest,
-            KeyNotFoundException => (int)HttpStatusCode.NotFound,
-            _ => (int)HttpStatusCode.InternalServerError
-        };
-
+        context.Response.StatusCode = (int)statusCode;
         await context.Response.WriteAsync(JsonSerializer.Serialize(response));
     }
 }

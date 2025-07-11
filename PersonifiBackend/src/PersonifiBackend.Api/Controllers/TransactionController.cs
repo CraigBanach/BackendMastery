@@ -6,6 +6,9 @@ using PersonifiBackend.Core.Interfaces;
 
 namespace PersonifiBackend.Api.Controllers;
 
+/// <summary>
+/// Transaction management endpoints for authenticated users
+/// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
@@ -26,6 +29,13 @@ public class TransactionController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Gets a specific transaction by ID for the authenticated user
+    /// </summary>
+    /// <param name="id">The transaction ID</param>
+    /// <returns>The transaction details</returns>
+    /// <response code="200">Returns the transaction</response>
+    /// <response code="404">Transaction not found</response>
     [HttpGet("{id}")]
     public async Task<ActionResult<TransactionDto>> GetById(int id)
     {
@@ -37,6 +47,15 @@ public class TransactionController : ControllerBase
         return Ok(transaction);
     }
 
+    /// <summary>
+    /// Gets paginated transactions for the authenticated user with optional filtering
+    /// </summary>
+    /// <param name="pagination">Pagination parameters (page, pageSize, sortBy, sortDescending)</param>
+    /// <param name="startDate">Filter transactions from this date (inclusive)</param>
+    /// <param name="endDate">Filter transactions to this date (inclusive)</param>
+    /// <param name="categoryId">Filter by category ID</param>
+    /// <returns>Paginated list of transactions</returns>
+    /// <response code="200">Returns paginated transactions with headers</response>
     [HttpGet]
     public async Task<ActionResult<PagedResponse<TransactionDto>>> GetUserTransactions(
         [FromQuery] PaginationRequest pagination,
@@ -62,6 +81,14 @@ public class TransactionController : ControllerBase
         return Ok(transactions);
     }
 
+    /// <summary>
+    /// Creates a new transaction for the authenticated user
+    /// </summary>
+    /// <param name="dto">Transaction details</param>
+    /// <returns>The created transaction with assigned ID</returns>
+    /// <response code="201">Transaction created successfully</response>
+    /// <response code="400">Invalid transaction data</response>
+    // TODO: Rename dto for better API clarity throughout controllers
     [HttpPost]
     public async Task<ActionResult<TransactionDto>> Create([FromBody] CreateTransactionDto dto)
     {
@@ -76,6 +103,15 @@ public class TransactionController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
+    /// <summary>
+    /// Updates an existing transaction for the authenticated user
+    /// </summary>
+    /// <param name="id">The transaction ID to update</param>
+    /// <param name="dto">Updated transaction details</param>
+    /// <returns>The updated transaction</returns>
+    /// <response code="200">Transaction updated successfully</response>
+    /// <response code="404">Transaction not found</response>
+    /// <response code="400">Invalid transaction data</response>
     [HttpPut("{id}")]
     public async Task<ActionResult<TransactionDto>> Update(
         int id,
@@ -92,6 +128,13 @@ public class TransactionController : ControllerBase
 
     // TODO: Add patch endpoint to update only a small part of the transaction
 
+    /// <summary>
+    /// Deletes a transaction for the authenticated user
+    /// </summary>
+    /// <param name="id">The transaction ID to delete</param>
+    /// <returns>No content on success</returns>
+    /// <response code="204">Transaction deleted successfully</response>
+    /// <response code="404">Transaction not found</response>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
