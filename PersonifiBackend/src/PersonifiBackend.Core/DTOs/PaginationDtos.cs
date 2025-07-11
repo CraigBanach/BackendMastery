@@ -17,26 +17,14 @@ public class PaginationRequest
     public bool SortDescending { get; set; } = true;
 }
 
-public class PagedResponse<T>
+public record PagedResponse<T>(
+    IEnumerable<T> Items,
+    int TotalCount,
+    int CurrentPage,
+    int PageSize
+)
 {
-    public IEnumerable<T> Items { get; set; } = new List<T>();
-    public int CurrentPage { get; set; }
-    public int PageSize { get; set; }
-    public int TotalPages { get; set; }
-    public int TotalCount { get; set; }
+    public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
     public bool HasPrevious => CurrentPage > 1;
     public bool HasNext => CurrentPage < TotalPages;
-
-    // Parameterless constructor for serialization/deserialization
-    // TODO: Ask Claude how to void this and still allow deserialization
-    public PagedResponse() { }
-
-    public PagedResponse(IEnumerable<T> items, int count, int page, int pageSize)
-    {
-        Items = items;
-        TotalCount = count;
-        CurrentPage = page;
-        PageSize = pageSize;
-        TotalPages = (int)Math.Ceiling(count / (double)pageSize);
-    }
 }

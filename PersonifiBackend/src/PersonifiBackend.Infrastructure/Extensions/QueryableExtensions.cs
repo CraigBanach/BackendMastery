@@ -11,6 +11,10 @@ public static class QueryableExtensions
     )
     {
         var count = await source.CountAsync();
+        if (count == 0)
+        {
+            return new PaginationResult<T>(new List<T>(), 0);
+        }
 
         var items = await source
             .Skip((pagination.Page - 1) * pagination.PageSize)

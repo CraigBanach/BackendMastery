@@ -57,7 +57,7 @@ namespace PersonifiBackend.Api.Controllers
                 var created = await _categoryService.CreateAsync(dto, _userContext.UserId);
                 return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
             }
-            catch (CategoryAlreadyExistsException ex)
+            catch (DuplicateResourceException ex)
             {
                 _logger.LogWarning(
                     ex,
@@ -65,7 +65,7 @@ namespace PersonifiBackend.Api.Controllers
                     _userContext.UserId,
                     dto
                 );
-                return Conflict(new { message = "Category already exists." });
+                return Conflict(new { message = $"Category {dto.Name} already exists." });
             }
             catch (Exception ex)
             {
