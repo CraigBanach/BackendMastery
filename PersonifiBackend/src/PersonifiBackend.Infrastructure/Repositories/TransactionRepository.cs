@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PersonifiBackend.Core.DTOs;
 using PersonifiBackend.Core.Entities;
 using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Infrastructure.Data;
+using PersonifiBackend.Infrastructure.Extensions;
 
 namespace PersonifiBackend.Infrastructure.Repositories;
 
@@ -21,8 +23,9 @@ public class TransactionRepository : ITransactionRepository
             .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
     }
 
-    public async Task<IEnumerable<Transaction>> GetUserTransactionsAsync(
+    public async Task<PaginationResult<Transaction>> GetUserTransactionsAsync(
         string userId,
+        PaginationRequest pagination,
         DateTime? startDate = null,
         DateTime? endDate = null,
         int? categoryId = null
@@ -30,6 +33,7 @@ public class TransactionRepository : ITransactionRepository
     {
         var query = _context.Transactions.Include(t => t.Category).Where(t => t.UserId == userId);
 
+        // Apply filters
         if (startDate.HasValue)
             query = query.Where(t => t.TransactionDate >= startDate.Value);
 
@@ -39,10 +43,11 @@ public class TransactionRepository : ITransactionRepository
         if (categoryId.HasValue)
             query = query.Where(t => t.CategoryId == categoryId.Value);
 
-        return await query
-            .OrderByDescending(t => t.TransactionDate)
-            .ThenByDescending(t => t.CreatedAt)
-            .ToListAsync();
+        // Apply sorting
+        query = ApplySorting(query, pagination.SortBy, pagination.SortDescending);
+
+        // Use extension method to paginate
+        return await query.ToPaginationResultAsync(pagination);
     }
 
     public async Task<Transaction> CreateAsync(Transaction transaction)
@@ -76,5 +81,32 @@ public class TransactionRepository : ITransactionRepository
 
         _context.Transactions.Remove(transaction);
         return await _context.SaveChangesAsync() > 0;
+    }
+
+    private static IQueryable<Transaction> ApplySorting(
+        IQueryable<Transaction> query,
+        string? sortBy,
+        bool descending
+    )
+    {
+        // Dynamic sorting based on property name
+        return sortBy?.ToLower() switch
+        {
+            "amount" => descending
+                ? query.OrderByDescending(t => t.Amount).ThenByDescending(t => t.Id)
+                : query.OrderBy(t => t.Amount).ThenBy(t => t.Id),
+            "description" => descending
+                ? query.OrderByDescending(t => t.Description).ThenByDescending(t => t.Id)
+                : query.OrderBy(t => t.Description).ThenBy(t => t.Id),
+            "category" => descending
+                ? query.OrderByDescending(t => t.Category.Name).ThenByDescending(t => t.Id)
+                : query.OrderBy(t => t.Category.Name).ThenBy(t => t.Id),
+            "date" or "transactiondate" => descending
+                ? query.OrderByDescending(t => t.TransactionDate).ThenByDescending(t => t.Id)
+                : query.OrderBy(t => t.TransactionDate).ThenBy(t => t.Id),
+            _ => descending
+                ? query.OrderByDescending(t => t.TransactionDate).ThenByDescending(t => t.Id)
+                : query.OrderBy(t => t.TransactionDate).ThenBy(t => t.Id),
+        };
     }
 }

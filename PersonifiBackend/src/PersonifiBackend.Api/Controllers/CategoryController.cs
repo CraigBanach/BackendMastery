@@ -7,6 +7,9 @@ using PersonifiBackend.Core.Interfaces;
 
 namespace PersonifiBackend.Api.Controllers
 {
+    /// <summary>
+    /// Category management endpoints for authenticated users
+    /// </summary>
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
@@ -27,6 +30,13 @@ namespace PersonifiBackend.Api.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Gets a specific category by ID for the authenticated user
+        /// </summary>
+        /// <param name="id">The category ID</param>
+        /// <returns>The category details</returns>
+        /// <response code="200">Returns the category</response>
+        /// <response code="404">Category not found</response>
         [HttpGet("{id}")]
         public async Task<ActionResult<CategoryDto>> GetById(int id)
         {
@@ -36,6 +46,11 @@ namespace PersonifiBackend.Api.Controllers
             return Ok(category);
         }
 
+        /// <summary>
+        /// Gets all categories for the authenticated user
+        /// </summary>
+        /// <returns>List of user's categories</returns>
+        /// <response code="200">Returns the list of categories</response>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> GetUserCategories()
         {
@@ -43,6 +58,14 @@ namespace PersonifiBackend.Api.Controllers
             return Ok(categories);
         }
 
+        /// <summary>
+        /// Creates a new category for the authenticated user
+        /// </summary>
+        /// <param name="dto">Category details</param>
+        /// <returns>The created category with assigned ID</returns>
+        /// <response code="201">Category created successfully</response>
+        /// <response code="400">Invalid category data</response>
+        /// <response code="409">Category name already exists</response>
         [HttpPost]
         public async Task<ActionResult<CategoryDto>> Create([FromBody] CreateCategoryDto dto)
         {
@@ -52,36 +75,19 @@ namespace PersonifiBackend.Api.Controllers
                 dto
             );
 
-            try
-            {
-                var created = await _categoryService.CreateAsync(dto, _userContext.UserId);
-                return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
-            }
-            catch (CategoryAlreadyExistsException ex)
-            {
-                _logger.LogWarning(
-                    ex,
-                    "Category creation failed for user {UserId}: {@Category}",
-                    _userContext.UserId,
-                    dto
-                );
-                return Conflict(new { message = "Category already exists." });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "An error occurred while creating category for user {UserId}: {@Category}",
-                    _userContext.UserId,
-                    dto
-                );
-                return StatusCode(
-                    500,
-                    new { message = "An error occurred while creating the category." }
-                );
-            }
+            var created = await _categoryService.CreateAsync(dto, _userContext.UserId);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
+        /// <summary>
+        /// Updates an existing category for the authenticated user
+        /// </summary>
+        /// <param name="id">The category ID to update</param>
+        /// <param name="dto">Updated category details</param>
+        /// <returns>The updated category</returns>
+        /// <response code="200">Category updated successfully</response>
+        /// <response code="404">Category not found</response>
+        /// <response code="400">Invalid category data</response>
         [HttpPut("{id}")]
         public async Task<ActionResult<CategoryDto>> Update(
             int id,
@@ -100,6 +106,13 @@ namespace PersonifiBackend.Api.Controllers
             return Ok(updated);
         }
 
+        /// <summary>
+        /// Deletes a category for the authenticated user
+        /// </summary>
+        /// <param name="id">The category ID to delete</param>
+        /// <returns>No content on success</returns>
+        /// <response code="204">Category deleted successfully</response>
+        /// <response code="404">Category not found</response>
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {

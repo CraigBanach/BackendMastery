@@ -4,6 +4,7 @@ using PersonifiBackend.Core.Entities;
 using PersonifiBackend.Core.Exceptions;
 using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Infrastructure.Data;
+using PersonifiBackend.Infrastructure.Exceptions;
 
 namespace PersonifiBackend.Infrastructure.Repositories;
 
@@ -39,16 +40,7 @@ public class CategoryRepository : ICategoryRepository
         }
         catch (DbUpdateException ex)
         {
-            // TODO: Move this into some exception handler or middleware
-            if (ex.InnerException is PostgresException pgEx)
-            {
-                if (pgEx.SqlState == "23505")
-                {
-                    throw new CategoryAlreadyExistsException();
-                }
-            }
-            // Handle specific database update exceptions if needed
-            throw new InvalidOperationException("Error creating category", ex);
+            throw DatabaseExceptionHandler.HandleDbException(ex, "Category", category.Name);
         }
         catch (Exception ex)
         {

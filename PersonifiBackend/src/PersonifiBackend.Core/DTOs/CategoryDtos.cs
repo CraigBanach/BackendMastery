@@ -2,6 +2,7 @@
 
 namespace PersonifiBackend.Core.DTOs;
 
+// TODO: Create FluentValidation validator for CreateCategoryDto
 public record CreateCategoryDto(
     string Name,
     CategoryType Type,
@@ -9,6 +10,7 @@ public record CreateCategoryDto(
     string? Color = null
 );
 
+// TODO: Create FluentValidation validator for UpdateCategoryDto
 public record UpdateCategoryDto(
     string Name,
     CategoryType Type,

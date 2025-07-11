@@ -1,12 +1,14 @@
-﻿using PersonifiBackend.Core.Entities;
+﻿using PersonifiBackend.Core.DTOs;
+using PersonifiBackend.Core.Entities;
 
 namespace PersonifiBackend.Core.Interfaces;
 
 public interface ITransactionRepository
 {
     Task<Transaction?> GetByIdAsync(int id, string userId);
-    Task<IEnumerable<Transaction>> GetUserTransactionsAsync(
+    Task<PaginationResult<Transaction>> GetUserTransactionsAsync(
         string userId,
+        PaginationRequest pagination,
         DateTime? startDate = null,
         DateTime? endDate = null,
         int? categoryId = null
