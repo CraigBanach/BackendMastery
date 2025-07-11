@@ -18,9 +18,9 @@ env:
   DOTNET_VERSION: "9.0.x"
 
 jobs:
-  # Test job runs on both PRs and pushes
-  test:
-    name: Run Tests
+  # Unit tests job - runs fast tests with mocks
+  unit-tests:
+    name: Run Unit Tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -56,28 +56,87 @@ jobs:
             --configuration Release \
             --verbosity normal \
             --logger trx \
-            --results-directory TestResults \
-            --collect:"XPlat Code Coverage"
+            --results-directory TestResults/Unit \
+            --collect:"XPlat Code Coverage" \
+            --filter "Category=Unit"
 
-      - name: Upload test results
+      - name: Upload unit test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results
-          path: PersonifiBackend/TestResults/
+          name: unit-test-results
+          path: PersonifiBackend/TestResults/Unit/
           retention-days: 7
 
-      - name: Upload code coverage
+      - name: Upload unit test coverage
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: code-coverage
-          path: PersonifiBackend/TestResults/*/coverage.cobertura.xml
+          name: unit-test-coverage
+          path: PersonifiBackend/TestResults/Unit/*/coverage.cobertura.xml
+          retention-days: 7
+
+  # Integration tests job - runs slower tests with database
+  integration-tests:
+    name: Run Integration Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./PersonifiBackend
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run integration tests
+        run: |
+          dotnet test \
+            --no-build \
+            --configuration Release \
+            --verbosity normal \
+            --logger trx \
+            --results-directory TestResults/Integration \
+            --collect:"XPlat Code Coverage" \
+            --filter "Category=Integration"
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: PersonifiBackend/TestResults/Integration/
+          retention-days: 7
+
+      - name: Upload integration test coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-coverage
+          path: PersonifiBackend/TestResults/Integration/*/coverage.cobertura.xml
           retention-days: 7
 
   build-and-push-image:
     runs-on: ubuntu-latest
-    needs: test
+    needs: [unit-tests, integration-tests]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     permissions:
@@ -133,23 +192,24 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  comment-pr:
-    name: Comment Test Results on PR
+  comment-pr-unit:
+    name: Comment Unit Test Results on PR
     runs-on: ubuntu-latest
-    needs: test
-    if: github.event_name == 'pull_request'
+    needs: unit-tests
+    if: github.event_name == 'pull_request' && always()
 
     permissions:
       pull-requests: write
 
     steps:
-      - name: Download test results
+      - name: Download unit test results
         uses: actions/download-artifact@v4
         with:
-          name: test-results
-          path: TestResults/
+          name: unit-test-results
+          path: TestResults/Unit/
+        continue-on-error: true
 
-      - name: Comment PR with test results
+      - name: Comment PR with unit test results
         uses: actions/github-script@v7
         with:
           script: |
@@ -157,25 +217,182 @@ jobs:
             const path = require('path');
 
             // Find TRX files
-            const testResultsDir = 'TestResults';
-            let testSummary = '## Test Results 🧪\n\n';
+            const testResultsDir = 'TestResults/Unit';
+            let testSummary = '## Unit Test Results ⚡\n\n';
+
+            // Check if unit tests passed or failed
+            const unitTestResult = '${{ needs.unit-tests.result }}';
+            
+            if (unitTestResult === 'success') {
+              testSummary += '✅ **Unit tests passed successfully!**\n\n';
+            } else if (unitTestResult === 'failure') {
+              testSummary += '❌ **Unit tests failed**\n\n';
+            } else {
+              testSummary += '⚠️ **Unit tests were cancelled or skipped**\n\n';
+            }
+
+            // Parse TRX files for detailed statistics
+            let totalTests = 0;
+            let passedTests = 0;
+            let failedTests = 0;
+            let skippedTests = 0;
 
             try {
-              const files = fs.readdirSync(testResultsDir, { recursive: true });
-              const trxFiles = files.filter(file => file.toString().endsWith('.trx'));
-              
-              if (trxFiles.length > 0) {
-                testSummary += '✅ Tests completed successfully!\n\n';
-                testSummary += `Found ${trxFiles.length} test result file(s).\n`;
-              } else {
-                testSummary += '❌ No test results found.\n';
+              if (fs.existsSync(testResultsDir)) {
+                const files = fs.readdirSync(testResultsDir, { recursive: true });
+                const trxFiles = files.filter(file => file.toString().endsWith('.trx'));
+                
+                for (const trxFile of trxFiles) {
+                  const trxPath = path.join(testResultsDir, trxFile);
+                  const trxContent = fs.readFileSync(trxPath, 'utf8');
+                  
+                  // Parse TRX XML for test statistics
+                  const totalMatch = trxContent.match(/total="(\d+)"/);
+                  const passedMatch = trxContent.match(/passed="(\d+)"/);
+                  const failedMatch = trxContent.match(/failed="(\d+)"/);
+                  const skippedMatch = trxContent.match(/skipped="(\d+)"/);
+                  
+                  if (totalMatch) totalTests += parseInt(totalMatch[1]);
+                  if (passedMatch) passedTests += parseInt(passedMatch[1]);
+                  if (failedMatch) failedTests += parseInt(failedMatch[1]);
+                  if (skippedMatch) skippedTests += parseInt(skippedMatch[1]);
+                }
+
+                if (totalTests > 0) {
+                  testSummary += '### 📊 Test Statistics\n\n';
+                  testSummary += `| Metric | Count |\n`;
+                  testSummary += `|--------|-------|\n`;
+                  testSummary += `| **Total Tests** | ${totalTests} |\n`;
+                  testSummary += `| **✅ Passed** | ${passedTests} |\n`;
+                  testSummary += `| **❌ Failed** | ${failedTests} |\n`;
+                  testSummary += `| **⏭️ Skipped** | ${skippedTests} |\n`;
+                  
+                  const successRate = totalTests > 0 ? ((passedTests / totalTests) * 100).toFixed(1) : '0.0';
+                  testSummary += `| **Success Rate** | ${successRate}% |\n\n`;
+                  
+                  if (unitTestResult === 'success') {
+                    testSummary += '- All unit tests (controllers, services, middleware) completed without errors\n';
+                    testSummary += '- Fast feedback loop maintained\n';
+                  } else if (failedTests > 0) {
+                    testSummary += '- Check the Actions tab for detailed error information\n';
+                    testSummary += '- Focus on unit test failures for quick fixes\n';
+                  }
+                } else {
+                  testSummary += '📊 No detailed test statistics available\n';
+                }
               }
             } catch (error) {
-              testSummary += '❌ Error reading test results.\n';
+              testSummary += '\n⚠️ Could not parse detailed test results.\n';
+              console.error('Error parsing TRX files:', error);
             }
 
             testSummary += '\n---\n';
-            testSummary += '*This comment was automatically generated by the CI/CD pipeline.*';
+            testSummary += '*Unit test results updated automatically by CI/CD pipeline.*';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: testSummary
+            });
+
+  comment-pr-integration:
+    name: Comment Integration Test Results on PR
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    if: github.event_name == 'pull_request' && always()
+
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Download integration test results
+        uses: actions/download-artifact@v4
+        with:
+          name: integration-test-results
+          path: TestResults/Integration/
+        continue-on-error: true
+
+      - name: Comment PR with integration test results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Find TRX files
+            const testResultsDir = 'TestResults/Integration';
+            let testSummary = '## Integration Test Results 🔗\n\n';
+
+            // Check if integration tests passed or failed
+            const integrationTestResult = '${{ needs.integration-tests.result }}';
+            
+            if (integrationTestResult === 'success') {
+              testSummary += '✅ **Integration tests passed successfully!**\n\n';
+            } else if (integrationTestResult === 'failure') {
+              testSummary += '❌ **Integration tests failed**\n\n';
+            } else {
+              testSummary += '⚠️ **Integration tests were cancelled or skipped**\n\n';
+            }
+
+            // Parse TRX files for detailed statistics
+            let totalTests = 0;
+            let passedTests = 0;
+            let failedTests = 0;
+            let skippedTests = 0;
+
+            try {
+              if (fs.existsSync(testResultsDir)) {
+                const files = fs.readdirSync(testResultsDir, { recursive: true });
+                const trxFiles = files.filter(file => file.toString().endsWith('.trx'));
+                
+                for (const trxFile of trxFiles) {
+                  const trxPath = path.join(testResultsDir, trxFile);
+                  const trxContent = fs.readFileSync(trxPath, 'utf8');
+                  
+                  // Parse TRX XML for test statistics
+                  const totalMatch = trxContent.match(/total="(\d+)"/);
+                  const passedMatch = trxContent.match(/passed="(\d+)"/);
+                  const failedMatch = trxContent.match(/failed="(\d+)"/);
+                  const skippedMatch = trxContent.match(/skipped="(\d+)"/);
+                  
+                  if (totalMatch) totalTests += parseInt(totalMatch[1]);
+                  if (passedMatch) passedTests += parseInt(passedMatch[1]);
+                  if (failedMatch) failedTests += parseInt(failedMatch[1]);
+                  if (skippedMatch) skippedTests += parseInt(skippedMatch[1]);
+                }
+
+                if (totalTests > 0) {
+                  testSummary += '### 📊 Test Statistics\n\n';
+                  testSummary += `| Metric | Count |\n`;
+                  testSummary += `|--------|-------|\n`;
+                  testSummary += `| **Total Tests** | ${totalTests} |\n`;
+                  testSummary += `| **✅ Passed** | ${passedTests} |\n`;
+                  testSummary += `| **❌ Failed** | ${failedTests} |\n`;
+                  testSummary += `| **⏭️ Skipped** | ${skippedTests} |\n`;
+                  
+                  const successRate = totalTests > 0 ? ((passedTests / totalTests) * 100).toFixed(1) : '0.0';
+                  testSummary += `| **Success Rate** | ${successRate}% |\n\n`;
+                  
+                  if (integrationTestResult === 'success') {
+                    testSummary += '- All API endpoints tested with full HTTP stack\n';
+                    testSummary += '- Database operations verified\n';
+                    testSummary += '- Authentication flows working correctly\n';
+                  } else if (failedTests > 0) {
+                    testSummary += '- This may indicate issues with API endpoints, database, or authentication\n';
+                    testSummary += '- Check the Actions tab for detailed error information\n';
+                  }
+                } else {
+                  testSummary += '📊 No detailed test statistics available\n';
+                }
+              }
+            } catch (error) {
+              testSummary += '\n⚠️ Could not parse detailed test results.\n';
+              console.error('Error parsing TRX files:', error);
+            }
+
+            testSummary += '\n---\n';
+            testSummary += '*Integration test results updated automatically by CI/CD pipeline.*';
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
