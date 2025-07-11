@@ -7,7 +7,7 @@ using System.Text.Encodings.Web;
 public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     public const string TestBearerToken = "test-auth-valid-token";
-    
+
     public TestAuthHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
@@ -24,10 +24,12 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
         }
 
         var authHeaderValue = authHeader.ToString();
-        
+
         // Check if it's a Bearer token with the correct value
-        if (!authHeaderValue.StartsWith("Bearer ") || 
-            authHeaderValue.Substring(7) != TestBearerToken)
+        if (
+            !authHeaderValue.StartsWith("Bearer ")
+            || authHeaderValue.Substring(7) != TestBearerToken
+        )
         {
             return Task.FromResult(AuthenticateResult.Fail("Invalid bearer token"));
         }
