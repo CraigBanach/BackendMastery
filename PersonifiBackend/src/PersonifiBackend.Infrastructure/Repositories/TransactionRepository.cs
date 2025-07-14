@@ -52,7 +52,7 @@ public class TransactionRepository : ITransactionRepository
 
     public async Task<Transaction> CreateAsync(Transaction transaction)
     {
-        transaction.CreatedAt = DateTime.UtcNow;
+        transaction.CreatedAt = DateTime.Now;
         _context.Transactions.Add(transaction);
         await _context.SaveChangesAsync();
 
@@ -62,7 +62,7 @@ public class TransactionRepository : ITransactionRepository
 
     public async Task<Transaction> UpdateAsync(Transaction transaction)
     {
-        transaction.UpdatedAt = DateTime.UtcNow;
+        transaction.UpdatedAt = DateTime.Now;
         _context.Transactions.Update(transaction);
         await _context.SaveChangesAsync();
 

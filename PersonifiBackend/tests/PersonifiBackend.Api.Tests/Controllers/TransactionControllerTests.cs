@@ -43,9 +43,9 @@ public class TransactionControllerTests
                     100.00m,
                     "Test Transaction",
                     "Test Notes",
-                    DateTime.UtcNow,
+                    DateTime.Now,
                     new CategoryDto(1, "Test Category", CategoryType.Expense, null, null),
-                    DateTime.UtcNow
+                    DateTime.Now
                 )
             );
 
@@ -77,18 +77,18 @@ public class TransactionControllerTests
                 100.00m,
                 "Transaction 1",
                 "Notes 1",
-                DateTime.UtcNow,
+                DateTime.Now,
                 new CategoryDto(1, "Category 1", CategoryType.Expense, null, null),
-                DateTime.UtcNow
+                DateTime.Now
             ),
             new TransactionDto(
                 2,
                 200.00m,
                 "Transaction 2",
                 "Notes 2",
-                DateTime.UtcNow,
+                DateTime.Now,
                 new CategoryDto(2, "Category 2", CategoryType.Income, null, null),
-                DateTime.UtcNow
+                DateTime.Now
             ),
         };
         var paginationRequest = new PaginationRequest { Page = 1, PageSize = 20 };
@@ -115,7 +115,7 @@ public class TransactionControllerTests
             100.00m,
             "Test Description",
             "Test Notes",
-            DateTime.UtcNow,
+            DateTime.Now,
             1
         );
         var created = new TransactionDto(
@@ -123,9 +123,9 @@ public class TransactionControllerTests
             100.00m, // Amount
             "Test Description", // Description
             "Test Notes", // Notes
-            DateTime.UtcNow, // TransactionDate
+            DateTime.Now, // TransactionDate
             new CategoryDto(1, "Test Category", CategoryType.Expense, null, null), // Category
-            DateTime.UtcNow // CreatedAt
+            DateTime.Now // CreatedAt
         );
         _serviceMock.Setup(s => s.CreateAsync(dto, "user1")).ReturnsAsync(created);
 
@@ -143,7 +143,7 @@ public class TransactionControllerTests
             150.00m, // Amount
             "Updated Description", // Description
             "Updated Notes", // Notes
-            DateTime.UtcNow, // TransactionDate
+            DateTime.Now, // TransactionDate
             1 // CategoryId
         );
         var updated = new TransactionDto(
@@ -151,9 +151,9 @@ public class TransactionControllerTests
             150.00m, // Amount
             "Updated Description", // Description
             "Updated Notes", // Notes
-            DateTime.UtcNow, // TransactionDate
+            DateTime.Now, // TransactionDate
             new CategoryDto(1, "Test Category", CategoryType.Expense, null, null), // Category
-            DateTime.UtcNow // CreatedAt
+            DateTime.Now // CreatedAt
         );
         _serviceMock.Setup(s => s.UpdateAsync(1, dto, "user1")).ReturnsAsync(updated);
 
@@ -171,7 +171,7 @@ public class TransactionControllerTests
             150.00m, // Amount
             "Updated Description", // Description
             "Updated Notes", // Notes
-            DateTime.UtcNow, // TransactionDate
+            DateTime.Now, // TransactionDate
             1 // CategoryId
         );
         _serviceMock.Setup(s => s.UpdateAsync(1, dto, "user1")).ReturnsAsync((TransactionDto?)null);

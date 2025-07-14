@@ -30,9 +30,9 @@ public class TransactionServiceTests
             100.00m,
             "Test Transaction",
             null,
-            DateTime.UtcNow,
+            DateTime.Now,
             new CategoryDto(1, "Test Category", CategoryType.Expense, null, null), // Fixed the constructor call
-            DateTime.UtcNow
+            DateTime.Now
         );
         _repoMock.Setup(r => r.GetByIdAsync(1, "user1")).ReturnsAsync(transaction);
         _mapperMock.Setup(m => m.Map<TransactionDto>(transaction)).Returns(dto);
@@ -62,7 +62,7 @@ public class TransactionServiceTests
             100.00m,
             "Test Description",
             "Test Notes",
-            DateTime.UtcNow,
+            DateTime.Now,
             1
         );
         var transaction = new Transaction { UserId = "user1" };
@@ -72,9 +72,9 @@ public class TransactionServiceTests
             100.00m,
             "Test Description",
             "Test Notes",
-            DateTime.UtcNow,
+            DateTime.Now,
             new CategoryDto(1, "Test Category", CategoryType.Expense, null, null),
-            DateTime.UtcNow
+            DateTime.Now
         );
 
         _mapperMock.Setup(m => m.Map<Transaction>(dto)).Returns(transaction);
@@ -94,7 +94,7 @@ public class TransactionServiceTests
             100.00m,
             "Updated Description",
             "Updated Notes",
-            DateTime.UtcNow,
+            DateTime.Now,
             1
         );
         var existingTransaction = new Transaction
@@ -121,9 +121,9 @@ public class TransactionServiceTests
             100.00m,
             "Updated Description",
             "Updated Notes",
-            DateTime.UtcNow,
+            DateTime.Now,
             new CategoryDto(1, "Test Category", CategoryType.Expense, null, null),
-            DateTime.UtcNow
+            DateTime.Now
         );
         _mapperMock.Setup(m => m.Map<TransactionDto>(existingTransaction)).Returns(resultDto);
 
@@ -143,7 +143,7 @@ public class TransactionServiceTests
             100.00m, // Amount
             "Updated Description", // Description
             "Updated Notes", // Notes
-            DateTime.UtcNow, // TransactionDate
+            DateTime.Now, // TransactionDate
             1 // CategoryId
         );
 

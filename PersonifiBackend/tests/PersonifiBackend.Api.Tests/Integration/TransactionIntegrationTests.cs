@@ -1,8 +1,8 @@
-﻿using PersonifiBackend.Api.Tests.Extensions;
+﻿using System.Net;
+using System.Net.Http.Json;
+using PersonifiBackend.Api.Tests.Extensions;
 using PersonifiBackend.Api.Tests.Fixtures;
 using PersonifiBackend.Core.DTOs;
-using System.Net;
-using System.Net.Http.Json;
 
 namespace PersonifiBackend.Api.Tests.Integration;
 
@@ -85,8 +85,8 @@ public class TransactionIntegrationTests : IntegrationTestBase
     {
         // Arrange - Create test data with known dates
         await SeedTestTransactionsAsync(10);
-        var startDate = DateTime.UtcNow.AddDays(-100);
-        var endDate = DateTime.UtcNow.AddDays(-50);
+        var startDate = DateTime.Now.AddDays(-100);
+        var endDate = DateTime.Now.AddDays(-50);
 
         // Act
         var content = await Client.GetFromJsonAsync<PagedResponse<TransactionDto>>(
@@ -119,7 +119,7 @@ public class TransactionIntegrationTests : IntegrationTestBase
             Amount: 123.45m,
             Description: "Integration test transaction",
             Notes: "Test notes",
-            TransactionDate: DateTime.UtcNow,
+            TransactionDate: DateTime.Now,
             CategoryId: 1
         );
 

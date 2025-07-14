@@ -25,6 +25,11 @@ public class PersonifiDbContext : DbContext
             entity.Property(e => e.Notes).HasMaxLength(1000);
             entity.HasIndex(e => new { e.UserId, e.TransactionDate });
 
+            // Configure DateTime columns to use timestamp without time zone
+            entity.Property(e => e.TransactionDate).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+
             entity
                 .HasOne(e => e.Category)
                 .WithMany(c => c.Transactions)
@@ -67,6 +72,10 @@ public class PersonifiDbContext : DbContext
                 e.CategoryId,
                 e.Period,
             });
+
+            // Configure DateTime columns to use timestamp without time zone
+            entity.Property(e => e.StartDate).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.EndDate).HasColumnType("timestamp without time zone");
         });
 
         // Seed default categories
