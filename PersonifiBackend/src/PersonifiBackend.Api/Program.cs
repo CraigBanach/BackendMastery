@@ -1,4 +1,6 @@
 using PersonifiBackend.Api.Configuration;
+using PersonifiBackend.Api.Extensions;
+using PersonifiBackend.Infrastructure.Services;
 using Serilog;
 
 // Configure Serilog
@@ -16,6 +18,13 @@ builder
     .AddApplicationServices()
     .AddCors()
     .AddSecurity();
+
+if (builder.Environment.IsDevelopment())
+{
+    // Development-specific services
+    builder.Services.AddDataSeeder();
+    builder.Services.AddHostedService<DataSeederHostedService>();
+}
 
 // TODO: Configure FluentValidation in Program.cs with auto-validation
 

@@ -118,9 +118,9 @@ public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStar
                     UserId = "test-user-id",
                     Amount = random.Next(10, 1000),
                     Description = $"Transaction {i}",
-                    TransactionDate = DateTime.UtcNow.AddDays(-i),
+                    TransactionDate = DateTime.Now.AddDays(-i),
                     CategoryId = categories[random.Next(categories.Length)].Id,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                 }
             );
         }

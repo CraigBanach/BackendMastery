@@ -33,9 +33,9 @@ public class TestDataBuilder
                         random.NextDouble() * (double)(maxAmount - minAmount) + (double)minAmount
                     ),
                     Description = $"Test Transaction {i + 1}",
-                    TransactionDate = DateTime.UtcNow.AddDays(-random.Next(365)),
+                    TransactionDate = DateTime.Now.AddDays(-random.Next(365)),
                     CategoryId = categories[random.Next(categories.Count)].Id,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                 }
             );
         }
