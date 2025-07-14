@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Bogus;
+using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -112,19 +113,44 @@ public class DataSeederService : IDataSeederService
                 var currentCategories = Interlocked.Increment(ref categoriesCompleted);
                 categoryProgress?.Report((currentCategories, userCount));
 
-                // Step 2: Run transactions and budgets in parallel for this user
-                var transactionTask = SeedTransactionsForUser(userId, categories, transactionsPerUser, 
-                    (batchSize) => {
-                        var current = Interlocked.Add(ref transactionsCompleted, batchSize);
-                        var percentage = (double)current / expectedTotalTransactions * 100;
-                        transactionProgress?.Report((current, expectedTotalTransactions, percentage));
-                    }, cancellationToken);
+                // Step 2: Categories are now committed to database
+                
+                // Step 3: Run transactions and budgets in parallel for this user
+                // Each gets its own scope and fetches categories fresh from DB to get correct IDs
+                var transactionTask = Task.Run(async () =>
+                {
+                    using var transactionScope = _scopeFactory.CreateScope();
+                    var transactionContext = transactionScope.ServiceProvider.GetRequiredService<PersonifiDbContext>();
+                    
+                    // Fetch categories fresh from database to get correct IDs
+                    var dbCategories = await transactionContext.Categories
+                        .Where(c => c.UserId == userId)
+                        .ToListAsync(cancellationToken);
+                        
+                    await SeedTransactionsForUser(transactionContext, userId, dbCategories, transactionsPerUser, 
+                        (batchSize) => {
+                            var current = Interlocked.Add(ref transactionsCompleted, batchSize);
+                            var percentage = (double)current / expectedTotalTransactions * 100;
+                            transactionProgress?.Report((current, expectedTotalTransactions, percentage));
+                        }, cancellationToken);
+                });
 
-                var budgetTask = SeedBudgetsForUser(userId, categories, 
-                    () => {
-                        var current = Interlocked.Increment(ref budgetsCompleted);
-                        budgetProgress?.Report((current, userCount));
-                    }, cancellationToken);
+                var budgetTask = Task.Run(async () =>
+                {
+                    using var budgetScope = _scopeFactory.CreateScope();
+                    var budgetContext = budgetScope.ServiceProvider.GetRequiredService<PersonifiDbContext>();
+                    
+                    // Fetch categories fresh from database to get correct IDs
+                    var dbCategories = await budgetContext.Categories
+                        .Where(c => c.UserId == userId)
+                        .ToListAsync(cancellationToken);
+                        
+                    await SeedBudgetsForUser(budgetContext, userId, dbCategories, 
+                        () => {
+                            var current = Interlocked.Increment(ref budgetsCompleted);
+                            budgetProgress?.Report((current, userCount));
+                        }, cancellationToken);
+                });
 
                 // Wait for both to complete
                 await Task.WhenAll(transactionTask, budgetTask);
@@ -293,8 +319,8 @@ public class DataSeederService : IDataSeederService
 
         await _retryPipeline.ExecuteAsync(async cancellationToken =>
         {
-            await dbContext.Categories.AddRangeAsync(categories, cancellationToken);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            // Use bulk insert for categories too
+            await dbContext.BulkInsertAsync(categories, cancellationToken: cancellationToken);
         }, cancellationToken);
 
         return categories;
@@ -403,12 +429,49 @@ public class DataSeederService : IDataSeederService
         return faker.Generate(count);
     }
 
+
+    /// <summary>
+    /// Helper method to seed transactions for a single user
+    /// </summary>
+    private async Task SeedTransactionsForUser(
+        PersonifiDbContext dbContext,
+        string userId,
+        List<Category> categories,
+        int transactionsPerUser,
+        Action<int> onBatchComplete,
+        CancellationToken cancellationToken)
+    {
+        
+        // Optimize EF Core for bulk operations
+        dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+        dbContext.ChangeTracker.AutoDetectChangesEnabled = false;
+        
+        var transactions = GenerateTransactions(userId, categories, transactionsPerUser);
+        
+        // Larger batch size for better performance with Supabase
+        const int batchSize = 5000;
+        foreach (var batch in transactions.Chunk(batchSize))
+        {
+            await _retryPipeline.ExecuteAsync(async cancellationToken =>
+            {
+                // Use bulk insert for much better performance
+                await dbContext.BulkInsertAsync(batch, cancellationToken: cancellationToken);
+            }, cancellationToken);
+            
+            // Report progress AFTER successful completion (outside retry block)
+            onBatchComplete(batch.Length);
+        }
+    }
+
+    /// <summary>
+    /// Helper method to seed budgets for a single user
+    /// </summary>
     private async Task SeedBudgetsForUser(
         PersonifiDbContext dbContext,
         string userId,
         List<Category> categories,
-        CancellationToken cancellationToken
-    )
+        Action onComplete,
+        CancellationToken cancellationToken)
     {
         var expenseCategories = categories.Where(c => c.Type == CategoryType.Expense).ToList();
         var budgets = new List<Budget>();
@@ -443,56 +506,8 @@ public class DataSeederService : IDataSeederService
 
         await _retryPipeline.ExecuteAsync(async cancellationToken =>
         {
-            await dbContext.Budgets.AddRangeAsync(budgets, cancellationToken);
-            await dbContext.SaveChangesAsync(cancellationToken);
-        }, cancellationToken);
-    }
-
-    /// <summary>
-    /// Helper method to seed transactions for a single user
-    /// </summary>
-    private async Task SeedTransactionsForUser(
-        string userId,
-        List<Category> categories,
-        int transactionsPerUser,
-        Action<int> onBatchComplete,
-        CancellationToken cancellationToken)
-    {
-        using var scope = _scopeFactory.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<PersonifiDbContext>();
-        
-        var transactions = GenerateTransactions(userId, categories, transactionsPerUser);
-        
-        // Insert in batches for better performance
-        const int batchSize = 1000;
-        foreach (var batch in transactions.Chunk(batchSize))
-        {
-            await _retryPipeline.ExecuteAsync(async cancellationToken =>
-            {
-                await dbContext.Transactions.AddRangeAsync(batch, cancellationToken);
-                await dbContext.SaveChangesAsync(cancellationToken);
-            }, cancellationToken);
-            
-            // Report progress AFTER successful completion (outside retry block)
-            onBatchComplete(batch.Length);
-        }
-    }
-
-    /// <summary>
-    /// Helper method to seed budgets for a single user
-    /// </summary>
-    private async Task SeedBudgetsForUser(
-        string userId,
-        List<Category> categories,
-        Action onComplete,
-        CancellationToken cancellationToken)
-    {
-        using var scope = _scopeFactory.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<PersonifiDbContext>();
-        
-        await _retryPipeline.ExecuteAsync(async cancellationToken =>
-        {
-            await SeedBudgetsForUser(dbContext, userId, categories, cancellationToken);
+            // Use bulk insert for budgets too
+            await dbContext.BulkInsertAsync(budgets, cancellationToken: cancellationToken);
         }, cancellationToken);
         
         // Report progress AFTER successful completion (outside retry block)
