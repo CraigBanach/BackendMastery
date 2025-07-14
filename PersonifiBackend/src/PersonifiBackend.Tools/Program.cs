@@ -1,0 +1,152 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using PersonifiBackend.Core.Configuration;
+using PersonifiBackend.Infrastructure.Data;
+using PersonifiBackend.Infrastructure.Services;
+using PersonifiBackend.Tools.Configuration;
+using Serilog;
+
+// Configure Serilog
+LoggingExtensions.ConfigureLogging();
+Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+
+var builder = Host.CreateApplicationBuilder(args);
+
+builder.Configuration.AddUserSecrets<Program>();
+
+// Configure services
+builder.Services.AddLogging(logging => logging.AddSerilog());
+
+// Minimal DB configuration for DataSeederService
+builder.Services.AddDbContext<PersonifiDbContext>(options =>
+{
+    var dbConnectionString =
+        builder
+            .Configuration.GetSection(DatabaseOptions.SectionName)
+            .Get<DatabaseOptions>()
+            ?.ConnectionString
+        ?? throw new InvalidOperationException("Database connection string is not configured.");
+
+    options.UseNpgsql(dbConnectionString);
+});
+
+builder.Services.AddScoped<IDataSeederService, DataSeederService>();
+
+var host = builder.Build();
+
+// Simple menu-driven console application
+var serviceProvider = host.Services;
+var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+
+try
+{
+    logger.LogInformation("PersonifiBackend Tools started");
+
+    while (true)
+    {
+        Console.WriteLine("\n=== PersonifiBackend Tools ===");
+        Console.WriteLine("S - Seed Database");
+        Console.WriteLine("C - Clear Test Data");
+        Console.WriteLine("P - Performance Test (Coming Soon)");
+        Console.WriteLine("E - Exit");
+        Console.Write("Select an option: ");
+
+        var choice = Console.ReadLine()?.ToUpper();
+
+        switch (choice)
+        {
+            case "S":
+                await SeedDatabase(serviceProvider);
+                break;
+            case "C":
+                await ClearTestData(serviceProvider);
+                break;
+            case "P":
+                Console.WriteLine("Performance testing feature coming soon...");
+                break;
+            case "E":
+                logger.LogInformation("Exiting PersonifiBackend Tools");
+                return;
+            default:
+                Console.WriteLine("Invalid option. Please try again.");
+                break;
+        }
+    }
+}
+catch (Exception ex)
+{
+    logger.LogError(ex, "An error occurred in PersonifiBackend Tools");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
+
+static async Task SeedDatabase(IServiceProvider serviceProvider)
+{
+    using var scope = serviceProvider.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<IDataSeederService>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    // Check for existing test data first
+    var existingTestUsers = await seeder.GetExistingTestUserCountAsync();
+    if (existingTestUsers > 0)
+    {
+        logger.LogWarning("Found {ExistingCount} existing test users", existingTestUsers);
+        Console.Write("Clear existing test data first? (y/N): ");
+        var clearConfirmation = Console.ReadLine();
+        if (clearConfirmation?.ToLower() == "y")
+        {
+            await seeder.ClearDataAsync();
+            logger.LogInformation("Existing test data cleared");
+        }
+        else
+        {
+            Console.Write("Continue seeding anyway? (y/N): ");
+            var continueConfirmation = Console.ReadLine();
+            if (continueConfirmation?.ToLower() != "y")
+            {
+                logger.LogInformation("Seeding cancelled by user");
+                return;
+            }
+        }
+    }
+
+    Console.Write("Enter number of users (default 10): ");
+    var usersInput = Console.ReadLine();
+    var userCount = int.TryParse(usersInput, out var users) ? users : 10;
+
+    Console.Write("Enter transactions per user (default 1000): ");
+    var transactionsInput = Console.ReadLine();
+    var transactionCount = int.TryParse(transactionsInput, out var transactions)
+        ? transactions
+        : 1000;
+
+    logger.LogInformation("Starting database seeding...");
+    await seeder.SeedDataAsync(userCount, transactionCount);
+    logger.LogInformation("Database seeding completed");
+}
+
+static async Task ClearTestData(IServiceProvider serviceProvider)
+{
+    using var scope = serviceProvider.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<IDataSeederService>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    Console.Write("Are you sure you want to clear all test data? (y/N): ");
+    var confirmation = Console.ReadLine();
+
+    if (confirmation?.ToLower() == "y")
+    {
+        logger.LogInformation("Clearing test data...");
+        await seeder.ClearDataAsync();
+        logger.LogInformation("Test data cleared");
+    }
+    else
+    {
+        Console.WriteLine("Operation cancelled");
+    }
+}

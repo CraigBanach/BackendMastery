@@ -17,6 +17,7 @@ public interface IDataSeederService
         CancellationToken cancellationToken = default
     );
     Task ClearDataAsync(CancellationToken cancellationToken = default);
+    Task<int> GetExistingTestUserCountAsync(CancellationToken cancellationToken = default);
 }
 
 public class DataSeederService : IDataSeederService
@@ -123,6 +124,18 @@ public class DataSeederService : IDataSeederService
         );
 
         _logger.LogInformation("Test data cleared");
+    }
+
+    public async Task<int> GetExistingTestUserCountAsync(CancellationToken cancellationToken = default)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<PersonifiDbContext>();
+        
+        return await dbContext.Transactions
+            .Where(t => t.UserId.StartsWith("test-user-"))
+            .Select(t => t.UserId)
+            .Distinct()
+            .CountAsync(cancellationToken);
     }
 
     private async Task<List<Category>> SeedCategoriesForUser(
