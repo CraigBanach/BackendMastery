@@ -19,12 +19,7 @@ builder
     .AddCors()
     .AddSecurity();
 
-if (builder.Environment.IsDevelopment())
-{
-    // Development-specific services
-    builder.Services.AddDataSeeder();
-    builder.Services.AddHostedService<DataSeederHostedService>();
-}
+// Development-specific services can be added here if needed
 
 // TODO: Configure FluentValidation in Program.cs with auto-validation
 

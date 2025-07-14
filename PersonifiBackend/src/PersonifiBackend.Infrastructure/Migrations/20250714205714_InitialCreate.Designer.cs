@@ -12,7 +12,7 @@ using PersonifiBackend.Infrastructure.Data;
 namespace PersonifiBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(PersonifiDbContext))]
-    [Migration("20250617115620_InitialCreate")]
+    [Migration("20250714205714_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -41,7 +41,7 @@ namespace PersonifiBackend.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("EndDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -50,7 +50,7 @@ namespace PersonifiBackend.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -189,7 +189,7 @@ namespace PersonifiBackend.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -201,10 +201,10 @@ namespace PersonifiBackend.Infrastructure.Migrations
                         .HasColumnType("character varying(1000)");
 
                     b.Property<DateTime>("TransactionDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -214,7 +214,13 @@ namespace PersonifiBackend.Infrastructure.Migrations
 
                     b.HasIndex("CategoryId");
 
+                    b.HasIndex("UserId", "CategoryId")
+                        .HasDatabaseName("IX_Transaction_UserCategory");
+
                     b.HasIndex("UserId", "TransactionDate");
+
+                    b.HasIndex("UserId", "TransactionDate", "Id")
+                        .HasDatabaseName("IX_Transaction_UserDate");
 
                     b.ToTable("Transactions");
                 });
