@@ -23,24 +23,4 @@ public static class LoggingExtensions
         builder.Host.UseSerilog();
         return builder;
     }
-
-    /// <summary>
-    /// Runs the application with proper logging error handling and cleanup
-    /// </summary>
-    public static void RunWithLogging(this WebApplication app)
-    {
-        try
-        {
-            app.Run();
-        }
-        catch (Exception ex)
-        {
-            Log.Fatal(ex, "Application failed to start");
-            throw;
-        }
-        finally
-        {
-            Log.CloseAndFlush();
-        }
-    }
 }

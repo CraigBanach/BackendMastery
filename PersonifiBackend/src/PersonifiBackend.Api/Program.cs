@@ -1,4 +1,5 @@
 using PersonifiBackend.Api.Configuration;
+using Serilog;
 
 // Configure Serilog
 LoggingExtensions.ConfigureLogging();
@@ -26,7 +27,18 @@ app.ConfigureMiddleware();
 // Ensure database is ready
 app.EnsureDatabase();
 
-// Run with logging
-app.RunWithLogging();
+try
+{
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application failed to start");
+    throw;
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
 public partial class Program { }
