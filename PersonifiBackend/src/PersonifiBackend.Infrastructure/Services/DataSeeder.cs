@@ -2,10 +2,12 @@
 using Bogus;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using PersonifiBackend.Core.Entities;
 using PersonifiBackend.Infrastructure.Data;
+using Polly;
+using Polly.Retry;
 
 namespace PersonifiBackend.Infrastructure.Services;
 
@@ -14,8 +16,12 @@ public interface IDataSeederService
     Task SeedDataAsync(
         int userCount = 10,
         int transactionsPerUser = 1000,
+        IProgress<(int current, int total)>? categoryProgress = null,
+        IProgress<(int current, int total, double percentage)>? transactionProgress = null,
+        IProgress<(int current, int total)>? budgetProgress = null,
         CancellationToken cancellationToken = default
     );
+    
     Task ClearDataAsync(CancellationToken cancellationToken = default);
     Task<int> GetExistingTestUserCountAsync(CancellationToken cancellationToken = default);
 }
@@ -24,24 +30,51 @@ public class DataSeederService : IDataSeederService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<DataSeederService> _logger;
+    private readonly ResiliencePipeline _retryPipeline;
 
     public DataSeederService(IServiceScopeFactory scopeFactory, ILogger<DataSeederService> logger)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
+        
+        // Configure retry policy for transient database failures using Polly v8
+        _retryPipeline = new ResiliencePipelineBuilder()
+            .AddRetry(new RetryStrategyOptions
+            {
+                ShouldHandle = new PredicateBuilder()
+                    .Handle<NpgsqlException>()
+                    .Handle<TimeoutException>()
+                    .Handle<InvalidOperationException>(ex => ex.Message.Contains("transient failure")),
+                MaxRetryAttempts = 3,
+                Delay = TimeSpan.FromSeconds(1),
+                BackoffType = DelayBackoffType.Exponential, // 1s, 2s, 4s
+                OnRetry = args =>
+                {
+                    _logger.LogWarning("Database operation failed, retrying attempt {AttemptNumber}/3. Delay: {Delay}ms. Error: {Exception}",
+                        args.AttemptNumber + 1, 
+                        args.RetryDelay.TotalMilliseconds,
+                        args.Outcome.Exception?.Message);
+                    return ValueTask.CompletedTask;
+                }
+            })
+            .Build();
     }
 
+    /// <summary>
+    /// Simple parallel implementation: Process each user independently
+    /// Categories → Transactions & Budgets run in parallel per user
+    /// </summary>
     public async Task SeedDataAsync(
         int userCount = 10,
         int transactionsPerUser = 1000,
+        IProgress<(int current, int total)>? categoryProgress = null,
+        IProgress<(int current, int total, double percentage)>? transactionProgress = null,
+        IProgress<(int current, int total)>? budgetProgress = null,
         CancellationToken cancellationToken = default
     )
     {
-        using var scope = _scopeFactory.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<PersonifiDbContext>();
-
         _logger.LogInformation(
-            "Starting data seeding: {UserCount} users with {TransactionsPerUser} transactions each",
+            "Starting parallel data seeding: {UserCount} users with {TransactionsPerUser} transactions each",
             userCount,
             transactionsPerUser
         );
@@ -50,53 +83,66 @@ public class DataSeederService : IDataSeederService
         // Generate user IDs
         var userIds = Enumerable.Range(1, userCount).Select(i => $"test-user-{i:D4}").ToList();
 
-        // Seed categories for each user
-        var categoriesByUser = new Dictionary<string, List<Category>>();
-        foreach (var userId in userIds)
+        // Thread-safe counters for progress reporting
+        var categoriesCompleted = 0;
+        var transactionsCompleted = 0;
+        var budgetsCompleted = 0;
+        var expectedTotalTransactions = userCount * transactionsPerUser;
+
+        // Semaphore to limit concurrent database operations
+        // Conservative limit for Supabase free tier (15 connection pool / 2 per user)
+        var semaphore = new SemaphoreSlim(Math.Min(Environment.ProcessorCount, 7));
+
+        // Process each user independently in parallel
+        var userTasks = userIds.Select(async userId =>
         {
-            var categories = await SeedCategoriesForUser(dbContext, userId, cancellationToken);
-            categoriesByUser[userId] = categories;
-        }
-
-        // Seed transactions in batches for better performance
-        const int batchSize = 1000;
-        var totalTransactions = 0;
-
-        foreach (var userId in userIds)
-        {
-            var categories = categoriesByUser[userId];
-            var transactions = GenerateTransactions(userId, categories, transactionsPerUser);
-
-            // Insert in batches
-            foreach (var batch in transactions.Chunk(batchSize))
+            await semaphore.WaitAsync(cancellationToken);
+            try
             {
-                await dbContext.Transactions.AddRangeAsync(batch, cancellationToken);
-                await dbContext.SaveChangesAsync(cancellationToken);
-                totalTransactions += batch.Length;
-
-                if (totalTransactions % 10000 == 0)
+                // Step 1: Create categories for this user
+                using var scope = _scopeFactory.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<PersonifiDbContext>();
+                
+                var categories = await _retryPipeline.ExecuteAsync(async cancellationToken =>
                 {
-                    _logger.LogInformation("Seeded {Count} transactions...", totalTransactions);
-                }
-            }
-        }
+                    return await SeedCategoriesForUser(dbContext, userId, cancellationToken);
+                }, cancellationToken);
+                
+                // Report category progress
+                var currentCategories = Interlocked.Increment(ref categoriesCompleted);
+                categoryProgress?.Report((currentCategories, userCount));
 
-        // Seed budgets
-        foreach (var userId in userIds)
-        {
-            await SeedBudgetsForUser(
-                dbContext,
-                userId,
-                categoriesByUser[userId],
-                cancellationToken
-            );
-        }
+                // Step 2: Run transactions and budgets in parallel for this user
+                var transactionTask = SeedTransactionsForUser(userId, categories, transactionsPerUser, 
+                    (batchSize) => {
+                        var current = Interlocked.Add(ref transactionsCompleted, batchSize);
+                        var percentage = (double)current / expectedTotalTransactions * 100;
+                        transactionProgress?.Report((current, expectedTotalTransactions, percentage));
+                    }, cancellationToken);
+
+                var budgetTask = SeedBudgetsForUser(userId, categories, 
+                    () => {
+                        var current = Interlocked.Increment(ref budgetsCompleted);
+                        budgetProgress?.Report((current, userCount));
+                    }, cancellationToken);
+
+                // Wait for both to complete
+                await Task.WhenAll(transactionTask, budgetTask);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        });
+
+        // Wait for all users to complete
+        await Task.WhenAll(userTasks);
 
         stopwatch.Stop();
         _logger.LogInformation(
-            "Data seeding completed in {ElapsedSeconds}s. Total transactions: {TotalTransactions}",
+            "Parallel data seeding completed in {ElapsedSeconds}s. Total transactions: {TotalTransactions}",
             stopwatch.Elapsed.TotalSeconds,
-            totalTransactions
+            expectedTotalTransactions
         );
     }
 
@@ -126,13 +172,15 @@ public class DataSeederService : IDataSeederService
         _logger.LogInformation("Test data cleared");
     }
 
-    public async Task<int> GetExistingTestUserCountAsync(CancellationToken cancellationToken = default)
+    public async Task<int> GetExistingTestUserCountAsync(
+        CancellationToken cancellationToken = default
+    )
     {
         using var scope = _scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<PersonifiDbContext>();
-        
-        return await dbContext.Transactions
-            .Where(t => t.UserId.StartsWith("test-user-"))
+
+        return await dbContext
+            .Transactions.Where(t => t.UserId.StartsWith("test-user-"))
             .Select(t => t.UserId)
             .Distinct()
             .CountAsync(cancellationToken);
@@ -243,8 +291,11 @@ public class DataSeederService : IDataSeederService
             },
         };
 
-        await dbContext.Categories.AddRangeAsync(categories, cancellationToken);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await _retryPipeline.ExecuteAsync(async cancellationToken =>
+        {
+            await dbContext.Categories.AddRangeAsync(categories, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }, cancellationToken);
 
         return categories;
     }
@@ -390,45 +441,62 @@ public class DataSeederService : IDataSeederService
             );
         }
 
-        await dbContext.Budgets.AddRangeAsync(budgets, cancellationToken);
-        await dbContext.SaveChangesAsync(cancellationToken);
-    }
-}
-
-// Optional: Hosted service for seeding on startup (development only)
-public class DataSeederHostedService : IHostedService
-{
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<DataSeederHostedService> _logger;
-    private readonly IHostEnvironment _environment;
-
-    public DataSeederHostedService(
-        IServiceScopeFactory scopeFactory,
-        ILogger<DataSeederHostedService> logger,
-        IHostEnvironment environment
-    )
-    {
-        _scopeFactory = scopeFactory;
-        _logger = logger;
-        _environment = environment;
-    }
-
-    public async Task StartAsync(CancellationToken cancellationToken)
-    {
-        if (!_environment.IsDevelopment())
-            return;
-
-        // Check if we should seed (e.g., via environment variable)
-        var shouldSeed = Environment.GetEnvironmentVariable("SEED_DATABASE") == "true";
-        if (shouldSeed)
+        await _retryPipeline.ExecuteAsync(async cancellationToken =>
         {
-            using var scope = _scopeFactory.CreateScope();
-            var dataSeederService = scope.ServiceProvider.GetRequiredService<IDataSeederService>();
+            await dbContext.Budgets.AddRangeAsync(budgets, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }, cancellationToken);
+    }
 
-            _logger.LogInformation("Seeding database on startup...");
-            await dataSeederService.SeedDataAsync(10, 1000, cancellationToken);
+    /// <summary>
+    /// Helper method to seed transactions for a single user
+    /// </summary>
+    private async Task SeedTransactionsForUser(
+        string userId,
+        List<Category> categories,
+        int transactionsPerUser,
+        Action<int> onBatchComplete,
+        CancellationToken cancellationToken)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<PersonifiDbContext>();
+        
+        var transactions = GenerateTransactions(userId, categories, transactionsPerUser);
+        
+        // Insert in batches for better performance
+        const int batchSize = 1000;
+        foreach (var batch in transactions.Chunk(batchSize))
+        {
+            await _retryPipeline.ExecuteAsync(async cancellationToken =>
+            {
+                await dbContext.Transactions.AddRangeAsync(batch, cancellationToken);
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }, cancellationToken);
+            
+            // Report progress AFTER successful completion (outside retry block)
+            onBatchComplete(batch.Length);
         }
     }
 
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    /// <summary>
+    /// Helper method to seed budgets for a single user
+    /// </summary>
+    private async Task SeedBudgetsForUser(
+        string userId,
+        List<Category> categories,
+        Action onComplete,
+        CancellationToken cancellationToken)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<PersonifiDbContext>();
+        
+        await _retryPipeline.ExecuteAsync(async cancellationToken =>
+        {
+            await SeedBudgetsForUser(dbContext, userId, categories, cancellationToken);
+        }, cancellationToken);
+        
+        // Report progress AFTER successful completion (outside retry block)
+        onComplete();
+    }
+
 }

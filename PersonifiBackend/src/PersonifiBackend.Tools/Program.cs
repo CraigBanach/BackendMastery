@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using PersonifiBackend.Core.Configuration;
 using PersonifiBackend.Infrastructure.Data;
 using PersonifiBackend.Infrastructure.Services;
+using PersonifiBackend.Tools;
 using PersonifiBackend.Tools.Configuration;
 using Serilog;
 
@@ -15,10 +16,11 @@ Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Configuration.AddUserSecrets<Program>();
-
-// Configure services
-builder.Services.AddLogging(logging => logging.AddSerilog());
+// Explicitly add user secrets in development
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
 
 // Minimal DB configuration for DataSeederService
 builder.Services.AddDbContext<PersonifiDbContext>(options =>
@@ -48,10 +50,10 @@ try
     while (true)
     {
         Console.WriteLine("\n=== PersonifiBackend Tools ===");
-        Console.WriteLine("S - Seed Database");
-        Console.WriteLine("C - Clear Test Data");
-        Console.WriteLine("P - Performance Test (Coming Soon)");
-        Console.WriteLine("E - Exit");
+        Console.WriteLine("[S]eed Database");
+        Console.WriteLine("[C]lear Test Data");
+        Console.WriteLine("[P]erformance Test (Coming Soon)");
+        Console.WriteLine("[E]xit");
         Console.Write("Select an option: ");
 
         var choice = Console.ReadLine()?.ToUpper();
@@ -126,7 +128,54 @@ static async Task SeedDatabase(IServiceProvider serviceProvider)
         : 1000;
 
     logger.LogInformation("Starting database seeding...");
-    await seeder.SeedDataAsync(userCount, transactionCount);
+
+    // Configuration
+    const int progressUpdateIntervalMs = 1000;
+
+    // Create progress tracker (separated concern)
+    var progressTracker = new SeedingProgressTracker(userCount, transactionCount);
+    var progressDisplay = new ConsoleProgressDisplay();
+
+    // Simple progress reporters that just update the tracker
+    var categoryProgress = new Progress<(int current, int total)>(progress =>
+        progressTracker.UpdateCategories(progress.current)
+    );
+
+    var transactionProgress = new Progress<(int current, int total, double percentage)>(progress =>
+        progressTracker.UpdateTransactions(progress.current)
+    );
+
+    var budgetProgress = new Progress<(int current, int total)>(progress =>
+        progressTracker.UpdateBudgets(progress.current)
+    );
+
+    // Timer-based progress reporting
+    var progressTimer = new System.Timers.Timer(progressUpdateIntervalMs);
+    progressTimer.Elapsed += (sender, e) =>
+    {
+        if (progressTracker.IsCompleted)
+            return;
+
+        var status = progressTracker.GetCurrentStatus();
+        progressDisplay.ShowProgress(status);
+    };
+
+    progressTimer.Start();
+
+    await seeder.SeedDataAsync(
+        userCount,
+        transactionCount,
+        categoryProgress,
+        transactionProgress,
+        budgetProgress
+    );
+
+    progressTracker.MarkCompleted();
+    progressTimer.Stop();
+    progressTimer.Dispose();
+
+    // Final completion message
+    progressDisplay.ShowCompletion();
     logger.LogInformation("Database seeding completed");
 }
 

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PersonifiBackend.Tools": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
