@@ -26,7 +26,7 @@ Based on analysis of the solution, here are potential improvements identified:
 
 ### 4. N+1 Query Problem
 - **Issue**: Repository uses `.Include(t => t.Category)` but could be optimized
-- **Fix**: Consider using projection for list operations to reduce data transfer
+- **Fix**: Consider selective loading or read models (NOT DTOs in repositories - breaks clean architecture)
 - **Priority**: Medium
 - **Status**: ⏳ Pending
 
@@ -40,7 +40,7 @@ Based on analysis of the solution, here are potential improvements identified:
 - **Issue**: Using `DateTime.Now` instead of UTC (TransactionRepository.cs:55)
 - **Fix**: Use `DateTime.UtcNow` consistently
 - **Priority**: High
-- **Status**: ⏳ Pending
+- **Status**: ✅ Complete
 
 ## **Security Improvements**
 
