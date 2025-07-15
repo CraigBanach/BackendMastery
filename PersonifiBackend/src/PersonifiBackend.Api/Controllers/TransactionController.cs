@@ -136,7 +136,7 @@ public class TransactionController : ControllerBase
     /// <response code="204">Transaction deleted successfully</response>
     /// <response code="404">Transaction not found</response>
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<ActionResult> Delete(int id)
     {
         var result = await _transactionService.DeleteAsync(id, _userContext.UserId);
 
