@@ -29,7 +29,7 @@ public class UserContextMiddleware
                 {
                     userContextImpl.UserId = userId;
 
-                    _logger.LogDebug("User context set for user {UserId}", userId);
+                    _logger.LogDebug("User context set for authenticated user");
                 }
             }
             else

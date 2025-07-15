@@ -70,9 +70,8 @@ namespace PersonifiBackend.Api.Controllers
         public async Task<ActionResult<CategoryDto>> Create([FromBody] CreateCategoryDto dto)
         {
             _logger.LogInformation(
-                "Creating category for user {UserId}: {@Category}",
-                _userContext.UserId,
-                dto
+                "Creating category for authenticated user with name {CategoryName}",
+                dto.Name
             );
 
             var created = await _categoryService.CreateAsync(dto, _userContext.UserId);
@@ -95,10 +94,9 @@ namespace PersonifiBackend.Api.Controllers
         )
         {
             _logger.LogInformation(
-                "Updating category {CategoryId} for user {UserId}: {@Category}",
+                "Updating category {CategoryId} for authenticated user with name {CategoryName}",
                 id,
-                _userContext.UserId,
-                dto
+                dto.Name
             );
             var updated = await _categoryService.UpdateAsync(id, dto, _userContext.UserId);
             if (updated == null)
@@ -117,9 +115,8 @@ namespace PersonifiBackend.Api.Controllers
         public async Task<ActionResult> Delete(int id)
         {
             _logger.LogInformation(
-                "Deleting category {CategoryId} for user {UserId}",
-                id,
-                _userContext.UserId
+                "Deleting category {CategoryId} for authenticated user",
+                id
             );
             var deleted = await _categoryService.DeleteAsync(id, _userContext.UserId);
             if (!deleted)

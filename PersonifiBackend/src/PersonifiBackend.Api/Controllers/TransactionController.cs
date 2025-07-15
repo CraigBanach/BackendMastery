@@ -93,9 +93,8 @@ public class TransactionController : ControllerBase
     public async Task<ActionResult<TransactionDto>> Create([FromBody] CreateTransactionDto dto)
     {
         _logger.LogInformation(
-            "Creating transaction for user {UserId}: {@Transaction}",
-            _userContext.UserId,
-            dto
+            "Creating transaction for authenticated user with amount {Amount}",
+            dto.Amount
         );
 
         var created = await _transactionService.CreateAsync(dto, _userContext.UserId);

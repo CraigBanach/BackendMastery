@@ -51,9 +51,8 @@ public class CategoryService : ICategoryService
 
         var created = await _repository.CreateAsync(category);
         _logger.LogInformation(
-            "Created category {CategoryId} for user {UserId}",
-            created.Id,
-            userId
+            "Created category {CategoryId} for authenticated user",
+            created.Id
         );
 
         return _mapper.Map<CategoryDto>(created);

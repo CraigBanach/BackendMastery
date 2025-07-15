@@ -60,9 +60,8 @@ public class TransactionService : ITransactionService
 
         var created = await _repository.CreateAsync(transaction);
         _logger.LogInformation(
-            "Created transaction {TransactionId} for user {UserId}",
-            created.Id,
-            userId
+            "Created transaction {TransactionId} for authenticated user",
+            created.Id
         );
 
         return _mapper.Map<TransactionDto>(created);
@@ -77,7 +76,7 @@ public class TransactionService : ITransactionService
         _mapper.Map(dto, existing);
         var updated = await _repository.UpdateAsync(existing);
 
-        _logger.LogInformation("Updated transaction {TransactionId} for user {UserId}", id, userId);
+        _logger.LogInformation("Updated transaction {TransactionId} for authenticated user", id);
 
         return _mapper.Map<TransactionDto>(updated);
     }
@@ -89,9 +88,8 @@ public class TransactionService : ITransactionService
         if (result)
         {
             _logger.LogInformation(
-                "Deleted transaction {TransactionId} for user {UserId}",
-                id,
-                userId
+                "Deleted transaction {TransactionId} for authenticated user",
+                id
             );
         }
 
