@@ -7,21 +7,6 @@ using PersonifiBackend.Core.Interfaces;
 
 namespace PersonifiBackend.Application.Services;
 
-public interface ITransactionService
-{
-    Task<TransactionDto?> GetByIdAsync(int id, string userId);
-    Task<PagedResponse<TransactionDto>> GetUserTransactionsAsync(
-        string userId,
-        PaginationRequest pagination,
-        DateTime? startDate = null,
-        DateTime? endDate = null,
-        int? categoryId = null
-    );
-    Task<TransactionDto> CreateAsync(CreateTransactionDto dto, string userId);
-    Task<TransactionDto?> UpdateAsync(int id, UpdateTransactionDto dto, string userId);
-    Task<bool> DeleteAsync(int id, string userId);
-}
-
 public class TransactionService : ITransactionService
 {
     private readonly ITransactionRepository _repository;
@@ -75,9 +60,8 @@ public class TransactionService : ITransactionService
 
         var created = await _repository.CreateAsync(transaction);
         _logger.LogInformation(
-            "Created transaction {TransactionId} for user {UserId}",
-            created.Id,
-            userId
+            "Created transaction {TransactionId} for authenticated user",
+            created.Id
         );
 
         return _mapper.Map<TransactionDto>(created);
@@ -92,7 +76,7 @@ public class TransactionService : ITransactionService
         _mapper.Map(dto, existing);
         var updated = await _repository.UpdateAsync(existing);
 
-        _logger.LogInformation("Updated transaction {TransactionId} for user {UserId}", id, userId);
+        _logger.LogInformation("Updated transaction {TransactionId} for authenticated user", id);
 
         return _mapper.Map<TransactionDto>(updated);
     }
@@ -104,9 +88,8 @@ public class TransactionService : ITransactionService
         if (result)
         {
             _logger.LogInformation(
-                "Deleted transaction {TransactionId} for user {UserId}",
-                id,
-                userId
+                "Deleted transaction {TransactionId} for authenticated user",
+                id
             );
         }
 

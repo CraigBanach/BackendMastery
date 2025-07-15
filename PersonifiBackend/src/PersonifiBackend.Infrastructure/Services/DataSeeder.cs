@@ -336,7 +336,7 @@ public class DataSeederService : IDataSeederService
             .RuleFor(t => t.UserId, userId)
             .RuleFor(
                 t => t.TransactionDate,
-                f => f.Date.Between(DateTime.Now.AddYears(-2), DateTime.Now)
+                f => f.Date.Between(DateTime.UtcNow.AddYears(-2), DateTime.UtcNow)
             )
             .RuleFor(t => t.CreatedAt, (f, t) => t.TransactionDate.AddHours(f.Random.Int(1, 24)))
             .RuleFor(t => t.CategoryId, f => f.PickRandom(categories).Id)
@@ -498,7 +498,7 @@ public class DataSeederService : IDataSeederService
                     CategoryId = category.Id,
                     Amount = monthlyAmount,
                     Period = BudgetPeriod.Monthly,
-                    StartDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1),
+                    StartDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1),
                     IsActive = true,
                 }
             );
