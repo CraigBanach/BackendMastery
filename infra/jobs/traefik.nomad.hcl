@@ -1,21 +1,18 @@
-job "traefik" {
+job "traefik-simple" {
   datacenters = ["dc1"]
   type        = "service"
 
   group "traefik" {
     count = 1
-
-    # Define the host volume
-    volume "docker_sock" {
-      type   = "host"
-      source = "docker_sock"
-    }
-
+    
     network {
       port "http" {
         static = 80
       }
-      port "dashboard" {
+      port "https" {
+        static = 443
+      }
+      port "admin" {
         static = 8080
       }
     }
@@ -23,31 +20,20 @@ job "traefik" {
     task "traefik" {
       driver = "docker"
 
-      # Mount the volume in the task
-      volume_mount {
-        volume      = "docker_sock"
-        destination = "/var/run/docker.sock"
-        read_only   = true
-      }
-
       config {
         image = "traefik:v3.4"
-        ports = ["http", "dashboard"]
-
-        args = [
-          "--api.dashboard=true",
-          "--api.insecure=true",
-          "--ping=true",
-          "--providers.docker=true",
-          "--providers.docker.exposedByDefault=false",
-          "--entrypoints.web.address=:80",
-          "--log.level=INFO"
+        ports = ["http", "https", "admin"]
+        
+        # Mount the entire directory instead of just the file
+        volumes = [
+          "/etc/nomad/traefik:/etc/traefik:ro",
+          "/var/run/docker.sock:/var/run/docker.sock:ro"
         ]
       }
 
       resources {
-        cpu    = 100
-        memory = 128
+        cpu    = 256
+        memory = 512
       }
     }
   }
