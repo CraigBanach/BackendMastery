@@ -5,7 +5,7 @@ import {
   TrendingUpIcon,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
-import { auth0 } from "@/lib/auth0";
+//import { auth0 } from "@/lib/auth0";
 import { toDisplayFormat } from "@/lib/currency";
 
 export const OverviewCards = async () => {
@@ -30,7 +30,7 @@ export const OverviewCards = async () => {
   };
 
   try {
-    const token = await auth0.getAccessToken();
+    // const token = await auth0.getAccessToken();
     // const data = await fetch(
     //   `${process.env.PERSONIFI_BACKEND_URL}/dashboard/balance`,
     //   {

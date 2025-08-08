@@ -9,7 +9,7 @@ export async function middleware(request: NextRequest) {
     return authResponse;
   }
 
-  const session = await auth0.getSession();
+  const session = await auth0.getSession(request);
 
   if (session) {
     if (request.nextUrl.pathname === "/") {

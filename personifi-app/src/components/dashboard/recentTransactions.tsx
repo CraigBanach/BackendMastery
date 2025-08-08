@@ -1,72 +1,65 @@
 import {
-  UtensilsIcon,
-  ArrowUpIcon,
-  HomeIcon,
-  ShoppingBagIcon,
-  CarIcon,
-  SearchIcon,
-} from "lucide-react";
-import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+//import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getRecentTransactions } from "@/components/dashboard/getRecentTransactions";
+import { Transaction } from "@/types/transaction";
 
-const transactions = [
-  {
-    id: "t1",
-    description: "Tesco",
-    amount: -120.5,
-    date: "Today",
-    category: "Food",
-    icon: UtensilsIcon,
-  },
-  {
-    id: "t2",
-    description: "Salary Deposit",
-    amount: 2150.0,
-    date: "Yesterday",
-    category: "Income",
-    icon: ArrowUpIcon,
-  },
-  {
-    id: "t3",
-    description: "British Gas",
-    amount: -85.0,
-    date: "Yesterday",
-    category: "Utilities",
-    icon: HomeIcon,
-  },
-  {
-    id: "t4",
-    description: "Amazon",
-    amount: -65.99,
-    date: "12/07/2023",
-    category: "Shopping",
-    icon: ShoppingBagIcon,
-  },
-  {
-    id: "t5",
-    description: "BP Petrol",
-    amount: -45.0,
-    date: "11/07/2023",
-    category: "Transport",
-    icon: CarIcon,
-  },
-  {
-    id: "t6",
-    description: "Nando's",
-    amount: -78.5,
-    date: "10/07/2023",
-    category: "Food",
-    icon: UtensilsIcon,
-  },
-];
+// const transactions = [
+//   {
+//     id: "t1",
+//     description: "Tesco",
+//     amount: -120.5,
+//     date: "Today",
+//     category: "Food",
+//     icon: UtensilsIcon,
+//   },
+//   {
+//     id: "t2",
+//     description: "Salary Deposit",
+//     amount: 2150.0,
+//     date: "Yesterday",
+//     category: "Income",
+//     icon: ArrowUpIcon,
+//   },
+//   {
+//     id: "t3",
+//     description: "British Gas",
+//     amount: -85.0,
+//     date: "Yesterday",
+//     category: "Utilities",
+//     icon: HomeIcon,
+//   },
+//   {
+//     id: "t4",
+//     description: "Amazon",
+//     amount: -65.99,
+//     date: "12/07/2023",
+//     category: "Shopping",
+//     icon: ShoppingBagIcon,
+//   },
+//   {
+//     id: "t5",
+//     description: "BP Petrol",
+//     amount: -45.0,
+//     date: "11/07/2023",
+//     category: "Transport",
+//     icon: CarIcon,
+//   },
+//   {
+//     id: "t6",
+//     description: "Nando's",
+//     amount: -78.5,
+//     date: "10/07/2023",
+//     category: "Food",
+//     icon: UtensilsIcon,
+//   },
+// ];
 
 export const RecentTransactions = async () => {
   // const data = [];
@@ -102,7 +95,7 @@ export const RecentTransactions = async () => {
       <CardContent>
         <div className="space-y-4">
           {data.length > 0 ? (
-            data.map((transaction) => (
+            data.map((transaction: Transaction) => (
               <div
                 key={transaction.id}
                 className="flex items-center justify-between"
@@ -130,7 +123,8 @@ export const RecentTransactions = async () => {
                       {transaction.description}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {transaction.date} • {transaction.category.name}
+                      {transaction.transactionDate} •{" "}
+                      {transaction.category.name}
                     </p>
                   </div>
                 </div>
