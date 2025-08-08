@@ -57,55 +57,15 @@ jobs:
     steps:
       - name: Update GitOps deployment configuration
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
         run: |
-          # Debug: Check token and permissions
-          echo "🔍 Debugging GitOps deployment..."
-          echo "Repository owner: ${{ github.repository_owner }}"
-          echo "Current repository: ${{ github.repository }}"
-          echo "Token length: ${#GITHUB_TOKEN}"
-          echo "Actor: ${{ github.actor }}"
-          
-          # Test repository access first
-          echo "📡 Testing repository access..."
-          REPO_INFO=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
-               -H "Accept: application/vnd.github.v3+json" \
-               https://api.github.com/repos/${{ github.repository_owner }}/personifi-deployments)
-          
-          echo "Repository exists: $(echo "$REPO_INFO" | jq -r '.name // "NOT FOUND"')"
-          echo "Repository visibility: $(echo "$REPO_INFO" | jq -r '.visibility // "unknown"')"
-          echo "Repository private: $(echo "$REPO_INFO" | jq -r '.private // "unknown"')"
-          echo "Permissions: $(echo "$REPO_INFO" | jq -r '.permissions // "No permissions"')"
-          
-          # Try without authentication first (should work for public repos)
-          echo "🔓 Testing public access without token..."
-          curl -s https://api.github.com/repos/${{ github.repository_owner }}/personifi-deployments | jq -r '.name // "Public access failed"'
-          
-          # Configure git with explicit token
+          # Configure git
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           
-          # Try multiple clone approaches
-          echo "📥 Attempting to clone deployment repository..."
-          
-          # Method 1: Direct clone with token
-          echo "Method 1: Clone with token in URL..."
-          if git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository_owner }}/personifi-deployments.git; then
-            echo "✅ Clone with token succeeded"
-            cd personifi-deployments
-          else
-            echo "❌ Clone with token failed, trying public clone..."
-            # Method 2: Public clone (for public repos)
-            if git clone https://github.com/${{ github.repository_owner }}/personifi-deployments.git; then
-              echo "✅ Public clone succeeded"
-              cd personifi-deployments
-              # Configure token for push operations
-              git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository_owner }}/personifi-deployments.git
-            else
-              echo "❌ All clone methods failed"
-              exit 1
-            fi
-          fi
+          # Clone deployment repository
+          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository_owner }}/personifi-deployments.git
+          cd personifi-deployments
           
           # Get current images from deployment.env
           if [ -f deployment.env ]; then
