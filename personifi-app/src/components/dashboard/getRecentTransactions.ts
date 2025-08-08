@@ -5,6 +5,9 @@ import { auth0 } from "@/lib/auth0";
 export const getRecentTransactions = async () => {
   try {
     const token = await auth0.getAccessToken();
+    
+    console.log('Fetching from:', process.env.PERSONIFI_BACKEND_URL);
+    console.log('Token:', token ? 'Present' : 'Missing');
 
     const res = await fetch(
       `${process.env.PERSONIFI_BACKEND_URL}/transaction`,
@@ -17,20 +20,25 @@ export const getRecentTransactions = async () => {
       }
     );
 
+    console.log('Response status:', res.status);
+    console.log('Response headers:', Object.fromEntries(res.headers.entries()));
+    
     if (res?.ok) {
       const transactionResponse = await res.json();
       console.log("CbTest: ", transactionResponse);
       return transactionResponse.items;
     } else {
-      // TODO: Update
+      const responseText = await res.text();
+      console.log('Response text:', responseText);
       console.error(
-        "Failed to create a new Transaction: ",
-        res,
+        "Failed to fetch transactions: ",
+        res.status,
+        res.statusText,
         "Body: ",
-        await res.text()
+        responseText
       );
       throw new Error(
-        `HTTP Response Code: ${res?.status} \nHTTP Response Status: ${res.statusText}`
+        `HTTP Response Code: ${res?.status} \nHTTP Response Status: ${res.statusText}\nBody: ${responseText}`
       );
     }
   } catch (e) {
