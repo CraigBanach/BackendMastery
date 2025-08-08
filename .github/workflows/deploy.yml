@@ -222,7 +222,7 @@ jobs:
 
             // Check if unit tests passed or failed
             const unitTestResult = '${{ needs.unit-tests.result }}';
-            
+
             if (unitTestResult === 'success') {
               testSummary += '✅ **Unit tests passed successfully!**\n\n';
             } else if (unitTestResult === 'failure') {
@@ -326,7 +326,7 @@ jobs:
 
             // Check if integration tests passed or failed
             const integrationTestResult = '${{ needs.integration-tests.result }}';
-            
+
             if (integrationTestResult === 'success') {
               testSummary += '✅ **Integration tests passed successfully!**\n\n';
             } else if (integrationTestResult === 'failure') {
@@ -400,19 +400,3 @@ jobs:
               repo: context.repo.repo,
               body: testSummary
             });
-
-  deploy-staging:
-    needs: build-and-push-image
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: staging
-
-    steps:
-      - name: Deploy to Koyeb
-        env:
-          KOYEB_SERVICE_ID: ${{ vars.KOYEB_SERVICE_ID }}
-        run: |
-          curl -X POST "https://app.koyeb.com/v1/services/${{env.KOYEB_SERVICE_ID}}/redeploy" \
-            -H "Authorization: Bearer ${{secrets.KOYEB_REDEPLOY_KEY}}" \
-            -H "Content-Type: application/json" \
-            -d '{}'
