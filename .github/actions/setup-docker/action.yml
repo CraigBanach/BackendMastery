@@ -1,0 +1,50 @@
+name: 'Setup Docker Build'
+description: 'Common Docker setup for builds'
+
+inputs:
+  registry:
+    description: 'Docker registry'
+    required: true
+    default: 'ghcr.io'
+  image-name:
+    description: 'Image name'
+    required: true
+  github-token:
+    description: 'GitHub token for registry access'
+    required: true
+
+outputs:
+  tags:
+    description: 'Generated image tags'
+    value: ${{ steps.meta.outputs.tags }}
+  labels:
+    description: 'Generated image labels'
+    value: ${{ steps.meta.outputs.labels }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ github.actor }}
+        password: ${{ inputs.github-token }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ inputs.registry }}/${{ inputs.image-name }}
+        tags: |
+          type=ref,event=branch,enable={{is_default_branch}}
+          type=sha,prefix=main-,format=short,enable={{is_default_branch}}
+          type=raw,value=latest,enable={{is_default_branch}}
+        labels: |
+          org.opencontainers.image.title=${{ inputs.image-name }}
+          org.opencontainers.image.vendor=Craig Banach
+          org.opencontainers.image.url=https://github.com/${{ github.repository }}
+          org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          org.opencontainers.image.version=${{ github.ref_name }}
+          org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+          org.opencontainers.image.revision=${{ github.sha }}

@@ -1,0 +1,31 @@
+name: 'Detect Changes'
+description: 'Detect what parts of the application changed'
+
+outputs:
+  backend-changed:
+    description: 'Whether backend code changed'
+    value: ${{ steps.changes.outputs.backend }}
+  frontend-changed:
+    description: 'Whether frontend code changed'
+    value: ${{ steps.changes.outputs.frontend }}
+  workflows-changed:
+    description: 'Whether workflow files changed'
+    value: ${{ steps.changes.outputs.workflows }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Detect Changes
+      uses: dorny/paths-filter@v3
+      id: changes
+      with:
+        filters: |
+          backend:
+            - 'PersonifiBackend/**'
+            - 'infra/jobs/personifi-backend.nomad.template'
+          frontend:
+            - 'personifi-app/**'
+            - 'infra/jobs/personifi-frontend.nomad.template'
+          workflows:
+            - '.github/workflows/**'
+            - '.github/actions/**'
