@@ -1,0 +1,116 @@
+name: Backend Build
+
+on:
+  workflow_call:
+    inputs:
+      push-image:
+        description: 'Whether to push the Docker image'
+        type: boolean
+        default: false
+    outputs:
+      image-tag:
+        description: 'Built image tag'
+        value: ${{ jobs.backend-build.outputs.image-tag }}
+      success:
+        description: 'Whether build was successful'
+        value: ${{ jobs.backend-build.outputs.success }}
+
+env:
+  DOTNET_VERSION: "9.0.x"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: craigbanach/personifibackend
+
+jobs:
+  backend-build:
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.get-tag.outputs.tag }}
+      success: ${{ steps.set-success.outputs.success }}
+      
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # .NET Setup and Caching
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: ${{ runner.os }}-nuget-
+
+      # Build and Test
+      - name: Restore dependencies
+        working-directory: ./PersonifiBackend
+        run: dotnet restore
+
+      - name: Build solution
+        working-directory: ./PersonifiBackend
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run unit tests
+        working-directory: ./PersonifiBackend
+        run: |
+          dotnet test \
+            --no-build \
+            --configuration Release \
+            --verbosity normal \
+            --logger trx \
+            --results-directory TestResults/Unit \
+            --collect:"XPlat Code Coverage" \
+            --filter "Category=Unit"
+
+      - name: Run integration tests
+        working-directory: ./PersonifiBackend
+        run: |
+          dotnet test \
+            --no-build \
+            --configuration Release \
+            --verbosity normal \
+            --logger trx \
+            --results-directory TestResults/Integration \
+            --collect:"XPlat Code Coverage" \
+            --filter "Category=Integration"
+
+      # Docker Build (only if pushing)
+      - name: Setup Docker
+        if: inputs.push-image
+        uses: ./.github/actions/setup-docker
+        id: docker-setup
+        with:
+          registry: ${{ env.REGISTRY }}
+          image-name: ${{ env.IMAGE_NAME }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        if: inputs.push-image
+        uses: docker/build-push-action@v6
+        with:
+          context: "{{defaultContext}}:PersonifiBackend"
+          push: true
+          tags: ${{ steps.docker-setup.outputs.tags }}
+          labels: ${{ steps.docker-setup.outputs.labels }}
+
+      # Output the primary tag
+      - name: Get primary tag
+        id: get-tag
+        run: |
+          if [ "${{ inputs.push-image }}" = "true" ]; then
+            TAG=$(echo "${{ steps.docker-setup.outputs.tags }}" | head -n1)
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+          else
+            echo "tag=not-built" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set success status
+        id: set-success
+        run: echo "success=true" >> $GITHUB_OUTPUT

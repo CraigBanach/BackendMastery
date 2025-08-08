@@ -1,0 +1,184 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  # Detect what changed
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend-changed: ${{ steps.changes.outputs.backend-changed }}
+      frontend-changed: ${{ steps.changes.outputs.frontend-changed }}
+      workflows-changed: ${{ steps.changes.outputs.workflows-changed }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Detect Changes
+        uses: ./.github/actions/detect-changes
+        id: changes
+
+  # Build backend (if changed)
+  backend:
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.backend-changed == 'true' || needs.detect-changes.outputs.workflows-changed == 'true'
+    uses: ./.github/workflows/_backend-build.yml
+    with:
+      push-image: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    secrets: inherit
+
+  # Build frontend (if changed)
+  frontend:
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.frontend-changed == 'true' || needs.detect-changes.outputs.workflows-changed == 'true'
+    uses: ./.github/workflows/_frontend-build.yml
+    with:
+      push-image: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    secrets: inherit
+
+  # Deploy to GitOps repository
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [detect-changes, backend, frontend]
+    if: |
+      github.event_name == 'push' && 
+      github.ref == 'refs/heads/main' && 
+      (needs.backend.outputs.success == 'true' || needs.frontend.outputs.success == 'true')
+    
+    steps:
+      - name: Update GitOps deployment configuration
+        run: |
+          # Clone deployment repository
+          git clone https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository_owner }}/personifi-deployments.git
+          cd personifi-deployments
+          
+          # Get current images from deployment.env
+          if [ -f deployment.env ]; then
+            source deployment.env
+            CURRENT_BACKEND_IMAGE="$BACKEND_IMAGE"
+            CURRENT_FRONTEND_IMAGE="$FRONTEND_IMAGE"
+          else
+            CURRENT_BACKEND_IMAGE="ghcr.io/craigbanach/personifibackend:latest"
+            CURRENT_FRONTEND_IMAGE="ghcr.io/craigbanach/personifi-app:latest"
+          fi
+          
+          # Update with new images (if they were built)
+          NEW_BACKEND_IMAGE="$CURRENT_BACKEND_IMAGE"
+          NEW_FRONTEND_IMAGE="$CURRENT_FRONTEND_IMAGE"
+          CHANGES_SUMMARY=""
+          
+          # Update backend image if it was built
+          if [ "${{ needs.backend.outputs.success }}" = "true" ] && [ "${{ needs.backend.outputs.image-tag }}" != "not-built" ]; then
+            NEW_BACKEND_IMAGE="${{ needs.backend.outputs.image-tag }}"
+            CHANGES_SUMMARY="${CHANGES_SUMMARY}🚀 Backend: $NEW_BACKEND_IMAGE"$'\n'
+          fi
+          
+          # Update frontend image if it was built
+          if [ "${{ needs.frontend.outputs.success }}" = "true" ] && [ "${{ needs.frontend.outputs.image-tag }}" != "not-built" ]; then
+            NEW_FRONTEND_IMAGE="${{ needs.frontend.outputs.image-tag }}"
+            CHANGES_SUMMARY="${CHANGES_SUMMARY}🎨 Frontend: $NEW_FRONTEND_IMAGE"$'\n'
+          fi
+          
+          # Write updated deployment.env
+          cat > deployment.env << EOF
+          # Personifi Deployment Configuration
+          # Updated by GitHub Actions - Build ${{ github.run_number }}
+          
+          BACKEND_IMAGE=$NEW_BACKEND_IMAGE
+          FRONTEND_IMAGE=$NEW_FRONTEND_IMAGE
+          DEPLOYED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          COMMIT_SHA=${{ github.sha }}
+          DEPLOYMENT_VERSION=${{ github.run_number }}
+          BUILD_URL=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EOF
+          
+          # Commit and push changes
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add deployment.env
+          
+          git commit -m "🚀 Deploy build ${{ github.run_number }} (${{ github.sha:0:7 }})
+
+          $CHANGES_SUMMARY
+          Triggered by: ${{ github.actor }}
+          Build: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          
+          git push
+          
+          echo "✅ GitOps deployment configuration updated"
+          echo -e "$CHANGES_SUMMARY"
+
+  # Comment on PRs with build results
+  comment-pr:
+    runs-on: ubuntu-latest
+    needs: [detect-changes, backend, frontend]
+    if: github.event_name == 'pull_request' && always()
+    
+    steps:
+      - name: Comment PR with build results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const backendChanged = '${{ needs.detect-changes.outputs.backend-changed }}' === 'true';
+            const frontendChanged = '${{ needs.detect-changes.outputs.frontend-changed }}' === 'true';
+            const workflowsChanged = '${{ needs.detect-changes.outputs.workflows-changed }}' === 'true';
+            
+            const backendResult = '${{ needs.backend.result }}';
+            const frontendResult = '${{ needs.frontend.result }}';
+            
+            let summary = '## 🔨 Build Results\n\n';
+            
+            // Backend status
+            if (backendChanged || workflowsChanged) {
+              if (backendResult === 'success') {
+                summary += '✅ **Backend**: Tests passed, build successful\n';
+              } else if (backendResult === 'failure') {
+                summary += '❌ **Backend**: Tests failed or build failed\n';
+              } else if (backendResult === 'cancelled') {
+                summary += '🚫 **Backend**: Build was cancelled\n';
+              } else {
+                summary += '⚠️ **Backend**: Build was skipped\n';
+              }
+            } else {
+              summary += '⏭️ **Backend**: No changes detected\n';
+            }
+            
+            // Frontend status
+            if (frontendChanged || workflowsChanged) {
+              if (frontendResult === 'success') {
+                summary += '✅ **Frontend**: Lint passed, build successful\n';
+              } else if (frontendResult === 'failure') {
+                summary += '❌ **Frontend**: Lint failed or build failed\n';
+              } else if (frontendResult === 'cancelled') {
+                summary += '🚫 **Frontend**: Build was cancelled\n';
+              } else {
+                summary += '⚠️ **Frontend**: Build was skipped\n';
+              }
+            } else {
+              summary += '⏭️ **Frontend**: No changes detected\n';
+            }
+            
+            // Add workflow changes note
+            if (workflowsChanged) {
+              summary += '\n📝 **Note**: Workflow files changed - both services tested\n';
+            }
+            
+            // Build info
+            summary += `\n**Build ID**: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+            summary += '\n\n---\n*Automated build results from CI/CD pipeline*';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });

@@ -1,0 +1,95 @@
+name: Frontend Build
+
+on:
+  workflow_call:
+    inputs:
+      push-image:
+        description: 'Whether to push the Docker image'
+        type: boolean
+        default: false
+    outputs:
+      image-tag:
+        description: 'Built image tag'
+        value: ${{ jobs.frontend-build.outputs.image-tag }}
+      success:
+        description: 'Whether build was successful'
+        value: ${{ jobs.frontend-build.outputs.success }}
+
+env:
+  NODE_VERSION: "20"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: craigbanach/personifi-app
+
+jobs:
+  frontend-build:
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.get-tag.outputs.tag }}
+      success: ${{ steps.set-success.outputs.success }}
+      
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Node.js Setup and Caching
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: "./personifi-app/package-lock.json"
+
+      # Build and Test
+      - name: Install dependencies
+        working-directory: ./personifi-app
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: ./personifi-app
+        run: npm run lint
+
+      - name: Type check
+        working-directory: ./personifi-app
+        run: npx tsc --noEmit
+
+      - name: Build application
+        working-directory: ./personifi-app
+        run: npm run build
+
+      # Docker Build (only if pushing)
+      - name: Setup Docker
+        if: inputs.push-image
+        uses: ./.github/actions/setup-docker
+        id: docker-setup
+        with:
+          registry: ${{ env.REGISTRY }}
+          image-name: ${{ env.IMAGE_NAME }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        if: inputs.push-image
+        uses: docker/build-push-action@v6
+        with:
+          context: "{{defaultContext}}:personifi-app"
+          push: true
+          tags: ${{ steps.docker-setup.outputs.tags }}
+          labels: ${{ steps.docker-setup.outputs.labels }}
+
+      # Output the primary tag
+      - name: Get primary tag
+        id: get-tag
+        run: |
+          if [ "${{ inputs.push-image }}" = "true" ]; then
+            TAG=$(echo "${{ steps.docker-setup.outputs.tags }}" | head -n1)
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+          else
+            echo "tag=not-built" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set success status
+        id: set-success
+        run: echo "success=true" >> $GITHUB_OUTPUT
