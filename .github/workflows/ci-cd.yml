@@ -56,12 +56,30 @@ jobs:
     
     steps:
       - name: Update GitOps deployment configuration
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Configure git with token
-          git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          # Debug: Check token and permissions
+          echo "🔍 Debugging GitOps deployment..."
+          echo "Repository owner: ${{ github.repository_owner }}"
+          echo "Current repository: ${{ github.repository }}"
+          echo "Token length: ${#GITHUB_TOKEN}"
+          echo "Actor: ${{ github.actor }}"
           
-          # Clone deployment repository
-          git clone https://github.com/${{ github.repository_owner }}/personifi-deployments.git
+          # Test repository access first
+          echo "📡 Testing repository access..."
+          curl -H "Authorization: token ${GITHUB_TOKEN}" \
+               -H "Accept: application/vnd.github.v3+json" \
+               https://api.github.com/repos/${{ github.repository_owner }}/personifi-deployments \
+               | jq -r '.permissions // "No permissions object found"'
+          
+          # Configure git with explicit token
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          # Clone with explicit token in URL
+          echo "📥 Cloning deployment repository..."
+          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository_owner }}/personifi-deployments.git
           cd personifi-deployments
           
           # Get current images from deployment.env
