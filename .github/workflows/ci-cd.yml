@@ -57,8 +57,11 @@ jobs:
     steps:
       - name: Update GitOps deployment configuration
         run: |
+          # Configure git with token
+          git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          
           # Clone deployment repository
-          git clone https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository_owner }}/personifi-deployments.git
+          git clone https://github.com/${{ github.repository_owner }}/personifi-deployments.git
           cd personifi-deployments
           
           # Get current images from deployment.env
