@@ -50,6 +50,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint-and-test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    outputs:
+      frontend-tags: ${{ steps.meta.outputs.tags }}
 
     permissions:
       contents: read
@@ -103,6 +105,53 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  update-deployment-config:
+    runs-on: ubuntu-latest
+    needs: [build-and-push-image]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Update GitOps deployment configuration
+        run: |
+          # Clone deployment repository
+          git clone https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository_owner }}/personifi-deployments.git
+          cd personifi-deployments
+          
+          # Get current backend image from deployment.env
+          CURRENT_BACKEND_IMAGE=$(grep "BACKEND_IMAGE=" deployment.env | cut -d'=' -f2)
+          
+          # Extract frontend image tag (first line from multi-line tags output)
+          FRONTEND_TAG=$(echo "${{ needs.build-and-push-image.outputs.frontend-tags }}" | head -n1)
+          
+          # Update deployment.env with new frontend image, keep existing backend
+          cat > deployment.env << EOF
+          # Personifi Deployment Configuration
+          # Updated by GitHub Actions from frontend build
+          
+          BACKEND_IMAGE=${CURRENT_BACKEND_IMAGE}
+          FRONTEND_IMAGE=${FRONTEND_TAG}
+          DEPLOYED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          COMMIT_SHA=${{ github.sha }}
+          DEPLOYMENT_VERSION=$(date +%s)
+          EOF
+          
+          # Commit and push the changes
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add deployment.env
+          git commit -m "🎨 Deploy frontend ${{ github.sha:0:7 }}
+
+          Backend: ${CURRENT_BACKEND_IMAGE} (unchanged)
+          Frontend: ${FRONTEND_TAG}
+          Triggered by: ${{ github.actor }}"
+          git push
+          
+          echo "✅ GitOps deployment configuration updated"
+          echo "Frontend image: ${FRONTEND_TAG}"
 
   comment-pr-lint:
     name: Comment Lint Results on PR
