@@ -1,10 +1,10 @@
 "use server";
 
-import { auth0 } from "@/lib/auth0";
+import { getAccessToken } from "@/lib/AuthProvider";
 
 export const getRecentTransactions = async () => {
   try {
-    const token = await auth0.getAccessToken();
+    const token = await getAccessToken();
     
     console.log('Fetching from:', process.env.PERSONIFI_BACKEND_URL);
     console.log('Token:', token ? 'Present' : 'Missing');
