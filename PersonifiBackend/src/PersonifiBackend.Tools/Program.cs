@@ -4,17 +4,23 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PersonifiBackend.Core.Configuration;
+using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Infrastructure.Data;
+using PersonifiBackend.Infrastructure.Repositories;
 using PersonifiBackend.Infrastructure.Services;
 using PersonifiBackend.Tools;
-using PersonifiBackend.Tools.Configuration;
 using Serilog;
 
-// Configure Serilog
-LoggingExtensions.ConfigureLogging();
-Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
-
 var builder = Host.CreateApplicationBuilder(args);
+
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration) // Ensure the Serilog.Settings.Configuration package is installed
+    .CreateLogger();
+
+// Remove default logging providers
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog();
 
 // Explicitly add user secrets in development
 if (builder.Environment.IsDevelopment())
@@ -36,6 +42,8 @@ builder.Services.AddDbContext<PersonifiDbContext>(options =>
 });
 
 builder.Services.AddScoped<IDataSeederService, DataSeederService>();
+builder.Services.AddScoped<IPerformanceTestingService, PerformanceTestingService>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 
 var host = builder.Build();
 
@@ -52,7 +60,7 @@ try
         Console.WriteLine("\n=== PersonifiBackend Tools ===");
         Console.WriteLine("[S]eed Database");
         Console.WriteLine("[C]lear Test Data");
-        Console.WriteLine("[P]erformance Test (Coming Soon)");
+        Console.WriteLine("[P]erformance Test");
         Console.WriteLine("[E]xit");
         Console.Write("Select an option: ");
 
@@ -67,7 +75,7 @@ try
                 await ClearTestData(serviceProvider);
                 break;
             case "P":
-                Console.WriteLine("Performance testing feature coming soon...");
+                await RunPerformanceTests(serviceProvider);
                 break;
             case "E":
                 logger.LogInformation("Exiting PersonifiBackend Tools");
@@ -197,5 +205,36 @@ static async Task ClearTestData(IServiceProvider serviceProvider)
     else
     {
         Console.WriteLine("Operation cancelled");
+    }
+}
+
+static async Task RunPerformanceTests(IServiceProvider serviceProvider)
+{
+    using var scope = serviceProvider.CreateScope();
+    var performanceService = scope.ServiceProvider.GetRequiredService<IPerformanceTestingService>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    Console.Write("Enter user ID for performance tests: ");
+    var userId = Console.ReadLine()?.Trim();
+
+    if (string.IsNullOrEmpty(userId))
+    {
+        logger.LogError("User ID cannot be empty");
+        return;
+    }
+    try
+    {
+        logger.LogInformation("Running performance tests for user {UserId}", userId);
+
+        var report = await performanceService.RunPerformanceTestsAsync(userId);
+
+        logger.LogInformation(
+            "Performance tests completed. Report ID: {ReportId}",
+            report.TestRunId
+        );
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while running performance tests");
     }
 }

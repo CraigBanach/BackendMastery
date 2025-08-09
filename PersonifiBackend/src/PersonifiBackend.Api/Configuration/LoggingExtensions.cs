@@ -20,6 +20,7 @@ public static class LoggingExtensions
     /// </summary>
     public static WebApplicationBuilder AddLogging(this WebApplicationBuilder builder)
     {
+        builder.Logging.ClearProviders();
         builder.Host.UseSerilog();
         return builder;
     }

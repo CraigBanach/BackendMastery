@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PersonifiBackend.Core.Entities;
 
 namespace PersonifiBackend.Infrastructure.Data;
@@ -30,6 +31,11 @@ public class PersonifiDbContext : DbContext
             }
         }
 
+        var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
+            v => v.Kind == DateTimeKind.Utc ? DateTime.SpecifyKind(v, DateTimeKind.Unspecified) : v,
+            v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+        );
+
         // Transaction configuration
         modelBuilder.Entity<Transaction>(entity =>
         {
@@ -39,10 +45,19 @@ public class PersonifiDbContext : DbContext
             entity.Property(e => e.Notes).HasMaxLength(1000);
             entity.HasIndex(e => new { e.UserId, e.TransactionDate });
 
-            // Configure DateTime columns to use timestamp without time zone
-            entity.Property(e => e.TransactionDate).HasColumnType("timestamp without time zone");
-            entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
-            entity.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+            // Use timestamp without time zone and apply converter
+            entity
+                .Property(e => e.TransactionDate)
+                .HasColumnType("timestamp without time zone")
+                .HasConversion(dateTimeConverter);
+            entity
+                .Property(e => e.CreatedAt)
+                .HasColumnType("timestamp without time zone")
+                .HasConversion(dateTimeConverter);
+            entity
+                .Property(e => e.UpdatedAt)
+                .HasColumnType("timestamp without time zone")
+                .HasConversion(dateTimeConverter);
 
             entity
                 .HasOne(e => e.Category)
@@ -87,9 +102,14 @@ public class PersonifiDbContext : DbContext
                 e.Period,
             });
 
-            // Configure DateTime columns to use timestamp without time zone
-            entity.Property(e => e.StartDate).HasColumnType("timestamp without time zone");
-            entity.Property(e => e.EndDate).HasColumnType("timestamp without time zone");
+            entity
+                .Property(e => e.StartDate)
+                .HasColumnType("timestamp without time zone")
+                .HasConversion(dateTimeConverter);
+            entity
+                .Property(e => e.EndDate)
+                .HasColumnType("timestamp without time zone")
+                .HasConversion(dateTimeConverter);
         });
 
         // Seed default categories
