@@ -50,9 +50,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: [detect-changes, backend, frontend]
     if: |
+      always() &&
       github.event_name == 'push' && 
       github.ref == 'refs/heads/main' && 
-      (needs.backend.outputs.success == 'true' || needs.frontend.outputs.success == 'true')
+      (needs.detect-changes.outputs.backend-changed != 'true' || needs.backend.result == 'success') &&
+      (needs.detect-changes.outputs.frontend-changed != 'true' || needs.frontend.result == 'success')
     
     steps:
       - name: Update GitOps deployment configuration
