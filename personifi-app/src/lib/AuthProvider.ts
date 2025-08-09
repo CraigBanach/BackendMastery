@@ -15,8 +15,8 @@ export async function getAccessToken(): Promise<{ token: string }> {
       authError.code === 'AccessTokenError' ||
       (authError.message && authError.message.includes('access token has expired'))
     ) {
-      console.log('Token expired, redirecting to home page');
-      redirect('/');
+      console.log('Token expired, redirecting to logout');
+      redirect('/auth/logout');
     }
     
     // Re-throw other errors
