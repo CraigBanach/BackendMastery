@@ -1,7 +1,7 @@
 "use server";
 
 import { CreateTransaction } from "@/components/transactions/new/transactionForm";
-import { auth0 } from "@/lib/auth0";
+import { getAccessToken } from "@/lib/AuthProvider";
 
 export const createTransaction = async (transaction: CreateTransaction) => {
   const createTransactionDto = {
@@ -18,7 +18,7 @@ export const createTransaction = async (transaction: CreateTransaction) => {
   console.log("CBBody: ", body);
 
   try {
-    const token = await auth0.getAccessToken();
+    const token = await getAccessToken();
 
     const res = await fetch(
       `${process.env.PERSONIFI_BACKEND_URL}/transaction`,
