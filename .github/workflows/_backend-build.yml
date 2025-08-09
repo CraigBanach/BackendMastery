@@ -105,7 +105,12 @@ jobs:
         id: get-tag
         run: |
           if [ "${{ inputs.push-image }}" = "true" ]; then
-            TAG=$(echo "${{ steps.docker-setup.outputs.tags }}" | head -n1)
+            # Select the SHA-based tag (main-xxxxxxx) for deployments
+            TAG=$(echo "${{ steps.docker-setup.outputs.tags }}" | grep "main-" | head -n1)
+            if [ -z "$TAG" ]; then
+              # Fallback to first tag if no SHA tag found
+              TAG=$(echo "${{ steps.docker-setup.outputs.tags }}" | head -n1)
+            fi
             echo "tag=$TAG" >> $GITHUB_OUTPUT
           else
             echo "tag=not-built" >> $GITHUB_OUTPUT
