@@ -150,31 +150,16 @@ const getVarianceColor = (variance: number, isIncome: boolean) => {
   return isGood ? "text-green-600" : "text-red-600";
 };
 
-const getPaceStatusColor = (status: string) => {
-  switch (status) {
-    case 'on-track': return "text-blue-600";
-    case 'ahead': return "text-orange-600";
-    case 'behind': return "text-green-600";
-    default: return "text-gray-600";
-  }
+const getExpenseStatusColor = (variance: number, monthlyPaceStatus: string) => {
+  if (variance > 0) return "text-red-600"; // Over budget
+  if (monthlyPaceStatus === 'ahead') return "text-orange-600"; // Spending fast
+  return "text-blue-600"; // On track
 };
 
-const getPaceStatusText = (status: string, isIncome: boolean) => {
-  if (isIncome) {
-    switch (status) {
-      case 'on-track': return "On track";
-      case 'ahead': return "Ahead of schedule";
-      case 'behind': return "Behind schedule";
-      default: return "Unknown";
-    }
-  } else {
-    switch (status) {
-      case 'on-track': return "On track";
-      case 'ahead': return "Spending fast";
-      case 'behind': return "Under budget";
-      default: return "Unknown";
-    }
-  }
+const getExpenseStatusText = (variance: number, monthlyPaceStatus: string) => {
+  if (variance > 0) return "Over Budget";
+  if (monthlyPaceStatus === 'ahead') return "Spending Fast";
+  return "On Track";
 };
 
 export function BudgetVarianceDashboard() {
@@ -279,16 +264,15 @@ export function BudgetVarianceDashboard() {
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total Income</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalActualIncome)}</div>
-            <div className={cn("text-sm flex items-center space-x-1", getVarianceColor(totalIncomeVariance, true))}>
-              <span>{formatCurrency(totalIncomeVariance)}</span>
-              <span>vs budget</span>
+            <div className="text-sm text-muted-foreground">
+              Budget: {formatCurrency(totalBudgetedIncome)}
             </div>
           </CardContent>
         </Card>
@@ -299,33 +283,9 @@ export function BudgetVarianceDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalActualExpenses)}</div>
-            <div className={cn("text-sm flex items-center space-x-1", getVarianceColor(totalExpenseVariance, false))}>
-              <span>{formatCurrency(Math.abs(totalExpenseVariance))}</span>
-              <span>{totalExpenseVariance < 0 ? 'under' : 'over'} budget</span>
+            <div className="text-sm text-muted-foreground">
+              Budget: {formatCurrency(totalBudgetedExpenses)}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Net Position</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(netActual)}</div>
-            <div className={cn("text-sm flex items-center space-x-1", getVarianceColor(netVariance, true))}>
-              <span>{formatCurrency(netVariance)}</span>
-              <span>vs budget</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Budget Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">15/30</div>
-            <div className="text-sm text-muted-foreground">Days into month</div>
           </CardContent>
         </Card>
       </div>
@@ -338,97 +298,56 @@ export function BudgetVarianceDashboard() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full table-fixed">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 font-medium">Category</th>
-                  <th className="text-right py-2 font-medium">Budgeted</th>
-                  <th className="text-right py-2 font-medium">Actual</th>
-                  <th className="text-right py-2 font-medium">Variance</th>
-                  <th className="text-right py-2 font-medium">Variance %</th>
-                  <th className="text-right py-2 font-medium">Monthly Pace</th>
-                  <th className="text-right py-2 font-medium">Actions</th>
+                <tr className="border-b bg-gray-50">
+                  <th className="text-left py-3 px-4 font-medium rounded-tl-lg w-1/4">Category</th>
+                  <th className="text-right py-3 px-4 font-medium w-1/6"></th>
+                  <th className="text-right py-3 px-4 font-medium w-1/4">Expected</th>
+                  <th className="text-right py-3 px-4 font-medium w-1/4">Actual</th>
+                  <th className="text-right py-3 px-4 font-medium rounded-tr-lg w-1/12"></th>
                 </tr>
               </thead>
               <tbody>
                 {incomeData.map((item) => (
                   <>
-                    <tr key={item.categoryId} className="border-b hover:bg-gray-50">
-                      <td className="py-3 font-medium">{item.categoryName}</td>
-                      <td className="text-right py-3">{formatCurrency(item.budgeted)}</td>
-                      <td className="text-right py-3">{formatCurrency(item.actual)}</td>
-                      <td className={cn("text-right py-3", getVarianceColor(item.variance, true))}>
-                        {formatCurrency(item.variance)}
-                      </td>
-                      <td className={cn("text-right py-3", getVarianceColor(item.variance, true))}>
-                        {item.variancePercentage.toFixed(1)}%
-                      </td>
-                      <td className={cn("text-right py-3 text-sm", getPaceStatusColor(item.monthlyPaceStatus))}>
-                        {getPaceStatusText(item.monthlyPaceStatus, true)}
-                      </td>
-                      <td className="text-right py-3">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => openTransactionModal(item.categoryName, 'income')}
-                            className="h-8 px-2"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => toggleCategoryExpansion(item.categoryId)}
-                            className="h-8 px-2"
-                          >
-                            {expandedCategories.has(item.categoryId) ? (
-                              <ChevronUp className="h-4 w-4" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
+                    <tr 
+                      key={item.categoryId} 
+                      className="border-b hover:bg-gray-50 cursor-pointer"
+                      onClick={() => toggleCategoryExpansion(item.categoryId)}
+                    >
+                      <td className="py-3 px-4 font-medium bg-blue-50 border-r border-blue-100">{item.categoryName}</td>
+                      <td className="text-right py-3 px-4"></td>
+                      <td className="text-right py-3 px-4">{formatCurrency(item.budgeted)}</td>
+                      <td className="text-right py-3 px-4 font-semibold">{formatCurrency(item.actual)}</td>
+                      <td className="text-right py-3 px-4">
+                        {expandedCategories.has(item.categoryId) ? (
+                          <ChevronUp className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-gray-400" />
+                        )}
                       </td>
                     </tr>
                     {expandedCategories.has(item.categoryId) && (
                       <tr>
-                        <td colSpan={7} className="px-3 py-2 bg-gray-50">
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium">Recent Transactions</span>
-                              <div className="flex gap-1">
-                                {[3, 5, 10].map(limit => (
-                                  <Button
-                                    key={limit}
-                                    size="sm"
-                                    variant={transactionLimit === limit ? "default" : "ghost"}
-                                    onClick={() => setTransactionLimit(limit as 3 | 5 | 10)}
-                                    className="h-6 px-2 text-xs"
-                                  >
-                                    {limit}
-                                  </Button>
-                                ))}
+                        <td colSpan={5} className="px-4 py-3 bg-blue-25 border-l-4 border-blue-200">
+                          <div className="space-y-1">
+                            {item.recentTransactions.slice(0, 5).map((transaction) => (
+                              <div key={transaction.id} className="flex justify-between items-center py-1 text-sm">
+                                <div className="flex-1">
+                                  <span className="font-medium">{transaction.description}</span>
+                                  <span className="text-muted-foreground ml-2">
+                                    {new Date(transaction.date).toLocaleDateString('en-GB')}
+                                  </span>
+                                </div>
+                                <span className="font-medium">{formatCurrency(transaction.amount)}</span>
                               </div>
-                            </div>
-                            <div className="space-y-1">
-                              {item.recentTransactions.slice(0, transactionLimit).map((transaction) => (
-                                <div key={transaction.id} className="flex justify-between items-center py-1 text-sm">
-                                  <div className="flex-1">
-                                    <span className="font-medium">{transaction.description}</span>
-                                    <span className="text-muted-foreground ml-2">
-                                      {new Date(transaction.date).toLocaleDateString('en-GB')}
-                                    </span>
-                                  </div>
-                                  <span className="font-medium">{formatCurrency(transaction.amount)}</span>
-                                </div>
-                              ))}
-                              {item.recentTransactions.length === 0 && (
-                                <div className="text-sm text-muted-foreground py-2">
-                                  No transactions this month
-                                </div>
-                              )}
-                            </div>
+                            ))}
+                            {item.recentTransactions.length === 0 && (
+                              <div className="text-sm text-muted-foreground py-2">
+                                No transactions this month
+                              </div>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -449,102 +368,58 @@ export function BudgetVarianceDashboard() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full table-fixed">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 font-medium">Category</th>
-                  <th className="text-right py-2 font-medium">Budgeted</th>
-                  <th className="text-right py-2 font-medium">Actual</th>
-                  <th className="text-right py-2 font-medium">Variance</th>
-                  <th className="text-right py-2 font-medium">Variance %</th>
-                  <th className="text-right py-2 font-medium">Monthly Pace</th>
-                  <th className="text-right py-2 font-medium">Actions</th>
+                <tr className="border-b bg-gray-50">
+                  <th className="text-left py-3 px-4 font-medium rounded-tl-lg w-1/4">Category</th>
+                  <th className="text-right py-3 px-4 font-medium w-1/6">On Track</th>
+                  <th className="text-right py-3 px-4 font-medium w-1/4">Budgeted</th>
+                  <th className="text-right py-3 px-4 font-medium w-1/4">Actual</th>
+                  <th className="text-right py-3 px-4 font-medium rounded-tr-lg w-1/12"></th>
                 </tr>
               </thead>
               <tbody>
                 {expenseData.map((item) => (
                   <>
-                    <tr key={item.categoryId} className="border-b hover:bg-gray-50">
-                      <td className="py-3 font-medium">{item.categoryName}</td>
-                      <td className="text-right py-3">{formatCurrency(item.budgeted)}</td>
-                      <td className="text-right py-3">{formatCurrency(item.actual)}</td>
-                      <td className={cn("text-right py-3", getVarianceColor(item.variance, false))}>
-                        {formatCurrency(Math.abs(item.variance))}
-                        {item.variance !== 0 && (
-                          <span className="ml-1 text-xs">
-                            {item.variance < 0 ? 'under' : 'over'}
-                          </span>
+                    <tr 
+                      key={item.categoryId} 
+                      className="border-b hover:bg-gray-50 cursor-pointer"
+                      onClick={() => toggleCategoryExpansion(item.categoryId)}
+                    >
+                      <td className="py-3 px-4 font-medium bg-red-50 border-r border-red-100">{item.categoryName}</td>
+                      <td className={cn("text-right py-3 px-4 text-sm font-medium", getExpenseStatusColor(item.variance, item.monthlyPaceStatus))}>
+                        {getExpenseStatusText(item.variance, item.monthlyPaceStatus)}
+                      </td>
+                      <td className="text-right py-3 px-4">{formatCurrency(item.budgeted)}</td>
+                      <td className="text-right py-3 px-4 font-semibold">{formatCurrency(item.actual)}</td>
+                      <td className="text-right py-3 px-4">
+                        {expandedCategories.has(item.categoryId) ? (
+                          <ChevronUp className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-gray-400" />
                         )}
-                      </td>
-                      <td className={cn("text-right py-3", getVarianceColor(item.variance, false))}>
-                        {Math.abs(item.variancePercentage).toFixed(1)}%
-                      </td>
-                      <td className={cn("text-right py-3 text-sm", getPaceStatusColor(item.monthlyPaceStatus))}>
-                        {getPaceStatusText(item.monthlyPaceStatus, false)}
-                      </td>
-                      <td className="text-right py-3">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => openTransactionModal(item.categoryName, 'expense')}
-                            className="h-8 px-2"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => toggleCategoryExpansion(item.categoryId)}
-                            className="h-8 px-2"
-                          >
-                            {expandedCategories.has(item.categoryId) ? (
-                              <ChevronUp className="h-4 w-4" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
                       </td>
                     </tr>
                     {expandedCategories.has(item.categoryId) && (
                       <tr>
-                        <td colSpan={7} className="px-3 py-2 bg-gray-50">
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium">Recent Transactions</span>
-                              <div className="flex gap-1">
-                                {[3, 5, 10].map(limit => (
-                                  <Button
-                                    key={limit}
-                                    size="sm"
-                                    variant={transactionLimit === limit ? "default" : "ghost"}
-                                    onClick={() => setTransactionLimit(limit as 3 | 5 | 10)}
-                                    className="h-6 px-2 text-xs"
-                                  >
-                                    {limit}
-                                  </Button>
-                                ))}
+                        <td colSpan={5} className="px-4 py-3 bg-red-25 border-l-4 border-red-200">
+                          <div className="space-y-1">
+                            {item.recentTransactions.slice(0, 5).map((transaction) => (
+                              <div key={transaction.id} className="flex justify-between items-center py-1 text-sm">
+                                <div className="flex-1">
+                                  <span className="font-medium">{transaction.description}</span>
+                                  <span className="text-muted-foreground ml-2">
+                                    {new Date(transaction.date).toLocaleDateString('en-GB')}
+                                  </span>
+                                </div>
+                                <span className="font-medium">{formatCurrency(transaction.amount)}</span>
                               </div>
-                            </div>
-                            <div className="space-y-1">
-                              {item.recentTransactions.slice(0, transactionLimit).map((transaction) => (
-                                <div key={transaction.id} className="flex justify-between items-center py-1 text-sm">
-                                  <div className="flex-1">
-                                    <span className="font-medium">{transaction.description}</span>
-                                    <span className="text-muted-foreground ml-2">
-                                      {new Date(transaction.date).toLocaleDateString('en-GB')}
-                                    </span>
-                                  </div>
-                                  <span className="font-medium">{formatCurrency(transaction.amount)}</span>
-                                </div>
-                              ))}
-                              {item.recentTransactions.length === 0 && (
-                                <div className="text-sm text-muted-foreground py-2">
-                                  No transactions this month
-                                </div>
-                              )}
-                            </div>
+                            ))}
+                            {item.recentTransactions.length === 0 && (
+                              <div className="text-sm text-muted-foreground py-2">
+                                No transactions this month
+                              </div>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -562,9 +437,10 @@ export function BudgetVarianceDashboard() {
         <Button
           onClick={() => openTransactionModal()}
           size="lg"
-          className="h-14 w-14 rounded-full bg-finance-green hover:bg-finance-green-dark shadow-lg"
+          className="h-12 px-6 rounded-full bg-finance-green hover:bg-finance-green-dark shadow-lg font-medium"
         >
-          <Plus className="h-6 w-6" />
+          <Plus className="h-4 w-4 mr-2" />
+          Add Transaction
         </Button>
       </div>
 
