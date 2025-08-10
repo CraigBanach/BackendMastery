@@ -19,17 +19,6 @@ const TopNavigation = async () => {
       <div className="flex items-center space-x-2">
         <Button
           asChild
-          variant={pathName === "/dashboard" ? "default" : "ghost"}
-          size="sm"
-        >
-          <a href="/dashboard" className="flex items-center">
-            <Home className="h-4 w-4 mr-2" />
-            Dashboard
-          </a>
-        </Button>
-        
-        <Button
-          asChild
           variant={isBudgetPage ? "default" : "ghost"}
           size="sm"
         >
@@ -47,9 +36,9 @@ const TopNavigation = async () => {
         className="bg-finance-green hover:bg-finance-green-dark"
       >
         {isTransactionsPage ? (
-          <a href="/dashboard">
+          <a href="/budget">
             <ArrowLeftIcon className="h-4 w-4 mr-2" />
-            Dashboard
+            Budget
           </a>
         ) : (
           <a href="/transactions/new">
