@@ -14,7 +14,7 @@ interface BudgetPageProps {
 
 async function fetchBudgetData(year: number, month: number) {
   try {
-    const [budgetVariances, transactions] = await Promise.all([
+    const [budgetVariances, transactionsResponse] = await Promise.all([
       getBudgetVariance(year, month),
       getTransactions({
         pageSize: 100,
@@ -25,10 +25,11 @@ async function fetchBudgetData(year: number, month: number) {
       `${year}-${month.toString().padStart(2, '0')}-${new Date(year, month, 0).getDate().toString().padStart(2, '0')}`)
     ]);
 
-    return calculateVarianceData(budgetVariances, transactions.data);
+    return calculateVarianceData(budgetVariances || [], transactionsResponse?.data || []);
   } catch (error: unknown) {
     console.error('Error fetching budget data:', error);
-    redirect('/auth/logout');
+    // Return empty data instead of redirecting to logout
+    return [];
   }
 }
 

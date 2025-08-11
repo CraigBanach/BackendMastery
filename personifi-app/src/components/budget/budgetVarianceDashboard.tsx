@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Settings, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { BudgetVarianceWithTransactions } from "@/lib/hooks/useBudgetData";
+import { CategoryDto } from "@/types/budget";
 
 interface Transaction {
   id: number;
@@ -28,6 +29,9 @@ interface BudgetVarianceDashboardProps {
   currentYear?: number;
   currentMonth?: number;
   onMonthChange?: (year: number, month: number) => Promise<BudgetVarianceWithTransactions[]>;
+  categories?: CategoryDto[];
+  existingBudgets?: Array<{ categoryId: number; amount: number; }>;
+  onBudgetSaved?: () => void;
 }
 
 const formatCurrency = (amount: number) => {
@@ -62,7 +66,10 @@ export function BudgetVarianceDashboard({
   initialData = [], 
   currentYear = new Date().getFullYear(),
   currentMonth: initialMonth = new Date().getMonth() + 1,
-  onMonthChange
+  onMonthChange,
+  categories = [],
+  existingBudgets = [],
+  onBudgetSaved
 }: BudgetVarianceDashboardProps = {}) {
   const [currentMonth, setCurrentMonth] = useState(initialMonth);
   const [year, setYear] = useState(currentYear);
@@ -381,6 +388,12 @@ export function BudgetVarianceDashboard({
         isOpen={isSetupModalOpen}
         onClose={() => setIsSetupModalOpen(false)}
         currentMonth={new Date(year, currentMonth - 1)}
+        categories={categories}
+        existingBudgets={existingBudgets}
+        onBudgetSaved={() => {
+          onBudgetSaved?.();
+          setIsSetupModalOpen(false);
+        }}
       />
 
       {/* Transaction Modal */}

@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { BudgetVarianceDashboard } from "./budgetVarianceDashboard";
 import { BudgetVarianceWithTransactions } from "@/lib/hooks/useBudgetData";
-import { getBudgetVariance } from "@/lib/api/budgetApi";
+import { getBudgetVariance, getBudgetsForMonth } from "@/lib/api/budgetApi";
 import { getTransactions } from "@/lib/api/transactionApi";
 import { calculateVarianceData } from "@/lib/hooks/useBudgetData";
 
@@ -13,32 +14,60 @@ interface BudgetPageClientProps {
 }
 
 export function BudgetPageClient({ initialData, currentYear, currentMonth }: BudgetPageClientProps) {
-  const handleMonthChange = async (year: number, month: number): Promise<BudgetVarianceWithTransactions[]> => {
+  const [data, setData] = useState(initialData);
+  const [year, setYear] = useState(currentYear);
+  const [month, setMonth] = useState(currentMonth);
+
+  const fetchData = async (targetYear: number, targetMonth: number): Promise<BudgetVarianceWithTransactions[]> => {
     try {
-      const [budgetVariances, transactions] = await Promise.all([
-        getBudgetVariance(year, month),
+      const [budgetVariances, transactionsResponse] = await Promise.all([
+        getBudgetVariance(targetYear, targetMonth),
         getTransactions({
           pageSize: 100,
           sortBy: 'TransactionDate',
           sortDescending: true,
         }, 
-        `${year}-${month.toString().padStart(2, '0')}-01`,
-        `${year}-${month.toString().padStart(2, '0')}-${new Date(year, month, 0).getDate().toString().padStart(2, '0')}`)
+        `${targetYear}-${targetMonth.toString().padStart(2, '0')}-01`,
+        `${targetYear}-${targetMonth.toString().padStart(2, '0')}-${new Date(targetYear, targetMonth, 0).getDate().toString().padStart(2, '0')}`)
       ]);
 
-      return calculateVarianceData(budgetVariances, transactions.data);
+      return calculateVarianceData(budgetVariances || [], transactionsResponse?.data || []);
     } catch (error: unknown) {
       console.error('Error fetching budget data:', error);
-      throw error;
+      return [];
     }
   };
 
+  const handleMonthChange = async (newYear: number, newMonth: number): Promise<BudgetVarianceWithTransactions[]> => {
+    setYear(newYear);
+    setMonth(newMonth);
+    const newData = await fetchData(newYear, newMonth);
+    setData(newData);
+    return newData;
+  };
+
+  const handleBudgetSaved = async () => {
+    // Refresh current month's data after budget save
+    const newData = await fetchData(year, month);
+    setData(newData);
+  };
+
+  // Extract categories from current data for modal
+  const categories = data.map(item => item.category);
+  const existingBudgets = data.map(item => ({
+    categoryId: item.category.id,
+    amount: item.budgeted,
+  }));
+
   return (
     <BudgetVarianceDashboard
-      initialData={initialData}
-      currentYear={currentYear}
-      currentMonth={currentMonth}
+      initialData={data}
+      currentYear={year}
+      currentMonth={month}
       onMonthChange={handleMonthChange}
+      categories={categories}
+      existingBudgets={existingBudgets}
+      onBudgetSaved={handleBudgetSaved}
     />
   );
 }

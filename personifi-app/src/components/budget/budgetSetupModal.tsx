@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -12,41 +12,13 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-// Mock data types
-interface Category {
-  id: number;
-  name: string;
-  type: "income" | "expense";
-}
+import { setBudgetsForMonth } from "@/lib/api/budgetApi";
+import { CategoryDto } from "@/types/budget";
 
 interface BudgetAmount {
   categoryId: number;
   amount: number;
 }
-
-// Mock categories - this will come from API
-const mockCategories: Category[] = [
-  { id: 1, name: "Housing", type: "expense" },
-  { id: 2, name: "Food", type: "expense" },
-  { id: 3, name: "Transportation", type: "expense" },
-  { id: 4, name: "Entertainment", type: "expense" },
-  { id: 5, name: "Utilities", type: "expense" },
-  { id: 6, name: "Healthcare", type: "expense" },
-  { id: 7, name: "Salary", type: "income" },
-  { id: 8, name: "Freelance", type: "income" },
-  { id: 9, name: "Investments", type: "income" },
-];
-
-// Mock existing budget amounts
-const mockExistingBudgets: BudgetAmount[] = [
-  { categoryId: 1, amount: 1500 },
-  { categoryId: 2, amount: 500 },
-  { categoryId: 3, amount: 300 },
-  { categoryId: 4, amount: 200 },
-  { categoryId: 7, amount: 4500 },
-  { categoryId: 8, amount: 800 },
-];
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("en-GB", {
@@ -59,22 +31,29 @@ interface BudgetSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentMonth: Date;
+  categories?: CategoryDto[];
+  existingBudgets?: BudgetAmount[];
+  onBudgetSaved?: () => void;
 }
 
 export function BudgetSetupModal({
   isOpen,
   onClose,
   currentMonth,
+  categories = [],
+  existingBudgets = [],
+  onBudgetSaved,
 }: BudgetSetupModalProps) {
-  const [budgetAmounts, setBudgetAmounts] = useState<Record<number, string>>(
-    () => {
-      const initial: Record<number, string> = {};
-      mockExistingBudgets.forEach((budget) => {
-        initial[budget.categoryId] = budget.amount.toString();
-      });
-      return initial;
-    }
-  );
+  const [budgetAmounts, setBudgetAmounts] = useState<Record<number, string>>({});
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const initial: Record<number, string> = {};
+    existingBudgets.forEach((budget) => {
+      initial[budget.categoryId] = budget.amount.toString();
+    });
+    setBudgetAmounts(initial);
+  }, [existingBudgets]);
 
   const monthName = currentMonth.toLocaleDateString("en-GB", {
     month: "long",
@@ -88,18 +67,36 @@ export function BudgetSetupModal({
     }));
   };
 
-  const handleSave = () => {
-    // This will make API call to save budget amounts
-    console.log("Saving budget amounts:", budgetAmounts);
-    onClose();
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      // Convert budget amounts to API format
+      const budgetsToSave = Object.entries(budgetAmounts)
+        .filter(([_, value]) => value && parseFloat(value) > 0)
+        .map(([categoryId, value]) => ({
+          categoryId: parseInt(categoryId),
+          amount: parseFloat(value),
+        }));
+
+      if (budgetsToSave.length > 0) {
+        await setBudgetsForMonth(
+          currentMonth.getFullYear(),
+          currentMonth.getMonth() + 1,
+          budgetsToSave
+        );
+      }
+
+      onBudgetSaved?.();
+      onClose();
+    } catch (error) {
+      console.error('Error saving budgets:', error);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const expenseCategories = mockCategories.filter(
-    (cat) => cat.type === "expense"
-  );
-  const incomeCategories = mockCategories.filter(
-    (cat) => cat.type === "income"
-  );
+  const expenseCategories = categories.filter((cat) => cat.type === "expense");
+  const incomeCategories = categories.filter((cat) => cat.type === "income");
 
   const totalBudgetedIncome = incomeCategories.reduce((sum, cat) => {
     const amount = parseFloat(budgetAmounts[cat.id] || "0");
@@ -120,9 +117,10 @@ export function BudgetSetupModal({
       </Button>
       <Button
         onClick={handleSave}
+        disabled={saving}
         className="bg-finance-green hover:bg-finance-green-dark"
       >
-        Save Budget
+        {saving ? 'Saving...' : 'Save Budget'}
       </Button>
     </div>
   );

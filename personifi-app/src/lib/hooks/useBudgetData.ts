@@ -17,8 +17,12 @@ export function calculateVarianceData(
   budgetVariances: BudgetVarianceDto[],
   transactions: TransactionDto[]
 ): BudgetVarianceWithTransactions[] {
-  return budgetVariances.map(variance => {
-    const categoryTransactions = transactions
+  // Handle undefined/null inputs gracefully
+  const validVariances = budgetVariances || [];
+  const validTransactions = transactions || [];
+
+  return validVariances.map(variance => {
+    const categoryTransactions = validTransactions
       .filter(t => t.category.id === variance.category.id)
       .map(t => ({
         id: t.id,
