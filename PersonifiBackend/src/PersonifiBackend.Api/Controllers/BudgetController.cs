@@ -161,7 +161,7 @@ public class BudgetController : ControllerBase
         // First validate that the category belongs to the user
         var category = await _categoryService.GetByIdAsync(categoryId, _userContext.UserId);
         if (category == null)
-            return NotFound("Category not found");
+            return NotFound();
 
         var budget = await _budgetService.GetBudgetAsync(
             _userContext.UserId,
@@ -170,7 +170,7 @@ public class BudgetController : ControllerBase
             month
         );
         if (budget == null)
-            return NotFound("Budget not found");
+            return NotFound();
 
         return Ok(budget);
     }

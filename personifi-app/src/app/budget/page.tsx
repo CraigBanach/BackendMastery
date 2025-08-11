@@ -1,14 +1,56 @@
-import { BudgetVarianceDashboard } from "@/components/budget/budgetVarianceDashboard";
+import { BudgetPageClient } from "@/components/budget/budgetPageClient";
 import { PageHeader } from "@/components/ui/pageHeader";
+import { getBudgetVariance } from "@/lib/api/budgetApi";
+import { getTransactions } from "@/lib/api/transactionApi";
+import { calculateVarianceData } from "@/lib/hooks/useBudgetData";
+import { redirect } from "next/navigation";
 
-export default function BudgetPage() {
+interface BudgetPageProps {
+  searchParams?: Promise<{
+    year?: string;
+    month?: string;
+  }>;
+}
+
+async function fetchBudgetData(year: number, month: number) {
+  try {
+    const [budgetVariances, transactions] = await Promise.all([
+      getBudgetVariance(year, month),
+      getTransactions({
+        pageSize: 100,
+        sortBy: 'TransactionDate',
+        sortDescending: true,
+      }, 
+      `${year}-${month.toString().padStart(2, '0')}-01`,
+      `${year}-${month.toString().padStart(2, '0')}-${new Date(year, month, 0).getDate().toString().padStart(2, '0')}`)
+    ]);
+
+    return calculateVarianceData(budgetVariances, transactions.data);
+  } catch (error: unknown) {
+    console.error('Error fetching budget data:', error);
+    redirect('/auth/logout');
+  }
+}
+
+export default async function BudgetPage({ searchParams }: BudgetPageProps) {
+  const currentDate = new Date();
+  const params = await searchParams;
+  const year = params?.year ? parseInt(params.year) : currentDate.getFullYear();
+  const month = params?.month ? parseInt(params.month) : currentDate.getMonth() + 1;
+
+  const initialData = await fetchBudgetData(year, month);
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Budget Overview"
-        description="Track your spending against budgeted amounts"
+        subTitle="Track your spending against budgeted amounts"
       />
-      <BudgetVarianceDashboard />
+      <BudgetPageClient
+        initialData={initialData}
+        currentYear={year}
+        currentMonth={month}
+      />
     </div>
   );
 }

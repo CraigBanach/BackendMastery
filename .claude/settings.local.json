@@ -14,7 +14,8 @@
       "Bash(dotnet tool uninstall:*)",
       "Bash(rm:*)",
       "Bash(dotnet clean:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }
