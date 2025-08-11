@@ -23,12 +23,12 @@ public static class DependencyInjectionExtensions
         // Add Repositories
         builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
         builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-        //builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
+        builder.Services.AddScoped<IBudgetRepository, BudgetRepository>();
 
         // Add Services
         builder.Services.AddScoped<ITransactionService, TransactionService>();
         builder.Services.AddScoped<ICategoryService, CategoryService>();
-        //builder.Services.AddScoped<IBudgetService, BudgetService>();
+        builder.Services.AddScoped<IBudgetService, BudgetService>();
 
         // Add Background Services
         builder.Services.AddHostedService<BudgetAlertService>();

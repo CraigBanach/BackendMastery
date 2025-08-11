@@ -80,16 +80,18 @@ public class PersonifiDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Amount).HasPrecision(18, 2);
-            entity.HasIndex(e => new
-            {
-                e.UserId,
-                e.CategoryId,
-                e.Period,
-            });
+            entity.HasIndex(e => new { e.UserId, e.CategoryId, e.Year, e.Month }).IsUnique();
+            entity.HasIndex(e => new { e.UserId, e.Year, e.Month });
 
             // Configure DateTime columns to use timestamp without time zone
-            entity.Property(e => e.StartDate).HasColumnType("timestamp without time zone");
-            entity.Property(e => e.EndDate).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+
+            entity
+                .HasOne(e => e.Category)
+                .WithMany(c => c.Budgets)
+                .HasForeignKey(e => e.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Seed default categories

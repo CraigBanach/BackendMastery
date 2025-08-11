@@ -4,7 +4,17 @@
       "WebFetch(domain:auth0.com)",
       "WebFetch(domain:developer.auth0.com)",
       "Bash(npm run dev:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(export:*)",
+      "Bash(dotnet tool install:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet --version)",
+      "Bash(dotnet ef migrations remove:*)",
+      "Bash(dotnet tool uninstall:*)",
+      "Bash(rm:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
