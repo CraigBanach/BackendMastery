@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { BudgetSetupModal } from "./budgetSetupModal";
 import { TransactionModal } from "./transactionModal";
 import {
@@ -152,7 +152,7 @@ const getVarianceColor = (variance: number, isIncome: boolean) => {
 
 const getExpenseStatusColor = (variance: number, monthlyPaceStatus: string) => {
   if (variance > 0) return "text-red-600"; // Over budget
-  if (monthlyPaceStatus === 'ahead') return "text-orange-600"; // Spending fast
+  if (monthlyPaceStatus === 'ahead') return "text-yellow-600"; // Spending fast
   return "text-blue-600"; // On track
 };
 
@@ -310,9 +310,8 @@ export function BudgetVarianceDashboard() {
               </thead>
               <tbody>
                 {incomeData.map((item) => (
-                  <>
+                  <React.Fragment key={item.categoryId}>
                     <tr 
-                      key={item.categoryId} 
                       className="border-b hover:bg-gray-50 cursor-pointer"
                       onClick={() => toggleCategoryExpansion(item.categoryId)}
                     >
@@ -352,7 +351,7 @@ export function BudgetVarianceDashboard() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
@@ -380,9 +379,8 @@ export function BudgetVarianceDashboard() {
               </thead>
               <tbody>
                 {expenseData.map((item) => (
-                  <>
+                  <React.Fragment key={item.categoryId}>
                     <tr 
-                      key={item.categoryId} 
                       className="border-b hover:bg-gray-50 cursor-pointer"
                       onClick={() => toggleCategoryExpansion(item.categoryId)}
                     >
@@ -424,7 +422,7 @@ export function BudgetVarianceDashboard() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
