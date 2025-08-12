@@ -13,6 +13,12 @@ public interface ITransactionRepository
         DateTime? endDate = null,
         int? categoryId = null
     );
+    Task<IEnumerable<Transaction>> GetTransactionsByDateRangeAsync(
+        string userId,
+        DateTime startDate,
+        DateTime endDate,
+        int? categoryId = null
+    );
     Task<Transaction> CreateAsync(Transaction transaction);
     Task<Transaction> UpdateAsync(Transaction transaction);
     Task<bool> DeleteAsync(int id, string userId);

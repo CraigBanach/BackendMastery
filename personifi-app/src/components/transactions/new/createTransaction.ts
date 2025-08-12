@@ -1,11 +1,29 @@
 "use server";
 
-import { CreateTransaction } from "@/components/transactions/new/transactionForm";
+import { CreateTransaction as TransactionModalType } from "@/components/budget/transactionModal";
+import { CreateTransaction as TransactionFormType } from "./transactionForm";
 import { getAccessToken } from "@/lib/AuthProvider";
 
-export const createTransaction = async (transaction: CreateTransaction) => {
+interface TransactionResponse {
+  id: number;
+  amount: number;
+  description: string;
+  notes?: string;
+  transactionDate: string;
+  category: {
+    id: number;
+    name: string;
+    type: string;
+  };
+  createdAt: string;
+}
+
+// Function overloads for different transaction types
+export async function createTransaction(transaction: TransactionModalType): Promise<TransactionResponse>;
+export async function createTransaction(transaction: TransactionFormType): Promise<TransactionResponse>;
+export async function createTransaction(transaction: TransactionModalType | TransactionFormType): Promise<TransactionResponse> {
   const createTransactionDto = {
-    categoryId: 1,
+    categoryId: 'categoryId' in transaction ? transaction.categoryId : 1, // Default to Housing for old form
     amount: transaction.amount,
     transactionType: transaction.type,
     description: transaction.description,

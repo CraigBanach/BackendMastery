@@ -83,6 +83,26 @@ public class TransactionRepository : ITransactionRepository
         return await _context.SaveChangesAsync() > 0;
     }
 
+    public async Task<IEnumerable<Transaction>> GetTransactionsByDateRangeAsync(
+        string userId,
+        DateTime startDate,
+        DateTime endDate,
+        int? categoryId = null)
+    {
+        var query = _context.Transactions
+            .Include(t => t.Category)
+            .Where(t => t.UserId == userId && 
+                       t.TransactionDate >= startDate && 
+                       t.TransactionDate <= endDate);
+
+        if (categoryId.HasValue)
+        {
+            query = query.Where(t => t.CategoryId == categoryId.Value);
+        }
+
+        return await query.ToListAsync();
+    }
+
     private static IQueryable<Transaction> ApplySorting(
         IQueryable<Transaction> query,
         string? sortBy,

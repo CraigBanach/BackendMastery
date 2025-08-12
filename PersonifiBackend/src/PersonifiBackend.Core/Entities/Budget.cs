@@ -5,20 +5,11 @@ public class Budget
     public int Id { get; set; }
     public string UserId { get; set; } = string.Empty;
     public decimal Amount { get; set; }
-    public BudgetPeriod Period { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime? EndDate { get; set; }
-    public bool IsActive { get; set; }
+    public int Year { get; set; }
+    public int Month { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 
     public int CategoryId { get; set; }
     public Category Category { get; set; } = null!;
-}
-
-public enum BudgetPeriod
-{
-    Daily,
-    Weekly,
-    Monthly,
-    Quarterly,
-    Yearly
 }

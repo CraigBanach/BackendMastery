@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
   if (session) {
     if (request.nextUrl.pathname === "/") {
       const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
+      url.pathname = "/budget";
       return NextResponse.redirect(url);
     }
   } else {

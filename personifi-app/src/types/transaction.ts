@@ -1,7 +1,9 @@
+import { CategoryType } from './budget';
+
 export interface Category {
   id: number;
   name: string;
-  type: string;
+  type: CategoryType;
   icon: string;
   color: string;
 }

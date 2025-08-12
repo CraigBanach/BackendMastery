@@ -40,6 +40,7 @@ public class ErrorHandlingMiddleware
             ArgumentException => (HttpStatusCode.BadRequest, "Invalid request data"),
             KeyNotFoundException => (HttpStatusCode.NotFound, "Resource not found"),
             DuplicateResourceException ex => (HttpStatusCode.Conflict, ex.Message),
+            InvalidCategoriesException ex => (HttpStatusCode.NotFound, ex.Message),
             _ => (HttpStatusCode.InternalServerError, "An error occurred while processing your request")
         };
 
