@@ -1,8 +1,15 @@
 "use server";
 
-import { CreateTransaction as TransactionModalType } from "@/components/budget/transactionModal";
-import { CreateTransaction as TransactionFormType } from "./transactionForm";
 import { getAccessToken } from "@/lib/AuthProvider";
+
+interface TransactionRequest {
+  categoryId: number;
+  amount: number;
+  transactionType: string;
+  description: string;
+  notes?: string;
+  transactionDate: Date;
+}
 
 interface TransactionResponse {
   id: number;
@@ -14,26 +21,21 @@ interface TransactionResponse {
     id: number;
     name: string;
     type: string;
+    icon: string;
+    color: string;
   };
   createdAt: string;
 }
 
-// Function overloads for different transaction types
-export async function createTransaction(transaction: TransactionModalType): Promise<TransactionResponse>;
-export async function createTransaction(transaction: TransactionFormType): Promise<TransactionResponse>;
-export async function createTransaction(transaction: TransactionModalType | TransactionFormType): Promise<TransactionResponse> {
+export const createTransaction = async (transaction: TransactionRequest): Promise<TransactionResponse> => {
   const createTransactionDto = {
-    categoryId: 'categoryId' in transaction ? transaction.categoryId : 1, // Default to Housing for old form
+    categoryId: transaction.categoryId,
     amount: transaction.amount,
-    transactionType: transaction.type,
+    transactionType: transaction.transactionType,
     description: transaction.description,
     notes: transaction.notes,
-    transactionDate: transaction.date,
+    transactionDate: transaction.transactionDate,
   };
-
-  const body = JSON.stringify(createTransactionDto);
-
-  console.log("CBBody: ", body);
 
   try {
     const token = await getAccessToken();
