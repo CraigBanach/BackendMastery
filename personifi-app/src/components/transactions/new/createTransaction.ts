@@ -1,11 +1,11 @@
 "use server";
 
-import { CreateTransaction } from "@/components/transactions/new/transactionForm";
+import { CreateTransaction } from "@/components/budget/transactionModal";
 import { getAccessToken } from "@/lib/AuthProvider";
 
 export const createTransaction = async (transaction: CreateTransaction) => {
   const createTransactionDto = {
-    categoryId: 1,
+    categoryId: transaction.categoryId,
     amount: transaction.amount,
     transactionType: transaction.type,
     description: transaction.description,

@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Settings, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { BudgetVarianceWithTransactions } from "@/lib/hooks/useBudgetData";
-import { CategoryDto } from "@/types/budget";
+import { CategoryDto, CategoryType } from "@/types/budget";
+import { TransactionTable } from "./transactionTable";
 
 interface Transaction {
   id: number;
@@ -140,8 +141,8 @@ export function BudgetVarianceDashboard({
     setSelectedCategory(null);
   };
 
-  const expenseData = budgetData.filter(item => item.category.type === 'expense');
-  const incomeData = budgetData.filter(item => item.category.type === 'income');
+  const expenseData = budgetData.filter(item => item.category.type === CategoryType.Expense);
+  const incomeData = budgetData.filter(item => item.category.type === CategoryType.Income);
 
   const totalBudgetedExpenses = expenseData.reduce((sum, item) => sum + item.budgeted, 0);
   const totalActualExpenses = expenseData.reduce((sum, item) => sum + item.actual, 0);
@@ -197,6 +198,11 @@ export function BudgetVarianceDashboard({
         <Card>
           <CardContent className="py-8">
             <div className="flex items-center justify-center">
+              {/* TODO: Replace loading spinner with skeleton components that match layout structure */}
+              {/* - Budget variance table skeleton */}
+              {/* - Summary cards skeleton */}
+              {/* - Transaction list skeleton */}
+              {/* - Category rows skeleton */}
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
               <span className="ml-2">Loading budget data...</span>
             </div>
@@ -270,25 +276,11 @@ export function BudgetVarianceDashboard({
                     </tr>
                     {expandedCategories.has(item.category.id) && (
                       <tr>
-                        <td colSpan={5} className="px-4 py-3 bg-blue-25 border-l-4 border-blue-200">
-                          <div className="space-y-1">
-                            {item.recentTransactions.slice(0, 5).map((transaction) => (
-                              <div key={transaction.id} className="flex justify-between items-center py-1 text-sm">
-                                <div className="flex-1">
-                                  <span className="font-medium">{transaction.description}</span>
-                                  <span className="text-muted-foreground ml-2">
-                                    {new Date(transaction.date).toLocaleDateString('en-GB')}
-                                  </span>
-                                </div>
-                                <span className="font-medium">{formatCurrency(transaction.amount)}</span>
-                              </div>
-                            ))}
-                            {item.recentTransactions.length === 0 && (
-                              <div className="text-sm text-muted-foreground py-2">
-                                No transactions this month
-                              </div>
-                            )}
-                          </div>
+                        <td colSpan={5} className="p-0">
+                          <TransactionTable 
+                            transactions={item.recentTransactions} 
+                            variant="income" 
+                          />
                         </td>
                       </tr>
                     )}
@@ -341,25 +333,11 @@ export function BudgetVarianceDashboard({
                     </tr>
                     {expandedCategories.has(item.category.id) && (
                       <tr>
-                        <td colSpan={5} className="px-4 py-3 bg-red-25 border-l-4 border-red-200">
-                          <div className="space-y-1">
-                            {item.recentTransactions.slice(0, 5).map((transaction) => (
-                              <div key={transaction.id} className="flex justify-between items-center py-1 text-sm">
-                                <div className="flex-1">
-                                  <span className="font-medium">{transaction.description}</span>
-                                  <span className="text-muted-foreground ml-2">
-                                    {new Date(transaction.date).toLocaleDateString('en-GB')}
-                                  </span>
-                                </div>
-                                <span className="font-medium">{formatCurrency(transaction.amount)}</span>
-                              </div>
-                            ))}
-                            {item.recentTransactions.length === 0 && (
-                              <div className="text-sm text-muted-foreground py-2">
-                                No transactions this month
-                              </div>
-                            )}
-                          </div>
+                        <td colSpan={5} className="p-0">
+                          <TransactionTable 
+                            transactions={item.recentTransactions} 
+                            variant="expense" 
+                          />
                         </td>
                       </tr>
                     )}
@@ -402,6 +380,8 @@ export function BudgetVarianceDashboard({
         onClose={closeTransactionModal}
         preSelectedCategory={selectedCategory?.name}
         preSelectedType={selectedCategory?.type}
+        onTransactionSaved={onBudgetSaved}
+        categories={categories}
       />
     </div>
   );

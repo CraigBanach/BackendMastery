@@ -25,7 +25,7 @@ async function fetchBudgetData(year: number, month: number) {
       `${year}-${month.toString().padStart(2, '0')}-${new Date(year, month, 0).getDate().toString().padStart(2, '0')}`)
     ]);
 
-    return calculateVarianceData(budgetVariances || [], transactionsResponse?.data || []);
+    return calculateVarianceData(budgetVariances || [], transactionsResponse?.items || []);
   } catch (error: unknown) {
     console.error('Error fetching budget data:', error);
     // Return empty data instead of redirecting to logout

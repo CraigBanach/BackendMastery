@@ -1,7 +1,12 @@
+export enum CategoryType {
+  Expense = 'Expense',
+  Income = 'Income'
+}
+
 export interface CategoryDto {
   id: number;
   name: string;
-  type: 'expense' | 'income';
+  type: CategoryType;
 }
 
 export interface BudgetVarianceDto {

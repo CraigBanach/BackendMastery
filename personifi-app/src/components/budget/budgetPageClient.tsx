@@ -31,7 +31,7 @@ export function BudgetPageClient({ initialData, currentYear, currentMonth }: Bud
         `${targetYear}-${targetMonth.toString().padStart(2, '0')}-${new Date(targetYear, targetMonth, 0).getDate().toString().padStart(2, '0')}`)
       ]);
 
-      return calculateVarianceData(budgetVariances || [], transactionsResponse?.data || []);
+      return calculateVarianceData(budgetVariances || [], transactionsResponse?.items || []);
     } catch (error: unknown) {
       console.error('Error fetching budget data:', error);
       return [];
@@ -47,9 +47,14 @@ export function BudgetPageClient({ initialData, currentYear, currentMonth }: Bud
   };
 
   const handleBudgetSaved = async () => {
-    // Refresh current month's data after budget save
-    const newData = await fetchData(year, month);
-    setData(newData);
+    // TODO: Replace full page reload with proper state update
+    // The ideal approach would be:
+    // 1. const newData = await fetchData(year, month);
+    // 2. setData(newData);
+    // 3. Force re-render of BudgetVarianceDashboard with updated data
+    // Issue: React state wasn't updating properly after budget save
+    // For now using full page reload as quick fix
+    window.location.reload();
   };
 
   // Extract categories from current data for modal

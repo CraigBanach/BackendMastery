@@ -13,7 +13,7 @@ import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setBudgetsForMonth } from "@/lib/api/budgetApi";
-import { CategoryDto } from "@/types/budget";
+import { CategoryDto, CategoryType } from "@/types/budget";
 
 interface BudgetAmount {
   categoryId: number;
@@ -95,8 +95,8 @@ export function BudgetSetupModal({
     }
   };
 
-  const expenseCategories = categories.filter((cat) => cat.type === "expense");
-  const incomeCategories = categories.filter((cat) => cat.type === "income");
+  const expenseCategories = categories.filter((cat) => cat.type === CategoryType.Expense);
+  const incomeCategories = categories.filter((cat) => cat.type === CategoryType.Income);
 
   const totalBudgetedIncome = incomeCategories.reduce((sum, cat) => {
     const amount = parseFloat(budgetAmounts[cat.id] || "0");

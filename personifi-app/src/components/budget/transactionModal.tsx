@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -39,18 +39,7 @@ enum TransactionType {
   Income = "Income",
 }
 
-// Mock categories - will be populated from API
-const budgetCategories = [
-  "Housing",
-  "Food", 
-  "Transportation",
-  "Entertainment",
-  "Utilities",
-  "Healthcare",
-  "Salary",
-  "Freelance",
-  "Investments",
-];
+import { CategoryDto, CategoryType } from "@/types/budget";
 
 const now = new Date();
 
@@ -66,7 +55,7 @@ const formSchema = z.object({
     .max(
       new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
     ),
-  category: z.custom<string>((val) => budgetCategories.includes(val)),
+  categoryId: z.number().min(1),
   notes: z.string().max(10000).optional(),
 });
 
@@ -77,13 +66,17 @@ interface TransactionModalProps {
   onClose: () => void;
   preSelectedCategory?: string;
   preSelectedType?: 'income' | 'expense';
+  onTransactionSaved?: () => void;
+  categories?: CategoryDto[];
 }
 
 export function TransactionModal({ 
   isOpen, 
   onClose, 
   preSelectedCategory,
-  preSelectedType 
+  preSelectedType,
+  onTransactionSaved,
+  categories = []
 }: TransactionModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -94,11 +87,26 @@ export function TransactionModal({
       type: preSelectedType === 'income' ? TransactionType.Income : TransactionType.Expense,
       amount: 0,
       description: "",
-      category: preSelectedCategory || budgetCategories[0],
+      categoryId: categories.length > 0 ? categories[0].id : 1,
       date: new Date(),
       notes: "",
     },
   });
+
+  // Get current transaction type from form
+  const selectedType = form.watch("type");
+  
+  // Filter categories based on selected transaction type
+  const filteredCategories = categories.filter(cat => 
+    cat.type === (selectedType === TransactionType.Income ? CategoryType.Income : CategoryType.Expense)
+  );
+
+  // Update categoryId when type changes
+  React.useEffect(() => {
+    if (filteredCategories.length > 0) {
+      form.setValue("categoryId", filteredCategories[0].id);
+    }
+  }, [selectedType, filteredCategories, form]);
 
   const onSubmit = async (values: CreateTransaction) => {
     setIsSubmitting(true);
@@ -107,6 +115,7 @@ export function TransactionModal({
     try {
       await createTransaction(values);
       form.reset();
+      onTransactionSaved?.(); // Trigger data refresh
       onClose();
     } catch (e) {
       console.error(e);
@@ -255,13 +264,13 @@ export function TransactionModal({
 
                 <FormField
                   control={form.control}
-                  name="category"
+                  name="categoryId"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Category</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        onValueChange={(value) => field.onChange(parseInt(value))}
+                        value={field.value?.toString()}
                       >
                         <FormControl>
                           <SelectTrigger className="w-full">
@@ -269,9 +278,9 @@ export function TransactionModal({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {budgetCategories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
+                          {filteredCategories.map((category) => (
+                            <SelectItem key={category.id} value={category.id.toString()}>
+                              {category.icon} {category.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
