@@ -7,6 +7,8 @@ export interface CategoryDto {
   id: number;
   name: string;
   type: CategoryType;
+  icon: string;
+  color: string;
 }
 
 export interface BudgetVarianceDto {

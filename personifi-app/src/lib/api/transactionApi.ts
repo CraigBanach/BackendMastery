@@ -35,7 +35,7 @@ interface PaginationRequest {
 }
 
 interface PagedResponse<T> {
-  data: T[];
+  items: T[];
   currentPage: number;
   pageSize: number;
   totalCount: number;

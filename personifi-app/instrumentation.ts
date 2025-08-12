@@ -13,7 +13,13 @@ export async function register() {
     
     const originalFetch = global.fetch
     global.fetch = async (...args) => {
-      const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || 'unknown'
+      const getUrl = () => {
+        if (typeof args[0] === 'string') return args[0]
+        if (args[0] instanceof Request) return args[0].url
+        if (args[0] instanceof URL) return args[0].toString()
+        return 'unknown'
+      }
+      const url = getUrl()
       const method = args[1]?.method || 'GET'
       const start = Date.now()
       
