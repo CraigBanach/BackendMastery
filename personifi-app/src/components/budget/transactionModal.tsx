@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { createTransaction } from "@/components/transactions/new/createTransaction";
+import { createTransaction } from "@/lib/api/createTransaction";
 
 enum TransactionType {
   Expense = "Expense",
@@ -112,7 +112,14 @@ export function TransactionModal({
     setSubmitError("");
     
     try {
-      await createTransaction(values);
+      await createTransaction({
+        categoryId: values.categoryId,
+        amount: values.amount,
+        transactionType: values.type,
+        description: values.description,
+        notes: values.notes,
+        transactionDate: values.date,
+      });
       form.reset();
       onTransactionSaved?.(); // Trigger data refresh
       onClose();

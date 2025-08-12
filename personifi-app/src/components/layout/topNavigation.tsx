@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { auth0 } from "@/lib/auth0";
-import { ArrowLeftIcon, PieChart, Plus } from "lucide-react";
+import { PieChart } from "lucide-react";
 import { headers } from "next/headers";
 
 const TopNavigation = async () => {
@@ -10,7 +10,6 @@ const TopNavigation = async () => {
 
   const headerList = await headers();
   const pathName = headerList.get("x-current-path");
-  const isTransactionsPage = pathName?.includes("/transactions/new");
   const isBudgetPage = pathName?.includes("/budget");
 
   return (
@@ -28,25 +27,6 @@ const TopNavigation = async () => {
           </a>
         </Button>
       </div>
-
-      {/* Action Button */}
-      <Button
-        asChild
-        size="sm"
-        className="bg-finance-green hover:bg-finance-green-dark"
-      >
-        {isTransactionsPage ? (
-          <a href="/budget">
-            <ArrowLeftIcon className="h-4 w-4 mr-2" />
-            Budget
-          </a>
-        ) : (
-          <a href="/transactions/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Transaction
-          </a>
-        )}
-      </Button>
     </div>
   );
 };
