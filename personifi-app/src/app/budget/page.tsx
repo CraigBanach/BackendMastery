@@ -3,7 +3,6 @@ import { PageHeader } from "@/components/ui/pageHeader";
 import { getBudgetVariance } from "@/lib/api/budgetApi";
 import { getTransactions } from "@/lib/api/transactionApi";
 import { calculateVarianceData } from "@/lib/hooks/useBudgetData";
-import { redirect } from "next/navigation";
 
 interface BudgetPageProps {
   searchParams?: Promise<{

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { BudgetSetupModal } from "./budgetSetupModal";
 import { TransactionModal } from "./transactionModal";
 import {
@@ -16,14 +16,6 @@ import { ChevronLeft, ChevronRight, Settings, Plus, ChevronDown, ChevronUp } fro
 import { BudgetVarianceWithTransactions } from "@/lib/hooks/useBudgetData";
 import { CategoryDto, CategoryType } from "@/types/budget";
 import { TransactionTable } from "./transactionTable";
-
-interface Transaction {
-  id: number;
-  amount: number;
-  description: string;
-  date: string;
-  notes?: string;
-}
 
 interface BudgetVarianceDashboardProps {
   initialData?: BudgetVarianceWithTransactions[];
@@ -42,14 +34,6 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-const getVarianceColor = (variance: number, isIncome: boolean) => {
-  if (variance === 0) return "text-gray-600";
-  
-  // For income: positive variance is good (more income), negative is bad (less income)
-  // For expenses: negative variance is good (under budget), positive is bad (over budget)
-  const isGood = isIncome ? variance > 0 : variance < 0;
-  return isGood ? "text-green-600" : "text-red-600";
-};
 
 const getExpenseStatusColor = (variance: number, monthlyPaceStatus: string) => {
   if (variance > 0) return "text-red-600"; // Over budget
@@ -80,7 +64,6 @@ export function BudgetVarianceDashboard({
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<{ name: string; type: 'income' | 'expense' } | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
-  const [transactionLimit, setTransactionLimit] = useState<3 | 5 | 10>(5);
 
   const monthName = new Date(year, currentMonth - 1).toLocaleDateString('en-GB', { 
     month: 'long', 
@@ -146,15 +129,9 @@ export function BudgetVarianceDashboard({
 
   const totalBudgetedExpenses = expenseData.reduce((sum, item) => sum + item.budgeted, 0);
   const totalActualExpenses = expenseData.reduce((sum, item) => sum + item.actual, 0);
-  const totalExpenseVariance = totalActualExpenses - totalBudgetedExpenses;
 
   const totalBudgetedIncome = incomeData.reduce((sum, item) => sum + item.budgeted, 0);
   const totalActualIncome = incomeData.reduce((sum, item) => sum + item.actual, 0);
-  const totalIncomeVariance = totalActualIncome - totalBudgetedIncome;
-
-  const netBudgeted = totalBudgetedIncome - totalBudgetedExpenses;
-  const netActual = totalActualIncome - totalActualExpenses;
-  const netVariance = netActual - netBudgeted;
 
   return (
     <div className="space-y-6">

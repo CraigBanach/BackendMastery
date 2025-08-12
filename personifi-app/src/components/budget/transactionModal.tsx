@@ -73,7 +73,6 @@ interface TransactionModalProps {
 export function TransactionModal({ 
   isOpen, 
   onClose, 
-  preSelectedCategory,
   preSelectedType,
   onTransactionSaved,
   categories = []

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { auth0 } from "@/lib/auth0";
-import { ArrowLeftIcon, PieChart, Plus, Home } from "lucide-react";
+import { ArrowLeftIcon, PieChart, Plus } from "lucide-react";
 import { headers } from "next/headers";
 
 const TopNavigation = async () => {

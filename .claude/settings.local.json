@@ -15,7 +15,8 @@
       "Bash(rm:*)",
       "Bash(dotnet clean:*)",
       "Bash(grep:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm run lint)"
     ],
     "deny": []
   }

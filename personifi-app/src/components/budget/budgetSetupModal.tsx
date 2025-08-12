@@ -72,7 +72,7 @@ export function BudgetSetupModal({
     try {
       // Convert budget amounts to API format
       const budgetsToSave = Object.entries(budgetAmounts)
-        .filter(([_, value]) => value && parseFloat(value) > 0)
+        .filter(([, value]) => value && parseFloat(value) > 0)
         .map(([categoryId, value]) => ({
           categoryId: parseInt(categoryId),
           amount: parseFloat(value),

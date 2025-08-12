@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { BudgetVarianceDashboard } from "./budgetVarianceDashboard";
 import { BudgetVarianceWithTransactions } from "@/lib/hooks/useBudgetData";
-import { getBudgetVariance, getBudgetsForMonth } from "@/lib/api/budgetApi";
+import { getBudgetVariance } from "@/lib/api/budgetApi";
 import { getTransactions } from "@/lib/api/transactionApi";
 import { calculateVarianceData } from "@/lib/hooks/useBudgetData";
 
