@@ -7,7 +7,9 @@ public class Category
     public string? Icon { get; set; }
     public string? Color { get; set; }
     public CategoryType Type { get; set; }
-    public string UserId { get; set; } = string.Empty;
+
+    public int AccountId { get; set; }
+    public Account Account { get; set; } = null!;
 
     public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
     public ICollection<Budget> Budgets { get; set; } = new List<Budget>();
