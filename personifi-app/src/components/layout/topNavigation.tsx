@@ -11,9 +11,9 @@ const TopNavigation = async () => {
 
   const headerList = await headers();
   const pathName = headerList.get("x-current-path");
-  const isBudgetPage = pathName?.includes("/budget");
-  const isTransactionsPage = pathName?.includes("/transactions");
-  const isCategoriesPage = pathName?.includes("/categories");
+  const isBudgetPage = pathName?.includes("/budget") ?? false;
+  const isTransactionsPage = pathName?.includes("/transactions") ?? false;
+  const isCategoriesPage = pathName?.includes("/categories") ?? false;
 
   return (
     <>

@@ -21,7 +21,7 @@ const SessionHeader = async () => {
 
   const headerList = await headers();
   const pathName = headerList.get("x-current-path");
-  const isCategoriesPage = pathName?.includes("/categories");
+  const isCategoriesPage = pathName?.includes("/categories") ?? false;
 
   return (
     <div className="flex items-center gap-3">
