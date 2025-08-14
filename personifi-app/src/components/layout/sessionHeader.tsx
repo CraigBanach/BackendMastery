@@ -1,30 +1,45 @@
 import { Button } from "@/components/ui/button";
 import { auth0 } from "@/lib/auth0";
+import { Settings } from "lucide-react";
+import { headers } from "next/headers";
+import { ProfileDropdown } from "./profileDropdown";
 
 const SessionHeader = async () => {
   const session = await auth0.getSession();
+  
+  if (!session) {
+    return (
+      <Button
+        asChild
+        size="lg"
+        className="bg-finance-green hover:bg-finance-green-dark"
+      >
+        <a href="/auth/login">Login</a>
+      </Button>
+    );
+  }
+
+  const headerList = await headers();
+  const pathName = headerList.get("x-current-path");
+  const isCategoriesPage = pathName?.includes("/categories") ?? false;
 
   return (
-    <div className="flex items-center gap-2">
-      {session && (
-        <Button
-          asChild
-          variant="outline"
-          size="lg"
-          className="border-finance-red text-finance-red hover:bg-finance-red-dark hover:text-finance-red-light"
-        >
-          <a href="/auth/logout">Logout</a>
-        </Button>
-      )}
-      {!session && (
-        <Button
-          asChild
-          size="lg"
-          className="bg-finance-green hover:bg-finance-green-dark"
-        >
-          <a href="/auth/login">Login</a>
-        </Button>
-      )}
+    <div className="flex items-center gap-3">
+      {/* Categories - hide on mobile (collapsing priority) */}
+      <Button
+        asChild
+        variant={isCategoriesPage ? "default" : "ghost"}
+        size="sm"
+        className="hidden lg:flex"
+      >
+        <a href="/categories" className="flex items-center">
+          <Settings className="h-4 w-4 mr-2" />
+          Categories
+        </a>
+      </Button>
+
+      {/* Profile Dropdown */}
+      <ProfileDropdown />
     </div>
   );
 };
