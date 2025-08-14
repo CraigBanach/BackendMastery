@@ -1,6 +1,7 @@
 "use server";
 
 import { getAccessToken } from "../AuthProvider";
+import { CategoryType } from "@/types/budget";
 
 const API_BASE_URL = process.env.PERSONIFI_BACKEND_URL || 'https://localhost:7106/api';
 
@@ -14,7 +15,9 @@ interface ApiError {
 interface CategoryDto {
   id: number;
   name: string;
-  type: 'expense' | 'income';
+  type: CategoryType;
+  icon: string;
+  color: string;
 }
 
 export interface TransactionDto {
@@ -88,5 +91,33 @@ export async function getTransactions(
 
   const url = `${API_BASE_URL}/Transaction${params.toString() ? `?${params.toString()}` : ''}`;
   const response = await fetchWithAuth(url);
+  return response.json();
+}
+
+export async function deleteTransaction(id: number): Promise<void> {
+  const url = `${API_BASE_URL}/Transaction/${id}`;
+  await fetchWithAuth(url, {
+    method: 'DELETE',
+  });
+}
+
+export async function updateTransaction(id: number, transaction: {
+  categoryId: number;
+  amount: number;
+  description: string;
+  notes?: string;
+  transactionDate: Date;
+}): Promise<TransactionDto> {
+  const url = `${API_BASE_URL}/Transaction/${id}`;
+  const response = await fetchWithAuth(url, {
+    method: 'PUT',
+    body: JSON.stringify({
+      categoryId: transaction.categoryId,
+      amount: transaction.amount,
+      description: transaction.description,
+      notes: transaction.notes,
+      transactionDate: transaction.transactionDate,
+    }),
+  });
   return response.json();
 }
