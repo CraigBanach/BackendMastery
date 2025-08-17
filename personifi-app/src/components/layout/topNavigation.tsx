@@ -3,11 +3,17 @@ import { auth0 } from "@/lib/auth0";
 import { PieChart, Receipt } from "lucide-react";
 import { headers } from "next/headers";
 import { MobileNavMenu } from "./mobileNavMenu";
+import { hasAccount } from "@/lib/api/accountApi";
 
 const TopNavigation = async () => {
   const session = await auth0.getSession();
 
   if (!session) return <div></div>;
+
+  const userHasAccount = await hasAccount();
+  
+  // Don't show navigation if user doesn't have an account
+  if (!userHasAccount) return <div></div>;
 
   const headerList = await headers();
   const pathName = headerList.get("x-current-path");

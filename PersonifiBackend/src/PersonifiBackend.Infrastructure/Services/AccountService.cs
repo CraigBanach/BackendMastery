@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PersonifiBackend.Core.Entities;
 using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Infrastructure.Data;
@@ -119,16 +120,25 @@ public class AccountService : IAccountService
 
     public async Task<InvitationToken?> GetValidInvitationAsync(string token)
     {
-        return await _context.InvitationTokens
+        _logger.LogInformation("Looking for invitation with token: {Token}", token);
+        
+        var currentTime = DateTime.UtcNow;
+        var invitation = await _context.InvitationTokens
             .Include(i => i.Account)
             .Include(i => i.InviterUser)
-            .FirstOrDefaultAsync(i => i.Token == token && i.IsValid);
+            .FirstOrDefaultAsync(i => i.Token == token && !i.IsAccepted && i.ExpiresAt > currentTime);
+            
+        _logger.LogInformation("Invitation found: {Found}, Email: {Email}, IsAccepted: {IsAccepted}, ExpiresAt: {ExpiresAt}", 
+            invitation != null, invitation?.Email, invitation?.IsAccepted, invitation?.ExpiresAt);
+            
+        return invitation;
     }
 
     public async Task<bool> AcceptInvitationAsync(string token, int acceptingUserId)
     {
+        var currentTime = DateTime.UtcNow;
         var invitation = await _context.InvitationTokens
-            .FirstOrDefaultAsync(i => i.Token == token && i.IsValid);
+            .FirstOrDefaultAsync(i => i.Token == token && !i.IsAccepted && i.ExpiresAt > currentTime);
 
         if (invitation == null)
             return false;

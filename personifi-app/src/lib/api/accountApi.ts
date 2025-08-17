@@ -94,20 +94,7 @@ export async function sendInvitation(email: string, personalMessage?: string): P
 }
 
 export async function getInvitationDetails(token: string): Promise<InvitationDetailsResponse> {
-  // This endpoint doesn't require authentication
-  const response = await fetch(`${API_BASE_URL}/Account/invitation/${token}`);
-  
-  if (!response.ok) {
-    let errorMessage = `HTTP ${response.status}`;
-    try {
-      const errorData = await response.json() as ApiError;
-      errorMessage = errorData.error?.message || errorMessage;
-    } catch {
-      errorMessage = response.statusText || errorMessage;
-    }
-    throw new Error(errorMessage);
-  }
-  
+  const response = await fetchWithAuth(`${API_BASE_URL}/Account/invitation/${token}`);
   return response.json();
 }
 
@@ -121,4 +108,14 @@ export async function acceptInvitation(token: string): Promise<AcceptInvitationR
 export async function getAccountMembers(): Promise<AccountMemberResponse[]> {
   const response = await fetchWithAuth(`${API_BASE_URL}/Account/members`);
   return response.json();
+}
+
+export async function hasAccount(): Promise<boolean> {
+  try {
+    await fetchWithAuth(`${API_BASE_URL}/Account/members`);
+    return true;
+  } catch (error) {
+    // If we get an error (like 400 Bad Request), user doesn't have an account
+    return false;
+  }
 }

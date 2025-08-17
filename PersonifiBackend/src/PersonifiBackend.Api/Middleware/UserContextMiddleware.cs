@@ -1,5 +1,7 @@
-﻿using PersonifiBackend.Core.Interfaces;
+﻿using Microsoft.Extensions.Logging;
+using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Infrastructure.Services;
+using System.Security.Claims;
 
 namespace PersonifiBackend.Api.Middleware;
 
@@ -19,8 +21,10 @@ public class UserContextMiddleware
         // Check if user is authenticated
         if (context.User.Identity?.IsAuthenticated == true)
         {
-            // Extract user ID from the 'sub' claim (Auth0 standard)
-            var auth0UserId = context.User.Identity.Name;
+            // Extract user ID from Auth0 claims (try multiple claim types)
+            var auth0UserId = context.User.Identity.Name ?? 
+                             context.User.Claims.FirstOrDefault(c => c.Type == "sub")?.Value ??
+                             context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
             if (!string.IsNullOrEmpty(auth0UserId))
             {
@@ -31,18 +35,8 @@ public class UserContextMiddleware
 
                     try
                     {
-                        // Get email from claims for user creation if needed
-                        var email = context.User.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
-                        
-                        if (string.IsNullOrEmpty(email))
-                        {
-                            _logger.LogWarning("Authenticated user without email claim");
-                            await _next(context);
-                            return;
-                        }
-
-                        // Get or create user in our system
-                        var user = await accountService.GetOrCreateUserAsync(auth0UserId, email);
+                        // Get or create user in our system using Auth0 user ID
+                        var user = await accountService.GetOrCreateUserAsync(auth0UserId, auth0UserId);
                         
                         if (user != null)
                         {
@@ -57,8 +51,8 @@ public class UserContextMiddleware
                                 userContextImpl.AccountId = primaryAccount.Id;
                             }
 
-                            _logger.LogDebug("User context set for authenticated user - UserId: {UserId}, AccountId: {AccountId}", 
-                                user.Id, primaryAccount?.Id);
+                            _logger.LogInformation("User context set for authenticated user - UserId: {UserId}, AccountId: {AccountId}, PrimaryAccount: {PrimaryAccountFound}", 
+                                user.Id, primaryAccount?.Id, primaryAccount != null);
                         }
                     }
                     catch (Exception ex)

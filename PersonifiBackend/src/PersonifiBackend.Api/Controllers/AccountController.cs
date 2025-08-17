@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Core.Entities;
+using PersonifiBackend.Infrastructure.Services;
 
 namespace PersonifiBackend.Api.Controllers;
 
@@ -56,7 +57,6 @@ public class AccountController : ControllerBase
     }
 
     [HttpGet("invitation/{token}")]
-    [AllowAnonymous]
     public async Task<IActionResult> GetInvitation(string token)
     {
         try
@@ -114,23 +114,23 @@ public class AccountController : ControllerBase
     }
 
     [HttpGet("members")]
-    public async Task<IActionResult> GetAccountMembers()
+    public Task<IActionResult> GetAccountMembers()
     {
         if (!_userContext.AccountId.HasValue)
         {
-            return Unauthorized("No active account");
+            return Task.FromResult<IActionResult>(Unauthorized("No active account"));
         }
 
         try
         {
             // This would require a new method in AccountService to get account members
             // For now, return a placeholder response
-            return Ok(new List<AccountMemberResponse>());
+            return Task.FromResult<IActionResult>(Ok(new List<AccountMemberResponse>()));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving account members for account {AccountId}", _userContext.AccountId);
-            return BadRequest("Failed to retrieve account members");
+            return Task.FromResult<IActionResult>(BadRequest("Failed to retrieve account members"));
         }
     }
 
@@ -146,6 +146,17 @@ public class AccountController : ControllerBase
         {
             var account = await _accountService.CreateAccountAsync(request.Name);
             await _accountService.AddUserToAccountAsync(_userContext.UserId.Value, account.Id);
+
+            // Refresh user context to include the new account
+            if (_userContext is UserContext userContextImpl)
+            {
+                var primaryAccount = await _accountService.GetUserPrimaryAccountAsync(_userContext.UserId.Value);
+                if (primaryAccount != null)
+                {
+                    userContextImpl.AccountId = primaryAccount.Id;
+                    _logger.LogDebug("Updated user context with new AccountId: {AccountId}", primaryAccount.Id);
+                }
+            }
 
             return Ok(new CreateAccountResponse
             {

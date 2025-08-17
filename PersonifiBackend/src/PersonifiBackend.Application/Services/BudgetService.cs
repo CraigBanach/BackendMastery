@@ -25,10 +25,10 @@ public class BudgetService : IBudgetService
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<BudgetVarianceDto>> GetBudgetVarianceAsync(string userId, int year, int month)
+    public async Task<IEnumerable<BudgetVarianceDto>> GetBudgetVarianceAsync(int accountId, int year, int month)
     {
-        var categories = await _categoryRepository.GetUserCategoriesAsync(userId);
-        var budgets = await GetOrCreateBudgetsForMonthAsync(userId, year, month);
+        var categories = await _categoryRepository.GetAccountCategoriesAsync(accountId);
+        var budgets = await GetOrCreateBudgetsForMonthAsync(accountId, year, month);
         var budgetDict = budgets.ToDictionary(b => b.CategoryId, b => b.Amount);
 
         var variances = new List<BudgetVarianceDto>();
@@ -36,7 +36,7 @@ public class BudgetService : IBudgetService
         foreach (var category in categories)
         {
             var budgetedAmount = budgetDict.GetValueOrDefault(category.Id, 0m);
-            var actualAmount = await GetActualSpendingAsync(userId, category.Id, year, month);
+            var actualAmount = await GetActualSpendingAsync(accountId, category.Id, year, month);
             
             var categoryDto = _mapper.Map<CategoryDto>(category);
             var monthlyPaceStatus = CalculateMonthlyPaceStatus(budgetedAmount, actualAmount, year, month);

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PersonifiBackend.Application.Services;
 using PersonifiBackend.Core.DTOs;
 using PersonifiBackend.Core.Exceptions;
 using PersonifiBackend.Core.Interfaces;

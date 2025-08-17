@@ -38,7 +38,6 @@
 - [ ] Update `BudgetRepository` implementation
 
 ### Phase 5: DTOs and Mapping
-- [ ] Add user attribution to `TransactionDto` (CreatedByUserId field)
 - [ ] Update AutoMapper profiles for new fields
 - [ ] Update Create/Update DTOs as needed
 
@@ -63,13 +62,9 @@
 - [ ] Add 'Invite Partner' functionality to settings page
 - [ ] Create account management UI (view members, remove users)
 
-### Phase 10: User Attribution Display
-- [ ] Update transaction components to show user attribution ("Added by John")
-- [ ] Update auth context to handle account-based permissions
-
-### Phase 11: Testing
+### Phase 10: Testing
 - [ ] Test complete invitation flow: send → accept → collaborate
-- [ ] Test multi-user transaction management and attribution
+- [ ] Test multi-user transaction management
 - [ ] Test data isolation between different accounts
 
 ### Phase 12: Documentation
@@ -79,7 +74,7 @@
 
 ### Database Design
 - **Account-based multi-tenancy**: User belongs to Account, data scoped by AccountId
-- **Individual transaction ownership**: Transactions have CreatedByUserId for attribution
+- **Shared transaction access**: All account members can view/edit all transactions
 - **Database-stored invitation tokens**: 7-day expiration, full control over flow
 - **Clean schema**: No existing user data to migrate
 

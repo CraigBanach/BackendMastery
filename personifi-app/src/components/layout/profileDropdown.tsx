@@ -1,17 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { User } from "lucide-react";
 import { InvitePartnerModal } from "@/components/ui/invitePartnerModal";
+import { hasAccount } from "@/lib/api/accountApi";
 
 export function ProfileDropdown() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [userHasAccount, setUserHasAccount] = useState(false);
+  const [isCheckingAccount, setIsCheckingAccount] = useState(true);
+
+  useEffect(() => {
+    const checkAccount = async () => {
+      try {
+        const hasUserAccount = await hasAccount();
+        setUserHasAccount(hasUserAccount);
+      } catch (error) {
+        console.error('Error checking account status:', error);
+        setUserHasAccount(false);
+      } finally {
+        setIsCheckingAccount(false);
+      }
+    };
+
+    checkAccount();
+  }, []);
 
   const handleValueChange = (value: string) => {
     if (value === "logout") {
       window.location.href = "/auth/logout";
-    } else if (value === "invite") {
+    } else if (value === "invite" && userHasAccount) {
       setIsInviteModalOpen(true);
     }
   };
@@ -26,9 +45,11 @@ export function ProfileDropdown() {
           </div>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="invite">
-            Invite Partner
-          </SelectItem>
+          {userHasAccount && (
+            <SelectItem value="invite">
+              Invite Partner
+            </SelectItem>
+          )}
           <SelectItem value="logout" className="text-red-600">
             Logout
           </SelectItem>

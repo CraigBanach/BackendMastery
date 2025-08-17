@@ -5,6 +5,8 @@ import { SavingsGoals } from "@/components/dashboard/savingsGoals";
 import { SpendingChart } from "@/components/dashboard/spendingChart";
 import { UpcomingBills } from "@/components/dashboard/upcomingBills";
 import { PageHeader } from "@/components/ui/pageHeader";
+import { AccountSetupPrompt } from "@/components/ui/accountSetupPrompt";
+import { hasAccount } from "@/lib/api/accountApi";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -13,6 +15,12 @@ export const metadata: Metadata = {
 };
 
 const Dashboard = async () => {
+  const userHasAccount = await hasAccount();
+
+  if (!userHasAccount) {
+    return <AccountSetupPrompt />;
+  }
+
   return (
     <>
       <PageHeader
