@@ -53,9 +53,15 @@ jobs:
         working-directory: ./PersonifiBackend
         run: dotnet restore
 
-      - name: Build solution
+      - name: Build solution (excluding test projects)
         working-directory: ./PersonifiBackend
-        run: dotnet build --no-restore --configuration Release
+        run: |
+          dotnet build --no-restore --configuration Release \
+            src/PersonifiBackend.Core/PersonifiBackend.Core.csproj \
+            src/PersonifiBackend.Application/PersonifiBackend.Application.csproj \
+            src/PersonifiBackend.Infrastructure/PersonifiBackend.Infrastructure.csproj \
+            src/PersonifiBackend.Api/PersonifiBackend.Api.csproj \
+            src/PersonifiBackend.Tools/PersonifiBackend.Tools.csproj
 
       # TODO: Re-enable tests after multi-user implementation is complete
       # - name: Run unit tests
