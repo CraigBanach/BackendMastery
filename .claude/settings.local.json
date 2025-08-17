@@ -19,7 +19,8 @@
       "Bash(npm run lint)",
       "Bash(npm install:*)",
       "Bash(mkdir:*)",
-      "Bash(~/.dotnet/tools/dotnet-ef migrations add:*)"
+      "Bash(~/.dotnet/tools/dotnet-ef migrations add:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }

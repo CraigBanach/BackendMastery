@@ -14,29 +14,29 @@ public class BudgetRepository : IBudgetRepository
         _context = context;
     }
 
-    public async Task<Budget?> GetByIdAsync(int id, string userId)
+    public async Task<Budget?> GetByIdAsync(int id, int accountId)
     {
         return await _context.Budgets
             .Include(b => b.Category)
-            .FirstOrDefaultAsync(b => b.Id == id && b.UserId == userId);
+            .FirstOrDefaultAsync(b => b.Id == id && b.AccountId == accountId);
     }
 
-    public async Task<Budget?> GetBudgetAsync(string userId, int categoryId, int year, int month)
+    public async Task<Budget?> GetBudgetAsync(int accountId, int categoryId, int year, int month)
     {
         return await _context.Budgets
             .Include(b => b.Category)
             .FirstOrDefaultAsync(b => 
-                b.UserId == userId && 
+                b.AccountId == accountId && 
                 b.CategoryId == categoryId && 
                 b.Year == year && 
                 b.Month == month);
     }
 
-    public async Task<IEnumerable<Budget>> GetBudgetsForMonthAsync(string userId, int year, int month)
+    public async Task<IEnumerable<Budget>> GetBudgetsForMonthAsync(int accountId, int year, int month)
     {
         return await _context.Budgets
             .Include(b => b.Category)
-            .Where(b => b.UserId == userId && b.Year == year && b.Month == month)
+            .Where(b => b.AccountId == accountId && b.Year == year && b.Month == month)
             .ToListAsync();
     }
 
@@ -50,7 +50,7 @@ public class BudgetRepository : IBudgetRepository
 
     public async Task<Budget?> UpdateAsync(Budget budget)
     {
-        var existing = await GetByIdAsync(budget.Id, budget.UserId);
+        var existing = await GetByIdAsync(budget.Id, budget.AccountId);
         if (existing == null) return null;
 
         existing.Amount = budget.Amount;
@@ -60,9 +60,9 @@ public class BudgetRepository : IBudgetRepository
         return existing;
     }
 
-    public async Task<bool> DeleteAsync(int id, string userId)
+    public async Task<bool> DeleteAsync(int id, int accountId)
     {
-        var budget = await GetByIdAsync(id, userId);
+        var budget = await GetByIdAsync(id, accountId);
         if (budget == null) return false;
 
         _context.Budgets.Remove(budget);
@@ -70,9 +70,9 @@ public class BudgetRepository : IBudgetRepository
         return true;
     }
 
-    public async Task<IEnumerable<Budget>> SetBudgetsForMonthAsync(string userId, int year, int month, IEnumerable<SetBudgetRequest> budgets)
+    public async Task<IEnumerable<Budget>> SetBudgetsForMonthAsync(int accountId, int year, int month, IEnumerable<SetBudgetRequest> budgets)
     {
-        var existingBudgets = await GetBudgetsForMonthAsync(userId, year, month);
+        var existingBudgets = await GetBudgetsForMonthAsync(accountId, year, month);
         var existingDict = existingBudgets.ToDictionary(b => b.CategoryId);
         
         var updatedBudgets = new List<Budget>();
@@ -89,7 +89,7 @@ public class BudgetRepository : IBudgetRepository
             {
                 var newBudget = new Budget
                 {
-                    UserId = userId,
+                    AccountId = accountId,
                     CategoryId = budgetRequest.CategoryId,
                     Amount = budgetRequest.Amount,
                     Year = year,
@@ -104,6 +104,6 @@ public class BudgetRepository : IBudgetRepository
         await _context.SaveChangesAsync();
         
         // Return with loaded categories
-        return await GetBudgetsForMonthAsync(userId, year, month);
+        return await GetBudgetsForMonthAsync(accountId, year, month);
     }
 }

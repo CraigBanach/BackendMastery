@@ -17,14 +17,14 @@ public class CategoryRepository : ICategoryRepository
         _context = context;
     }
 
-    public async Task<Category?> GetByIdAsync(int id, string userId)
+    public async Task<Category?> GetByIdAsync(int id, int accountId)
     {
-        return await _context.Categories.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
+        return await _context.Categories.FirstOrDefaultAsync(c => c.Id == id && c.AccountId == accountId);
     }
 
-    public async Task<IEnumerable<Category>> GetUserCategoriesAsync(string userId)
+    public async Task<IEnumerable<Category>> GetAccountCategoriesAsync(int accountId)
     {
-        var query = _context.Categories.Where(c => c.UserId == userId);
+        var query = _context.Categories.Where(c => c.AccountId == accountId);
 
         return await query.ToListAsync();
     }
@@ -35,7 +35,7 @@ public class CategoryRepository : ICategoryRepository
         {
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
-            return await GetByIdAsync(category.Id, category.UserId)
+            return await GetByIdAsync(category.Id, category.AccountId)
                 ?? throw new InvalidOperationException("Failed to retrieve created category");
         }
         catch (DbUpdateException ex)
@@ -54,7 +54,7 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task<Category> UpdateAsync(Category category)
     {
-        var existingCategory = await GetByIdAsync(category.Id, category.UserId);
+        var existingCategory = await GetByIdAsync(category.Id, category.AccountId);
         if (existingCategory == null)
             throw new KeyNotFoundException("Category not found");
         existingCategory.Name = category.Name;
@@ -63,9 +63,9 @@ public class CategoryRepository : ICategoryRepository
         return existingCategory;
     }
 
-    public async Task<bool> DeleteAsync(int id, string userId)
+    public async Task<bool> DeleteAsync(int id, int accountId)
     {
-        var category = await GetByIdAsync(id, userId);
+        var category = await GetByIdAsync(id, accountId);
         if (category == null)
             return false;
         _context.Categories.Remove(category);

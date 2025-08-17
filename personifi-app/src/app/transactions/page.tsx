@@ -1,5 +1,6 @@
 import { TransactionsPageClient } from "@/components/transactions/transactionsPageClient";
 import { PageHeader } from "@/components/ui/pageHeader";
+import { InvitePrompt } from "@/components/ui/invitePrompt";
 import { getTransactions } from "@/lib/api/transactionApi";
 import { getCategories } from "@/lib/api/categoryApi";
 
@@ -57,6 +58,7 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
         title="Transactions"
         subTitle="Track and manage your monthly transactions"
       />
+      <InvitePrompt />
       <TransactionsPageClient
         initialTransactions={transactions}
         categories={categories}

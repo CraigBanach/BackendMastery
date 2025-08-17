@@ -40,7 +40,10 @@ namespace PersonifiBackend.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CategoryDto>> GetById(int id)
         {
-            var category = await _categoryService.GetByIdAsync(id, _userContext.UserId);
+            if (!_userContext.AccountId.HasValue)
+                return BadRequest("Please create an account first using POST /api/account/create");
+
+            var category = await _categoryService.GetByIdAsync(id, _userContext.AccountId.Value);
             if (category == null)
                 return NotFound();
             return Ok(category);
@@ -52,9 +55,12 @@ namespace PersonifiBackend.Api.Controllers
         /// <returns>List of user's categories</returns>
         /// <response code="200">Returns the list of categories</response>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetUserCategories()
+        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetAccountCategories()
         {
-            var categories = await _categoryService.GetUserCategoriesAsync(_userContext.UserId);
+            if (!_userContext.AccountId.HasValue)
+                return BadRequest("Please create an account first using POST /api/account/create");
+
+            var categories = await _categoryService.GetAccountCategoriesAsync(_userContext.AccountId.Value);
             return Ok(categories);
         }
 
@@ -69,12 +75,16 @@ namespace PersonifiBackend.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<CategoryDto>> Create([FromBody] CreateCategoryDto dto)
         {
+            if (!_userContext.AccountId.HasValue)
+                return BadRequest("Please create an account first using POST /api/account/create");
+
             _logger.LogInformation(
-                "Creating category for authenticated user with name {CategoryName}",
+                "Creating category for account {AccountId} with name {CategoryName}",
+                _userContext.AccountId.Value,
                 dto.Name
             );
 
-            var created = await _categoryService.CreateAsync(dto, _userContext.UserId);
+            var created = await _categoryService.CreateAsync(dto, _userContext.AccountId.Value);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
@@ -93,12 +103,16 @@ namespace PersonifiBackend.Api.Controllers
             [FromBody] UpdateCategoryDto dto
         )
         {
+            if (!_userContext.AccountId.HasValue)
+                return BadRequest("Please create an account first using POST /api/account/create");
+
             _logger.LogInformation(
-                "Updating category {CategoryId} for authenticated user with name {CategoryName}",
+                "Updating category {CategoryId} for account {AccountId} with name {CategoryName}",
                 id,
+                _userContext.AccountId.Value,
                 dto.Name
             );
-            var updated = await _categoryService.UpdateAsync(id, dto, _userContext.UserId);
+            var updated = await _categoryService.UpdateAsync(id, dto, _userContext.AccountId.Value);
             if (updated == null)
                 return NotFound();
             return Ok(updated);
@@ -114,11 +128,15 @@ namespace PersonifiBackend.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
+            if (!_userContext.AccountId.HasValue)
+                return BadRequest("Please create an account first using POST /api/account/create");
+
             _logger.LogInformation(
-                "Deleting category {CategoryId} for authenticated user",
-                id
+                "Deleting category {CategoryId} for account {AccountId}",
+                id,
+                _userContext.AccountId.Value
             );
-            var deleted = await _categoryService.DeleteAsync(id, _userContext.UserId);
+            var deleted = await _categoryService.DeleteAsync(id, _userContext.AccountId.Value);
             if (!deleted)
                 return NotFound();
             return NoContent();

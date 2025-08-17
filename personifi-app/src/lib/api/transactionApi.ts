@@ -28,6 +28,8 @@ export interface TransactionDto {
   transactionDate: string;
   category: CategoryDto;
   createdAt: string;
+  createdByUserId?: number;
+  createdByUserName?: string;
 }
 
 interface PaginationRequest {

@@ -16,4 +16,6 @@ export interface Transaction {
   transactionDate: string;
   category: Category;
   createdAt: string;
+  createdByUserId?: number;
+  createdByUserName?: string;
 }
