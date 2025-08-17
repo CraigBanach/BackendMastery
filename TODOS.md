@@ -1,3 +1,4 @@
 - Creating an income category sets a 'budget'. This wording is potentially strange.
 - Edit category is shit right now, no data is pre-populated
 - Split Categories by type on category page
+- Creating a category doesn't apply budget
