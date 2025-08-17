@@ -11,6 +11,10 @@ public class PersonifiDbContext : DbContext
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Budget> Budgets => Set<Budget>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Account> Accounts => Set<Account>();
+    public DbSet<UserAccount> UserAccounts => Set<UserAccount>();
+    public DbSet<InvitationToken> InvitationTokens => Set<InvitationToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,7 +41,7 @@ public class PersonifiDbContext : DbContext
             entity.Property(e => e.Amount).HasPrecision(18, 2);
             entity.Property(e => e.Description).HasMaxLength(200);
             entity.Property(e => e.Notes).HasMaxLength(1000);
-            entity.HasIndex(e => new { e.UserId, e.TransactionDate });
+            entity.HasIndex(e => new { e.AccountId, e.TransactionDate });
 
             // Configure DateTime columns to use timestamp without time zone
             entity.Property(e => e.TransactionDate).HasColumnType("timestamp without time zone");
@@ -49,30 +53,48 @@ public class PersonifiDbContext : DbContext
                 .WithMany(c => c.Transactions)
                 .HasForeignKey(e => e.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity
+                .HasOne(e => e.Account)
+                .WithMany(a => a.Transactions)
+                .HasForeignKey(e => e.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity
+                .HasOne(e => e.CreatedByUser)
+                .WithMany(u => u.CreatedTransactions)
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder
             .Entity<Transaction>()
             .HasIndex(t => new
             {
-                t.UserId,
+                t.AccountId,
                 t.TransactionDate,
                 t.Id,
             })
-            .HasDatabaseName("IX_Transaction_UserDate");
+            .HasDatabaseName("IX_Transaction_AccountDate");
 
         // Add index for category filtering
         modelBuilder
             .Entity<Transaction>()
-            .HasIndex(t => new { t.UserId, t.CategoryId })
-            .HasDatabaseName("IX_Transaction_UserCategory");
+            .HasIndex(t => new { t.AccountId, t.CategoryId })
+            .HasDatabaseName("IX_Transaction_AccountCategory");
 
         // Category configuration
         modelBuilder.Entity<Category>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).HasMaxLength(100);
-            entity.HasIndex(e => new { e.UserId, e.Name }).IsUnique();
+            entity.HasIndex(e => new { e.AccountId, e.Name }).IsUnique();
+
+            entity
+                .HasOne(e => e.Account)
+                .WithMany(a => a.Categories)
+                .HasForeignKey(e => e.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Budget configuration
@@ -80,8 +102,8 @@ public class PersonifiDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Amount).HasPrecision(18, 2);
-            entity.HasIndex(e => new { e.UserId, e.CategoryId, e.Year, e.Month }).IsUnique();
-            entity.HasIndex(e => new { e.UserId, e.Year, e.Month });
+            entity.HasIndex(e => new { e.AccountId, e.CategoryId, e.Year, e.Month }).IsUnique();
+            entity.HasIndex(e => new { e.AccountId, e.Year, e.Month });
 
             // Configure DateTime columns to use timestamp without time zone
             entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
@@ -92,90 +114,92 @@ public class PersonifiDbContext : DbContext
                 .WithMany(c => c.Budgets)
                 .HasForeignKey(e => e.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity
+                .HasOne(e => e.Account)
+                .WithMany(a => a.Budgets)
+                .HasForeignKey(e => e.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Seed default categories
-        SeedDefaultCategories(modelBuilder);
-    }
-
-    private void SeedDefaultCategories(ModelBuilder modelBuilder)
-    {
-        var categories = new[]
+        // User configuration
+        modelBuilder.Entity<User>(entity =>
         {
-            new
-            {
-                Id = 1,
-                Name = "Housing",
-                Type = CategoryType.Expense,
-                Icon = "🏠",
-                Color = "#1a3a5f",
-                UserId = "google-oauth2|114831037037369295773",
-            },
-            new
-            {
-                Id = 2,
-                Name = "Food",
-                Type = CategoryType.Expense,
-                Icon = "🍔",
-                Color = "#0f8a3c",
-                UserId = "google-oauth2|114831037037369295773",
-            },
-            new
-            {
-                Id = 3,
-                Name = "Transport",
-                Type = CategoryType.Expense,
-                Icon = "🚗",
-                Color = "#c9a86e",
-                UserId = "google-oauth2|114831037037369295773",
-            },
-            new
-            {
-                Id = 4,
-                Name = "Entertainment",
-                Type = CategoryType.Expense,
-                Icon = "🎮",
-                Color = "#8b5cf6",
-                UserId = "google-oauth2|114831037037369295773",
-            },
-            new
-            {
-                Id = 5,
-                Name = "Shopping",
-                Type = CategoryType.Expense,
-                Icon = "🛍️",
-                Color = "#b54248",
-                UserId = "google-oauth2|114831037037369295773",
-            },
-            new
-            {
-                Id = 6,
-                Name = "Utilities",
-                Type = CategoryType.Expense,
-                Icon = "💡",
-                Color = "#14b8a6",
-                UserId = "google-oauth2|114831037037369295773",
-            },
-            new
-            {
-                Id = 7,
-                Name = "Salary",
-                Type = CategoryType.Income,
-                Icon = "💰",
-                Color = "#0f8a3c",
-                UserId = "google-oauth2|114831037037369295773",
-            },
-            new
-            {
-                Id = 8,
-                Name = "Freelance",
-                Type = CategoryType.Income,
-                Icon = "💼",
-                Color = "#c9a86e",
-                UserId = "google-oauth2|114831037037369295773",
-            },
-        };
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Auth0UserId).HasMaxLength(255);
+            entity.Property(e => e.Email).HasMaxLength(255);
+            entity.HasIndex(e => e.Auth0UserId).IsUnique();
+            entity.HasIndex(e => e.Email);
 
-        modelBuilder.Entity<Category>().HasData(categories);
+            // Configure DateTime columns to use timestamp without time zone
+            entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+        });
+
+        // Account configuration
+        modelBuilder.Entity<Account>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(100);
+
+            // Configure DateTime columns to use timestamp without time zone
+            entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+        });
+
+        // UserAccount configuration (Many-to-Many)
+        modelBuilder.Entity<UserAccount>(entity =>
+        {
+            entity.HasKey(e => new { e.UserId, e.AccountId });
+
+            entity.Property(e => e.JoinedAt).HasColumnType("timestamp without time zone");
+
+            entity
+                .HasOne(e => e.User)
+                .WithMany(u => u.UserAccounts)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity
+                .HasOne(e => e.Account)
+                .WithMany(a => a.UserAccounts)
+                .HasForeignKey(e => e.AccountId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // InvitationToken configuration
+        modelBuilder.Entity<InvitationToken>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Token).HasMaxLength(255);
+            entity.Property(e => e.Email).HasMaxLength(255);
+            entity.Property(e => e.PersonalMessage).HasMaxLength(1000);
+            entity.HasIndex(e => e.Token).IsUnique();
+            entity.HasIndex(e => e.Email);
+            entity.HasIndex(e => e.ExpiresAt);
+
+            // Configure DateTime columns to use timestamp without time zone
+            entity.Property(e => e.ExpiresAt).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.AcceptedAt).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
+
+            entity
+                .HasOne(e => e.Account)
+                .WithMany(a => a.InvitationTokens)
+                .HasForeignKey(e => e.AccountId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity
+                .HasOne(e => e.InviterUser)
+                .WithMany(u => u.SentInvitations)
+                .HasForeignKey(e => e.InviterUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity
+                .HasOne(e => e.AcceptedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.AcceptedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
     }
 }

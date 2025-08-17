@@ -1,5 +1,6 @@
 import { BudgetPageClient } from "@/components/budget/budgetPageClient";
 import { PageHeader } from "@/components/ui/pageHeader";
+import { RequireAccount } from "@/components/ui/requireAccount";
 import { getBudgetVariance } from "@/lib/api/budgetApi";
 import { getTransactions } from "@/lib/api/transactionApi";
 import { calculateVarianceData } from "@/lib/hooks/useBudgetData";
@@ -26,8 +27,15 @@ async function fetchBudgetData(year: number, month: number) {
 
     return calculateVarianceData(budgetVariances || [], transactionsResponse?.items || []);
   } catch (error: unknown) {
-    console.error('Error fetching budget data:', error);
-    // Return empty data instead of redirecting to logout
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error fetching budget data:', errorMessage);
+    
+    // If it's an account-related error, return null to indicate no data available
+    if (errorMessage.includes('Bad Request') || errorMessage.includes('account')) {
+      return null;
+    }
+    
+    // For other errors, return empty array
     return [];
   }
 }
@@ -41,16 +49,18 @@ export default async function BudgetPage({ searchParams }: BudgetPageProps) {
   const initialData = await fetchBudgetData(year, month);
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Budget Overview"
-        subTitle="Track your spending against budgeted amounts"
-      />
-      <BudgetPageClient
-        initialData={initialData}
-        currentYear={year}
-        currentMonth={month}
-      />
-    </div>
+    <RequireAccount>
+      <div className="space-y-6">
+        <PageHeader
+          title="Budget Overview"
+          subTitle="Track your spending against budgeted amounts"
+        />
+        <BudgetPageClient
+          initialData={initialData || []}
+          currentYear={year}
+          currentMonth={month}
+        />
+      </div>
+    </RequireAccount>
   );
 }

@@ -39,7 +39,10 @@ public class TransactionController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<TransactionDto>> GetById(int id)
     {
-        var transaction = await _transactionService.GetByIdAsync(id, _userContext.UserId);
+        if (!_userContext.AccountId.HasValue)
+            return BadRequest("Please create an account first using POST /api/account/create");
+
+        var transaction = await _transactionService.GetByIdAsync(id, _userContext.AccountId.Value);
 
         if (transaction == null)
             return NotFound();
@@ -57,15 +60,18 @@ public class TransactionController : ControllerBase
     /// <returns>Paginated list of transactions</returns>
     /// <response code="200">Returns paginated transactions with headers</response>
     [HttpGet]
-    public async Task<ActionResult<PagedResponse<TransactionDto>>> GetUserTransactions(
+    public async Task<ActionResult<PagedResponse<TransactionDto>>> GetAccountTransactions(
         [FromQuery] PaginationRequest pagination,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate,
         [FromQuery] int? categoryId
     )
     {
-        var transactions = await _transactionService.GetUserTransactionsAsync(
-            _userContext.UserId,
+        if (!_userContext.AccountId.HasValue)
+            return BadRequest("Please create an account first using POST /api/account/create");
+
+        var transactions = await _transactionService.GetAccountTransactionsAsync(
+            _userContext.AccountId.Value,
             pagination,
             startDate,
             endDate,
@@ -92,12 +98,17 @@ public class TransactionController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<TransactionDto>> Create([FromBody] CreateTransactionDto dto)
     {
+        if (!_userContext.AccountId.HasValue || !_userContext.UserId.HasValue)
+            return BadRequest("Please create an account first using POST /api/account/create");
+
         _logger.LogInformation(
-            "Creating transaction for authenticated user with amount {Amount}",
+            "Creating transaction for account {AccountId} by user {UserId} with amount {Amount}",
+            _userContext.AccountId.Value,
+            _userContext.UserId.Value,
             dto.Amount
         );
 
-        var created = await _transactionService.CreateAsync(dto, _userContext.UserId);
+        var created = await _transactionService.CreateAsync(dto, _userContext.AccountId.Value, _userContext.UserId.Value);
 
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
@@ -117,7 +128,10 @@ public class TransactionController : ControllerBase
         [FromBody] UpdateTransactionDto dto
     )
     {
-        var updated = await _transactionService.UpdateAsync(id, dto, _userContext.UserId);
+        if (!_userContext.AccountId.HasValue)
+            return BadRequest("Please create an account first using POST /api/account/create");
+
+        var updated = await _transactionService.UpdateAsync(id, dto, _userContext.AccountId.Value);
 
         if (updated == null)
             return NotFound();
@@ -137,7 +151,10 @@ public class TransactionController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
-        var result = await _transactionService.DeleteAsync(id, _userContext.UserId);
+        if (!_userContext.AccountId.HasValue)
+            return BadRequest("Please create an account first using POST /api/account/create");
+
+        var result = await _transactionService.DeleteAsync(id, _userContext.AccountId.Value);
 
         if (!result)
             return NotFound();

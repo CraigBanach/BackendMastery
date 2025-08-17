@@ -6,15 +6,6 @@ using PersonifiBackend.Core.Interfaces;
 
 namespace PersonifiBackend.Application.Services;
 
-public interface ICategoryService
-{
-    Task<CategoryDto?> GetByIdAsync(int id, string userId);
-    Task<IEnumerable<CategoryDto>> GetUserCategoriesAsync(string userId);
-    Task<CategoryDto> CreateAsync(CreateCategoryDto dto, string userId);
-    Task<CategoryDto?> UpdateAsync(int id, UpdateCategoryDto dto, string userId);
-    Task<bool> DeleteAsync(int id, string userId);
-}
-
 public class CategoryService : ICategoryService
 {
     private readonly ICategoryRepository _repository;
@@ -32,45 +23,46 @@ public class CategoryService : ICategoryService
         _logger = logger;
     }
 
-    public async Task<CategoryDto?> GetByIdAsync(int id, string userId)
+    public async Task<CategoryDto?> GetByIdAsync(int id, int accountId)
     {
-        var category = await _repository.GetByIdAsync(id, userId);
+        var category = await _repository.GetByIdAsync(id, accountId);
         return category == null ? null : _mapper.Map<CategoryDto>(category);
     }
 
-    public async Task<IEnumerable<CategoryDto>> GetUserCategoriesAsync(string userId)
+    public async Task<IEnumerable<CategoryDto>> GetAccountCategoriesAsync(int accountId)
     {
-        var categories = await _repository.GetUserCategoriesAsync(userId);
+        var categories = await _repository.GetAccountCategoriesAsync(accountId);
         return _mapper.Map<IEnumerable<CategoryDto>>(categories);
     }
 
-    public async Task<CategoryDto> CreateAsync(CreateCategoryDto dto, string userId)
+    public async Task<CategoryDto> CreateAsync(CreateCategoryDto dto, int accountId)
     {
         var category = _mapper.Map<Category>(dto);
-        category.UserId = userId;
+        category.AccountId = accountId;
 
         var created = await _repository.CreateAsync(category);
         _logger.LogInformation(
-            "Created category {CategoryId} for authenticated user",
-            created.Id
+            "Created category {CategoryId} for account {AccountId}",
+            created.Id,
+            accountId
         );
 
         return _mapper.Map<CategoryDto>(created);
     }
 
-    public async Task<CategoryDto?> UpdateAsync(int id, UpdateCategoryDto dto, string userId)
+    public async Task<CategoryDto?> UpdateAsync(int id, UpdateCategoryDto dto, int accountId)
     {
-        var existing = await _repository.GetByIdAsync(id, userId);
+        var existing = await _repository.GetByIdAsync(id, accountId);
         if (existing == null)
             return null;
         var updatedCategory = _mapper.Map(dto, existing);
-        updatedCategory.UserId = userId;
+        updatedCategory.AccountId = accountId;
         var updated = await _repository.UpdateAsync(updatedCategory);
         return _mapper.Map<CategoryDto>(updated);
     }
 
-    public async Task<bool> DeleteAsync(int id, string userId)
+    public async Task<bool> DeleteAsync(int id, int accountId)
     {
-        return await _repository.DeleteAsync(id, userId);
+        return await _repository.DeleteAsync(id, accountId);
     }
 }

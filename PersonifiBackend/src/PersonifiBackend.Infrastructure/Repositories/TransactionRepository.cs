@@ -16,22 +16,22 @@ public class TransactionRepository : ITransactionRepository
         _context = context;
     }
 
-    public async Task<Transaction?> GetByIdAsync(int id, string userId)
+    public async Task<Transaction?> GetByIdAsync(int id, int accountId)
     {
         return await _context
             .Transactions.Include(t => t.Category)
-            .FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
+            .FirstOrDefaultAsync(t => t.Id == id && t.AccountId == accountId);
     }
 
-    public async Task<PaginationResult<Transaction>> GetUserTransactionsAsync(
-        string userId,
+    public async Task<PaginationResult<Transaction>> GetAccountTransactionsAsync(
+        int accountId,
         PaginationRequest pagination,
         DateTime? startDate = null,
         DateTime? endDate = null,
         int? categoryId = null
     )
     {
-        var query = _context.Transactions.Include(t => t.Category).Where(t => t.UserId == userId);
+        var query = _context.Transactions.Include(t => t.Category).Where(t => t.AccountId == accountId);
 
         // Apply filters
         if (startDate.HasValue)
@@ -56,7 +56,7 @@ public class TransactionRepository : ITransactionRepository
         _context.Transactions.Add(transaction);
         await _context.SaveChangesAsync();
 
-        return await GetByIdAsync(transaction.Id, transaction.UserId)
+        return await GetByIdAsync(transaction.Id, transaction.AccountId)
             ?? throw new InvalidOperationException("Failed to retrieve created transaction");
     }
 
@@ -66,14 +66,14 @@ public class TransactionRepository : ITransactionRepository
         _context.Transactions.Update(transaction);
         await _context.SaveChangesAsync();
 
-        return await GetByIdAsync(transaction.Id, transaction.UserId)
+        return await GetByIdAsync(transaction.Id, transaction.AccountId)
             ?? throw new InvalidOperationException("Failed to retrieve updated transaction");
     }
 
-    public async Task<bool> DeleteAsync(int id, string userId)
+    public async Task<bool> DeleteAsync(int id, int accountId)
     {
         var transaction = await _context.Transactions.FirstOrDefaultAsync(t =>
-            t.Id == id && t.UserId == userId
+            t.Id == id && t.AccountId == accountId
         );
 
         if (transaction == null)
@@ -84,14 +84,14 @@ public class TransactionRepository : ITransactionRepository
     }
 
     public async Task<IEnumerable<Transaction>> GetTransactionsByDateRangeAsync(
-        string userId,
+        int accountId,
         DateTime startDate,
         DateTime endDate,
         int? categoryId = null)
     {
         var query = _context.Transactions
             .Include(t => t.Category)
-            .Where(t => t.UserId == userId && 
+            .Where(t => t.AccountId == accountId && 
                        t.TransactionDate >= startDate && 
                        t.TransactionDate <= endDate);
 

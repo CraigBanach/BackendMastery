@@ -18,7 +18,16 @@
       "Bash(npx tsc:*)",
       "Bash(npm run lint)",
       "Bash(npm install:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(~/.dotnet/tools/dotnet-ef migrations add:*)",
+      "Bash(mv:*)",
+      "Bash(wget:*)",
+      "Bash(sudo dpkg:*)",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(~/.dotnet/tools/dotnet-ef migrations:*)",
+      "Bash(dotnet tool list:*)",
+      "Bash(dotnet ef database:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

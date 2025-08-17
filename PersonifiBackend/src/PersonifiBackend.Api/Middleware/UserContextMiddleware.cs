@@ -1,5 +1,7 @@
-﻿using PersonifiBackend.Core.Interfaces;
+﻿using Microsoft.Extensions.Logging;
+using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Infrastructure.Services;
+using System.Security.Claims;
 
 namespace PersonifiBackend.Api.Middleware;
 
@@ -14,22 +16,49 @@ public class UserContextMiddleware
         _logger = logger;
     }
 
-    public async Task InvokeAsync(HttpContext context, IUserContext userContext)
+    public async Task InvokeAsync(HttpContext context, IUserContext userContext, IAccountService accountService)
     {
         // Check if user is authenticated
         if (context.User.Identity?.IsAuthenticated == true)
         {
-            // Extract user ID from the 'sub' claim (Auth0 standard)
-            var userId = context.User.Identity.Name;
+            // Extract user ID from Auth0 claims (try multiple claim types)
+            var auth0UserId = context.User.Identity.Name ?? 
+                             context.User.Claims.FirstOrDefault(c => c.Type == "sub")?.Value ??
+                             context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            if (!string.IsNullOrEmpty(userId))
+            if (!string.IsNullOrEmpty(auth0UserId))
             {
                 // Cast to implementation to set values
                 if (userContext is UserContext userContextImpl)
                 {
-                    userContextImpl.UserId = userId;
+                    userContextImpl.Auth0UserId = auth0UserId;
 
-                    _logger.LogDebug("User context set for authenticated user");
+                    try
+                    {
+                        // Get or create user in our system using Auth0 user ID
+                        var user = await accountService.GetOrCreateUserAsync(auth0UserId, auth0UserId);
+                        
+                        if (user != null)
+                        {
+                            userContextImpl.UserId = user.Id;
+
+                            // Get user's primary account (first account they belong to)
+                            var primaryAccount = await accountService.GetUserPrimaryAccountAsync(user.Id);
+                            
+                            // If no account exists, this might be a new user - we'll create account when they make their first transaction
+                            if (primaryAccount != null)
+                            {
+                                userContextImpl.AccountId = primaryAccount.Id;
+                            }
+
+                            _logger.LogInformation("User context set for authenticated user - UserId: {UserId}, AccountId: {AccountId}, PrimaryAccount: {PrimaryAccountFound}", 
+                                user.Id, primaryAccount?.Id, primaryAccount != null);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error setting up user context for Auth0 user {Auth0UserId}", auth0UserId);
+                    }
                 }
             }
             else

@@ -1,5 +1,7 @@
 import { TransactionsPageClient } from "@/components/transactions/transactionsPageClient";
 import { PageHeader } from "@/components/ui/pageHeader";
+import { InvitePrompt } from "@/components/ui/invitePrompt";
+import { RequireAccount } from "@/components/ui/requireAccount";
 import { getTransactions } from "@/lib/api/transactionApi";
 import { getCategories } from "@/lib/api/categoryApi";
 
@@ -52,18 +54,21 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
   const { transactions, categories, pagination } = await fetchTransactionsData(year, month);
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Transactions"
-        subTitle="Track and manage your monthly transactions"
-      />
-      <TransactionsPageClient
-        initialTransactions={transactions}
-        categories={categories}
-        currentYear={year}
-        currentMonth={month}
-        pagination={pagination}
-      />
-    </div>
+    <RequireAccount>
+      <div className="space-y-6">
+        <PageHeader
+          title="Transactions"
+          subTitle="Track and manage your monthly transactions"
+        />
+        <InvitePrompt />
+        <TransactionsPageClient
+          initialTransactions={transactions}
+          categories={categories}
+          currentYear={year}
+          currentMonth={month}
+          pagination={pagination}
+        />
+      </div>
+    </RequireAccount>
   );
 }

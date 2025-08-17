@@ -22,6 +22,30 @@ namespace PersonifiBackend.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.Account", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Accounts");
+                });
+
             modelBuilder.Entity("PersonifiBackend.Core.Entities.Budget", b =>
                 {
                     b.Property<int>("Id")
@@ -29,6 +53,9 @@ namespace PersonifiBackend.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
@@ -46,10 +73,6 @@ namespace PersonifiBackend.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int>("Year")
                         .HasColumnType("integer");
 
@@ -57,9 +80,9 @@ namespace PersonifiBackend.Infrastructure.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("UserId", "Year", "Month");
+                    b.HasIndex("AccountId", "Year", "Month");
 
-                    b.HasIndex("UserId", "CategoryId", "Year", "Month")
+                    b.HasIndex("AccountId", "CategoryId", "Year", "Month")
                         .IsUnique();
 
                     b.ToTable("Budgets");
@@ -72,6 +95,9 @@ namespace PersonifiBackend.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Color")
                         .HasColumnType("text");
@@ -87,90 +113,73 @@ namespace PersonifiBackend.Infrastructure.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId", "Name")
+                    b.HasIndex("AccountId", "Name")
                         .IsUnique();
 
                     b.ToTable("Categories");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Color = "#1a3a5f",
-                            Icon = "🏠",
-                            Name = "Housing",
-                            Type = 1,
-                            UserId = "google-oauth2|114831037037369295773"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Color = "#0f8a3c",
-                            Icon = "🍔",
-                            Name = "Food",
-                            Type = 1,
-                            UserId = "google-oauth2|114831037037369295773"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Color = "#c9a86e",
-                            Icon = "🚗",
-                            Name = "Transport",
-                            Type = 1,
-                            UserId = "google-oauth2|114831037037369295773"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Color = "#8b5cf6",
-                            Icon = "🎮",
-                            Name = "Entertainment",
-                            Type = 1,
-                            UserId = "google-oauth2|114831037037369295773"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Color = "#b54248",
-                            Icon = "🛍️",
-                            Name = "Shopping",
-                            Type = 1,
-                            UserId = "google-oauth2|114831037037369295773"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Color = "#14b8a6",
-                            Icon = "💡",
-                            Name = "Utilities",
-                            Type = 1,
-                            UserId = "google-oauth2|114831037037369295773"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Color = "#0f8a3c",
-                            Icon = "💰",
-                            Name = "Salary",
-                            Type = 0,
-                            UserId = "google-oauth2|114831037037369295773"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Color = "#c9a86e",
-                            Icon = "💼",
-                            Name = "Freelance",
-                            Type = 0,
-                            UserId = "google-oauth2|114831037037369295773"
-                        });
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.InvitationToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AcceptedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int?>("AcceptedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("InviterUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsAccepted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PersonalMessage")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcceptedByUserId");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("Email");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("InviterUserId");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("InvitationTokens");
                 });
 
             modelBuilder.Entity("PersonifiBackend.Core.Entities.Transaction", b =>
@@ -181,6 +190,9 @@ namespace PersonifiBackend.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
+
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
@@ -190,6 +202,9 @@ namespace PersonifiBackend.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -206,45 +221,188 @@ namespace PersonifiBackend.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("UserId", "CategoryId")
-                        .HasDatabaseName("IX_Transaction_UserCategory");
+                    b.HasIndex("CreatedByUserId");
 
-                    b.HasIndex("UserId", "TransactionDate");
+                    b.HasIndex("AccountId", "CategoryId")
+                        .HasDatabaseName("IX_Transaction_AccountCategory");
 
-                    b.HasIndex("UserId", "TransactionDate", "Id")
-                        .HasDatabaseName("IX_Transaction_UserDate");
+                    b.HasIndex("AccountId", "TransactionDate");
+
+                    b.HasIndex("AccountId", "TransactionDate", "Id")
+                        .HasDatabaseName("IX_Transaction_AccountDate");
 
                     b.ToTable("Transactions");
                 });
 
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Auth0UserId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Auth0UserId")
+                        .IsUnique();
+
+                    b.HasIndex("Email");
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.UserAccount", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("UserId", "AccountId");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("UserAccounts");
+                });
+
             modelBuilder.Entity("PersonifiBackend.Core.Entities.Budget", b =>
                 {
+                    b.HasOne("PersonifiBackend.Core.Entities.Account", "Account")
+                        .WithMany("Budgets")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("PersonifiBackend.Core.Entities.Category", "Category")
                         .WithMany("Budgets")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Account");
+
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.Category", b =>
+                {
+                    b.HasOne("PersonifiBackend.Core.Entities.Account", "Account")
+                        .WithMany("Categories")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.InvitationToken", b =>
+                {
+                    b.HasOne("PersonifiBackend.Core.Entities.User", "AcceptedByUser")
+                        .WithMany()
+                        .HasForeignKey("AcceptedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("PersonifiBackend.Core.Entities.Account", "Account")
+                        .WithMany("InvitationTokens")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PersonifiBackend.Core.Entities.User", "InviterUser")
+                        .WithMany("SentInvitations")
+                        .HasForeignKey("InviterUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AcceptedByUser");
+
+                    b.Navigation("Account");
+
+                    b.Navigation("InviterUser");
                 });
 
             modelBuilder.Entity("PersonifiBackend.Core.Entities.Transaction", b =>
                 {
+                    b.HasOne("PersonifiBackend.Core.Entities.Account", "Account")
+                        .WithMany("Transactions")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("PersonifiBackend.Core.Entities.Category", "Category")
                         .WithMany("Transactions")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("PersonifiBackend.Core.Entities.User", "CreatedByUser")
+                        .WithMany("CreatedTransactions")
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
                     b.Navigation("Category");
+
+                    b.Navigation("CreatedByUser");
+                });
+
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.UserAccount", b =>
+                {
+                    b.HasOne("PersonifiBackend.Core.Entities.Account", "Account")
+                        .WithMany("UserAccounts")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PersonifiBackend.Core.Entities.User", "User")
+                        .WithMany("UserAccounts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.Account", b =>
+                {
+                    b.Navigation("Budgets");
+
+                    b.Navigation("Categories");
+
+                    b.Navigation("InvitationTokens");
+
+                    b.Navigation("Transactions");
+
+                    b.Navigation("UserAccounts");
                 });
 
             modelBuilder.Entity("PersonifiBackend.Core.Entities.Category", b =>
@@ -252,6 +410,15 @@ namespace PersonifiBackend.Infrastructure.Migrations
                     b.Navigation("Budgets");
 
                     b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.User", b =>
+                {
+                    b.Navigation("CreatedTransactions");
+
+                    b.Navigation("SentInvitations");
+
+                    b.Navigation("UserAccounts");
                 });
 #pragma warning restore 612, 618
         }

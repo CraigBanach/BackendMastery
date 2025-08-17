@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PersonifiBackend.Application.Services;
 using PersonifiBackend.Core.DTOs;
 using PersonifiBackend.Core.Exceptions;
 using PersonifiBackend.Core.Interfaces;
@@ -50,15 +49,18 @@ public class BudgetController : ControllerBase
         if (year < 2000 || year > 2100)
             return BadRequest("Year must be between 2000 and 2100");
 
+        if (!_userContext.AccountId.HasValue)
+            return BadRequest("Please create an account first using POST /api/account/create");
+
         _logger.LogInformation(
-            "Getting budget variance for user {UserId}, year {Year}, month {Month}",
-            _userContext.UserId,
+            "Getting budget variance for account {AccountId}, year {Year}, month {Month}",
+            _userContext.AccountId.Value,
             year,
             month
         );
 
         var variances = await _budgetService.GetBudgetVarianceAsync(
-            _userContext.UserId,
+            _userContext.AccountId.Value,
             year,
             month
         );
@@ -82,15 +84,18 @@ public class BudgetController : ControllerBase
         if (year < 2000 || year > 2100)
             return BadRequest("Year must be between 2000 and 2100");
 
+        if (!_userContext.AccountId.HasValue)
+            return BadRequest("Please create an account first using POST /api/account/create");
+
         _logger.LogInformation(
-            "Getting budgets for user {UserId}, year {Year}, month {Month}",
-            _userContext.UserId,
+            "Getting budgets for account {AccountId}, year {Year}, month {Month}",
+            _userContext.AccountId.Value,
             year,
             month
         );
 
         var budgets = await _budgetService.GetBudgetsForMonthAsync(
-            _userContext.UserId,
+            _userContext.AccountId.Value,
             year,
             month
         );
@@ -122,16 +127,19 @@ public class BudgetController : ControllerBase
         if (!budgets.Any())
             return BadRequest("At least one budget must be provided");
 
+        if (!_userContext.AccountId.HasValue)
+            return BadRequest("Please create an account first using POST /api/account/create");
+
         _logger.LogInformation(
-            "Setting budgets for user {UserId}, year {Year}, month {Month}, count {Count}",
-            _userContext.UserId,
+            "Setting budgets for account {AccountId}, year {Year}, month {Month}, count {Count}",
+            _userContext.AccountId.Value,
             year,
             month,
             budgets.Count()
         );
 
         var updatedBudgets = await _budgetService.SetBudgetsForMonthAsync(
-            _userContext.UserId,
+            _userContext.AccountId.Value,
             year,
             month,
             budgets
@@ -158,13 +166,16 @@ public class BudgetController : ControllerBase
         if (year < 2000 || year > 2100)
             return BadRequest("Year must be between 2000 and 2100");
 
-        // First validate that the category belongs to the user
-        var category = await _categoryService.GetByIdAsync(categoryId, _userContext.UserId);
+        if (!_userContext.AccountId.HasValue)
+            return BadRequest("Please create an account first using POST /api/account/create");
+
+        // First validate that the category belongs to the account
+        var category = await _categoryService.GetByIdAsync(categoryId, _userContext.AccountId.Value);
         if (category == null)
             return NotFound();
 
         var budget = await _budgetService.GetBudgetAsync(
-            _userContext.UserId,
+            _userContext.AccountId.Value,
             categoryId,
             year,
             month

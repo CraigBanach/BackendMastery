@@ -29,6 +29,7 @@ public static class DependencyInjectionExtensions
         builder.Services.AddScoped<ITransactionService, TransactionService>();
         builder.Services.AddScoped<ICategoryService, CategoryService>();
         builder.Services.AddScoped<IBudgetService, BudgetService>();
+        builder.Services.AddScoped<IAccountService, AccountService>();
 
         // Add Background Services
         builder.Services.AddHostedService<BudgetAlertService>();

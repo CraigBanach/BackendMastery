@@ -41,7 +41,7 @@ export const createTransaction = async (transaction: TransactionRequest): Promis
     const token = await getAccessToken();
 
     const res = await fetch(
-      `${process.env.PERSONIFI_BACKEND_URL}/transaction`,
+      `${process.env.PERSONIFI_BACKEND_URL}/Transaction`,
       {
         headers: {
           Authorization: `Bearer ${token.token}`,
