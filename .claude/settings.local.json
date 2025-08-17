@@ -26,7 +26,8 @@
       "Bash(dotnet ef migrations:*)",
       "Bash(~/.dotnet/tools/dotnet-ef migrations:*)",
       "Bash(dotnet tool list:*)",
-      "Bash(dotnet ef database:*)"
+      "Bash(dotnet ef database:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

@@ -69,7 +69,7 @@ export function InvitePartnerModal({ isOpen, onClose }: InvitePartnerModalProps)
     <Modal isOpen={isOpen} onClose={handleClose} title="Invite Your Partner">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="email">Partner's Email Address</Label>
+          <Label htmlFor="email">Partner&apos;s Email Address</Label>
           <Input
             id="email"
             type="email"

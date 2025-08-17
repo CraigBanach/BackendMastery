@@ -58,12 +58,12 @@ export function TransactionsPageClient({
     window.location.reload();
   };
 
-  const handleApiError = (error: unknown) => {
-    const errorMessage = error instanceof Error ? error.message : "";
-    if (errorMessage.includes("Please create an account first")) {
-      setShowCreateAccount(true);
-    }
-  };
+  // const handleApiError = (error: unknown) => {
+  //   const errorMessage = error instanceof Error ? error.message : "";
+  //   if (errorMessage.includes("Please create an account first")) {
+  //     setShowCreateAccount(true);
+  //   }
+  // };
 
   // Filter transactions by selected category and type
   const filteredTransactions = transactions

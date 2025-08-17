@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@auth0/nextjs-auth0/client";
+import { useUser } from "@auth0/nextjs-auth0";
 import { getInvitationDetails, acceptInvitation } from "@/lib/api/accountApi";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,12 +15,17 @@ interface InvitationDetails {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     token: string;
-  };
+  }>;
 }
 
 export default function InvitationPage({ params }: PageProps) {
+  const [token, setToken] = useState<string>("");
+
+  useEffect(() => {
+    params.then(p => setToken(p.token));
+  }, [params]);
   const { user, isLoading: isUserLoading } = useUser();
   const router = useRouter();
   const [invitation, setInvitation] = useState<InvitationDetails | null>(null);
@@ -29,9 +34,11 @@ export default function InvitationPage({ params }: PageProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!token) return;
+    
     const loadInvitation = async () => {
       try {
-        const details = await getInvitationDetails(params.token);
+        const details = await getInvitationDetails(token);
         setInvitation(details);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Failed to load invitation";
@@ -42,7 +49,7 @@ export default function InvitationPage({ params }: PageProps) {
     };
 
     loadInvitation();
-  }, [params.token]);
+  }, [token]);
 
   const handleAcceptInvitation = async () => {
     if (!user) {
@@ -55,7 +62,7 @@ export default function InvitationPage({ params }: PageProps) {
     setError(null);
 
     try {
-      await acceptInvitation(params.token);
+      await acceptInvitation(token);
       // Redirect to dashboard on success
       router.push("/dashboard");
     } catch (err) {
@@ -147,7 +154,7 @@ export default function InvitationPage({ params }: PageProps) {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">You're Invited!</CardTitle>
+          <CardTitle className="text-2xl">You&apos;re Invited!</CardTitle>
           <CardDescription>
             {invitation.inviterEmail} invited you to collaborate on Personifi
           </CardDescription>
@@ -156,7 +163,7 @@ export default function InvitationPage({ params }: PageProps) {
           <div className="bg-blue-50 p-4 rounded-lg">
             <h3 className="font-medium text-blue-900 mb-2">Account: {invitation.accountName}</h3>
             <p className="text-sm text-blue-700">
-              You'll be able to:
+              You&apos;ll be able to:
             </p>
             <ul className="text-sm text-blue-700 mt-2 space-y-1">
               <li>✓ View and add transactions</li>
@@ -168,7 +175,7 @@ export default function InvitationPage({ params }: PageProps) {
           {invitation.personalMessage && (
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-medium text-gray-900 mb-2">Personal Message:</h4>
-              <p className="text-gray-700 italic">"{invitation.personalMessage}"</p>
+              <p className="text-gray-700 italic">&quot;{invitation.personalMessage}&quot;</p>
             </div>
           )}
 

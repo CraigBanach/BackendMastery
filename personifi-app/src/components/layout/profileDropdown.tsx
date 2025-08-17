@@ -9,7 +9,7 @@ import { hasAccount } from "@/lib/api/accountApi";
 export function ProfileDropdown() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [userHasAccount, setUserHasAccount] = useState(false);
-  const [isCheckingAccount, setIsCheckingAccount] = useState(true);
+  const [, setIsCheckingAccount] = useState(true);
 
   useEffect(() => {
     const checkAccount = async () => {

@@ -76,7 +76,7 @@ export function CreateAccountModal({ isOpen, onClose, onSuccess }: CreateAccount
               className="mt-1"
             />
             <p className="text-sm text-gray-500 mt-1">
-              Choose a name that represents your household (e.g., "Smith Family", "Our Finances")
+              Choose a name that represents your household (e.g., &quot;Smith Family&quot;, &quot;Our Finances&quot;)
             </p>
           </div>
 

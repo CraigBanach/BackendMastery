@@ -2,9 +2,10 @@ import { getCategories } from "@/lib/api/categoryApi";
 import { CategoriesPageClient } from "@/components/categories/categoriesPageClient";
 import { PageHeader } from "@/components/ui/pageHeader";
 import { RequireAccount } from "@/components/ui/requireAccount";
+import { Category } from "@/types/transaction";
 
 export default async function CategoriesPage() {
-  let categories;
+  let categories: Category[];
   
   try {
     categories = await getCategories();

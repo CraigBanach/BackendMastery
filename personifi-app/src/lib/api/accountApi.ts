@@ -114,7 +114,7 @@ export async function hasAccount(): Promise<boolean> {
   try {
     await fetchWithAuth(`${API_BASE_URL}/Account/members`);
     return true;
-  } catch (error) {
+  } catch {
     // If we get an error (like 400 Bad Request), user doesn't have an account
     return false;
   }
