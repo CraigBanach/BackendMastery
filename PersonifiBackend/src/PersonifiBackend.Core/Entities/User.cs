@@ -7,6 +7,7 @@ public class User
     public string Email { get; set; } = string.Empty; // For invitation purposes
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public bool InvitePromptDismissed { get; set; } = false;
 
     public ICollection<UserAccount> UserAccounts { get; set; } = new List<UserAccount>();
     public ICollection<Transaction> CreatedTransactions { get; set; } = new List<Transaction>();

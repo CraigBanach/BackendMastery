@@ -66,7 +66,7 @@ export function TransactionsPageClient({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+      <div className="w-full max-w-4xl mx-auto">
         <MonthNavigation
           currentYear={year}
           currentMonth={month}
@@ -74,15 +74,17 @@ export function TransactionsPageClient({
         />
       </div>
       
-      <TransactionsList
-        transactions={filteredTransactions}
-        categories={categories}
-        selectedCategoryId={selectedCategoryId}
-        typeFilter={typeFilter}
-        onCategoryFilter={setSelectedCategoryId}
-        onTypeFilter={setTypeFilter}
-        onTransactionUpdated={handleTransactionUpdated}
-      />
+      <div className="w-full max-w-4xl mx-auto">
+        <TransactionsList
+          transactions={filteredTransactions}
+          categories={categories}
+          selectedCategoryId={selectedCategoryId}
+          typeFilter={typeFilter}
+          onCategoryFilter={setSelectedCategoryId}
+          onTypeFilter={setTypeFilter}
+          onTransactionUpdated={handleTransactionUpdated}
+        />
+      </div>
 
       <CreateAccountModal
         isOpen={showCreateAccount}
