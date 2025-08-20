@@ -306,7 +306,7 @@ export function TransactionsList({
                       return (
                         <div key={transaction.id}>
                           <div
-                            className={`relative p-3 xl:p-2 rounded-lg border-l-4 hover:bg-muted/50 transition-colors ${
+                            className={`relative p-4 sm:p-3 xl:p-2 rounded-lg border-l-4 hover:bg-muted/50 transition-colors ${
                               isEditing
                                 ? "bg-muted/50 border-primary"
                                 : "border-muted hover:border-muted-foreground"
@@ -322,28 +322,28 @@ export function TransactionsList({
                               <>
                                 <div className="flex items-center">
                                   {/* Icon */}
-                                  <div className="flex-shrink-0 mr-4">
-                                    <span className="text-2xl">
+                                  <div className="flex-shrink-0 mr-3 sm:mr-4">
+                                    <span className="text-xl sm:text-2xl">
                                       {transaction.category.icon}
                                     </span>
                                   </div>
 
                                   {/* Main Content - optimized for wide screens */}
-                                  <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-2 xl:gap-6 items-center min-w-0">
+                                  <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-1 sm:gap-2 xl:gap-6 items-start xl:items-center min-w-0">
                                     {/* Primary Info: Description */}
                                     <div className="xl:col-span-1">
-                                      <div className="font-bold text-lg xl:text-xl text-foreground truncate">
+                                      <div className="font-bold text-base sm:text-lg xl:text-xl text-foreground truncate">
                                         {transaction.description}
                                       </div>
-                                      <div className="text-sm font-medium text-muted-foreground xl:hidden">
+                                      <div className="text-xs sm:text-sm font-medium text-muted-foreground xl:hidden mt-0.5">
                                         {transaction.category.name}
                                       </div>
                                     </div>
 
                                     {/* Amount - prominent */}
-                                    <div className="xl:col-span-1 xl:text-center">
+                                    <div className="xl:col-span-1 xl:text-center mt-1 xl:mt-0">
                                       <div
-                                        className={`font-bold text-lg xl:text-xl ${colorClass}`}
+                                        className={`font-bold text-base sm:text-lg xl:text-xl ${colorClass}`}
                                       >
                                         {displayValue}
                                       </div>
@@ -358,14 +358,14 @@ export function TransactionsList({
                                   </div>
 
                                   {/* Actions */}
-                                  <div className="flex items-center space-x-1 ml-4 flex-shrink-0">
+                                  <div className="flex items-center space-x-1 ml-2 sm:ml-4 flex-shrink-0">
                                     <Button
                                       variant="ghost"
                                       size="sm"
                                       onClick={() => handleEdit(transaction)}
-                                      className="h-7 w-7 p-0 hover:bg-blue-100"
+                                      className="h-8 w-8 sm:h-7 sm:w-7 p-0 hover:bg-blue-100"
                                     >
-                                      <Edit className="h-3 w-3 text-blue-600" />
+                                      <Edit className="h-3.5 w-3.5 sm:h-3 sm:w-3 text-blue-600" />
                                     </Button>
                                     <Button
                                       variant="ghost"
@@ -373,16 +373,16 @@ export function TransactionsList({
                                       onClick={() =>
                                         handleDelete(transaction.id)
                                       }
-                                      className="h-7 w-7 p-0 hover:bg-red-100"
+                                      className="h-8 w-8 sm:h-7 sm:w-7 p-0 hover:bg-red-100"
                                     >
-                                      <Trash2 className="h-3 w-3 text-red-600" />
+                                      <Trash2 className="h-3.5 w-3.5 sm:h-3 sm:w-3 text-red-600" />
                                     </Button>
                                   </div>
                                 </div>
 
                                 {/* Notes - below main content */}
                                 {transaction.notes && (
-                                  <div className="mt-2 text-xs text-muted-foreground italic bg-muted/30 px-2 py-1 rounded ml-12">
+                                  <div className="mt-2 text-xs text-muted-foreground italic bg-muted/30 px-2 py-1 rounded ml-8 sm:ml-12">
                                     {transaction.notes}
                                   </div>
                                 )}

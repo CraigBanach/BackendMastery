@@ -55,7 +55,7 @@ export function QuickAddTransactionCard({ categories, onTransactionAdded }: Quic
   if (!isExpanded) {
     return (
       <Card className="border-dashed">
-        <CardContent className="py-4">
+        <CardContent className="py-3 sm:py-4">
           <Button
             variant="ghost"
             onClick={() => setIsExpanded(true)}
@@ -86,7 +86,7 @@ export function QuickAddTransactionCard({ categories, onTransactionAdded }: Quic
             </Button>
           </div>
           
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               type="number"
               step="0.01"
@@ -123,16 +123,17 @@ export function QuickAddTransactionCard({ categories, onTransactionAdded }: Quic
             required
           />
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(false)}
+              className="order-2 sm:order-1"
             >
               Cancel
             </Button>
-            <Button type="submit" size="sm" disabled={isLoading}>
+            <Button type="submit" size="sm" disabled={isLoading} className="order-1 sm:order-2">
               {isLoading ? 'Adding...' : 'Add'}
             </Button>
           </div>

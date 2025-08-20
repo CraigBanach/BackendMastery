@@ -32,10 +32,10 @@ export function MobileNavMenu({ isBudgetPage, isTransactionsPage, isCategoriesPa
 
   return (
     <Select value={getCurrentValue()} onValueChange={handleNavigation}>
-      <SelectTrigger className="w-auto border-0 bg-transparent hover:bg-muted p-2">
-        <div className="flex items-center gap-2">
-          <Menu className="h-4 w-4" />
-          <span className="text-sm font-medium">
+      <SelectTrigger className="w-auto border-0 bg-transparent hover:bg-muted p-3 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <Menu className="h-4 w-4 flex-shrink-0" />
+          <span className="text-sm font-medium truncate">
             {getCurrentLabel()}
           </span>
         </div>
