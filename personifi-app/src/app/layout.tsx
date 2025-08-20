@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
         <Header></Header>
-        <main className="flex flex-col p-4 md:p-6">{children}</main>
+        <main className="flex flex-col p-3 sm:p-4 md:p-6">{children}</main>
       </body>
     </html>
   );

@@ -1,4 +1,5 @@
 import { TransactionsPageClient } from "@/components/transactions/transactionsPageClient";
+import { TransactionsPageWithFab } from "@/components/transactions/transactionsPageWithFab";
 import { PageHeader } from "@/components/ui/pageHeader";
 import { InvitePrompt } from "@/components/ui/invitePrompt";
 import { RequireAccount } from "@/components/ui/requireAccount";
@@ -55,20 +56,22 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
 
   return (
     <RequireAccount>
-      <div className="space-y-6">
-        <PageHeader
-          title="Transactions"
-          subTitle="Track and manage your monthly transactions"
-        />
-        <InvitePrompt />
-        <TransactionsPageClient
-          initialTransactions={transactions}
-          categories={categories}
-          currentYear={year}
-          currentMonth={month}
-          pagination={pagination}
-        />
-      </div>
+      <TransactionsPageWithFab categories={categories}>
+        <div className="space-y-6">
+          <PageHeader
+            title="Transactions"
+            subTitle="Track and manage your monthly transactions"
+          />
+          <InvitePrompt />
+          <TransactionsPageClient
+            initialTransactions={transactions}
+            categories={categories}
+            currentYear={year}
+            currentMonth={month}
+            pagination={pagination}
+          />
+        </div>
+      </TransactionsPageWithFab>
     </RequireAccount>
   );
 }

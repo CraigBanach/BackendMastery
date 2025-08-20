@@ -102,8 +102,50 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
 
   return (
     <div className="space-y-6">
-      {/* Header Actions */}
-      <div className="flex justify-between items-center">
+      {/* Mobile: Stacked Layout */}
+      <div className="block sm:hidden space-y-4">
+        {/* Filter Buttons - Stacked */}
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Button
+              variant={typeFilter === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setTypeFilter("all")}
+              className="flex-1"
+            >
+              All Categories
+            </Button>
+            <Button
+              variant={typeFilter === CategoryType.Expense ? "default" : "outline"}
+              size="sm"
+              onClick={() => setTypeFilter(CategoryType.Expense)}
+              className="flex-1"
+            >
+              Expenses
+            </Button>
+          </div>
+          <Button
+            variant={typeFilter === CategoryType.Income ? "default" : "outline"}
+            size="sm"
+            onClick={() => setTypeFilter(CategoryType.Income)}
+            className="w-full"
+          >
+            Income
+          </Button>
+        </div>
+        
+        {/* Add Category Button - Full Width */}
+        <Button 
+          onClick={() => setIsCreateModalOpen(true)}
+          className="w-full"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Category
+        </Button>
+      </div>
+
+      {/* Desktop: Original Horizontal Layout */}
+      <div className="hidden sm:flex justify-between items-center">
         <div className="flex gap-2">
           <Button
             variant={typeFilter === "all" ? "default" : "outline"}

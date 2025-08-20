@@ -5,8 +5,6 @@ import { TransactionDto } from "@/lib/api/transactionApi";
 import { Category } from "@/types/transaction";
 import { MonthNavigation } from "./monthNavigation";
 import { TransactionsList } from "./transactionsList";
-import { QuickAddTransactionButton } from "./quickAddTransactionButton";
-import { QuickAddTransactionCard } from "./quickAddTransactionCard";
 import { CreateAccountModal } from "@/components/ui/createAccountModal";
 import { CategoryType } from "@/types/budget";
 
@@ -42,10 +40,6 @@ export function TransactionsPageClient({
     window.location.href = `/transactions?year=${newYear}&month=${newMonth}`;
   };
 
-  const handleTransactionAdded = () => {
-    // Refresh the page to show new transaction
-    window.location.reload();
-  };
 
   const handleTransactionUpdated = () => {
     // Refresh the page to show updated transaction
@@ -71,28 +65,12 @@ export function TransactionsPageClient({
     .filter(t => typeFilter === 'all' ? true : t.category.type === typeFilter);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <MonthNavigation
           currentYear={year}
           currentMonth={month}
           onMonthChange={handleMonthChange}
-        />
-        
-        {/* Add Transaction Button - desktop only */}
-        <div className="hidden sm:block">
-          <QuickAddTransactionButton
-            categories={categories}
-            onTransactionAdded={handleTransactionAdded}
-          />
-        </div>
-      </div>
-      
-      {/* Compact Add Transaction Card - mobile only */}
-      <div className="sm:hidden">
-        <QuickAddTransactionCard
-          categories={categories}
-          onTransactionAdded={handleTransactionAdded}
         />
       </div>
       

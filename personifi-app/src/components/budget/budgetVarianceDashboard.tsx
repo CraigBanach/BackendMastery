@@ -69,6 +69,11 @@ export function BudgetVarianceDashboard({
     month: 'long', 
     year: 'numeric' 
   });
+  
+  const monthNameMobile = new Date(year, currentMonth - 1).toLocaleDateString('en-GB', { 
+    month: 'short', 
+    year: '2-digit' 
+  });
 
   const navigateMonth = async (direction: 'prev' | 'next') => {
     let newMonth = currentMonth;
@@ -137,9 +142,35 @@ export function BudgetVarianceDashboard({
     <div className="space-y-6">
       {/* Month Navigation */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+        <CardHeader className="space-y-4 sm:space-y-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+            {/* Mobile: Full-width navigation with pinned arrows */}
+            <div className="flex sm:hidden items-center justify-between w-full">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateMonth('prev')}
+                disabled={loading}
+                className="flex-shrink-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <CardTitle className="text-lg font-semibold text-center flex-1">
+                {monthNameMobile}
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateMonth('next')}
+                disabled={loading}
+                className="flex-shrink-0"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* Desktop: Grouped navigation */}
+            <div className="hidden sm:flex items-center space-x-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -148,7 +179,9 @@ export function BudgetVarianceDashboard({
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <CardTitle className="text-xl">{monthName}</CardTitle>
+              <CardTitle className="text-xl font-semibold">
+                {monthName}
+              </CardTitle>
               <Button
                 variant="outline"
                 size="sm"
@@ -158,11 +191,13 @@ export function BudgetVarianceDashboard({
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
+            
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => setIsSetupModalOpen(true)}
               disabled={loading}
+              className="w-full sm:w-auto"
             >
               <Settings className="h-4 w-4 mr-2" />
               Edit Budgets
@@ -188,26 +223,26 @@ export function BudgetVarianceDashboard({
       )}
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2">
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Income</CardTitle>
+          <CardHeader className="pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Income</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalActualIncome)}</div>
-            <div className="text-sm text-muted-foreground">
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-base sm:text-xl md:text-2xl font-bold">{formatCurrency(totalActualIncome)}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">
               Budget: {formatCurrency(totalBudgetedIncome)}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+          <CardHeader className="pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total Expenses</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalActualExpenses)}</div>
-            <div className="text-sm text-muted-foreground">
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-base sm:text-xl md:text-2xl font-bold">{formatCurrency(totalActualExpenses)}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">
               Budget: {formatCurrency(totalBudgetedExpenses)}
             </div>
           </CardContent>
@@ -220,16 +255,59 @@ export function BudgetVarianceDashboard({
           <CardTitle>Income</CardTitle>
           <CardDescription>Your income sources for {monthName}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full table-fixed">
+        <CardContent className="px-3 sm:px-6">
+          {/* Mobile Card Layout */}
+          <div className="block md:hidden space-y-3">
+            {incomeData.map((item) => (
+              <div key={item.category.id} className="border rounded-lg">
+                <div 
+                  className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                  onClick={() => toggleCategoryExpansion(item.category.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">{item.category.icon}</span>
+                      <div>
+                        <div className="font-semibold text-base">{item.category.name}</div>
+                        <div className="text-sm space-y-1">
+                          <div className="text-muted-foreground">
+                            Actual: <span className="font-medium text-green-600">{formatCurrency(item.actual)}</span>
+                          </div>
+                          <div className="text-muted-foreground">
+                            Budget: <span className="font-medium">{formatCurrency(item.budgeted)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {expandedCategories.has(item.category.id) ? (
+                      <ChevronUp className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-gray-400" />
+                    )}
+                  </div>
+                </div>
+                {expandedCategories.has(item.category.id) && (
+                  <div className="border-t bg-gray-50/50">
+                    <TransactionTable 
+                      transactions={item.recentTransactions} 
+                      variant="income" 
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table Layout */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full table-fixed min-w-[500px]">
               <thead>
                 <tr className="border-b bg-gray-50">
-                  <th className="text-left py-3 px-4 font-medium rounded-tl-lg w-1/4">Category</th>
-                  <th className="text-right py-3 px-4 font-medium w-1/6"></th>
-                  <th className="text-right py-3 px-4 font-medium w-1/4">Expected</th>
-                  <th className="text-right py-3 px-4 font-medium w-1/4">Actual</th>
-                  <th className="text-right py-3 px-4 font-medium rounded-tr-lg w-1/12"></th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium rounded-tl-lg text-xs sm:text-sm w-1/4">Category</th>
+                  <th className="text-right py-2 sm:py-3 px-1 sm:px-4 font-medium text-xs sm:text-sm w-1/6"></th>
+                  <th className="text-right py-2 sm:py-3 px-1 sm:px-4 font-medium text-xs sm:text-sm w-1/4">Expected</th>
+                  <th className="text-right py-2 sm:py-3 px-1 sm:px-4 font-medium text-xs sm:text-sm w-1/4">Actual</th>
+                  <th className="text-right py-2 sm:py-3 px-1 sm:px-4 font-medium rounded-tr-lg text-xs sm:text-sm w-1/12"></th>
                 </tr>
               </thead>
               <tbody>
@@ -239,11 +317,11 @@ export function BudgetVarianceDashboard({
                       className="border-b hover:bg-gray-50 cursor-pointer"
                       onClick={() => toggleCategoryExpansion(item.category.id)}
                     >
-                      <td className="py-3 px-4 font-medium bg-blue-50 border-r border-blue-100">{item.category.name}</td>
-                      <td className="text-right py-3 px-4"></td>
-                      <td className="text-right py-3 px-4">{formatCurrency(item.budgeted)}</td>
-                      <td className="text-right py-3 px-4 font-semibold">{formatCurrency(item.actual)}</td>
-                      <td className="text-right py-3 px-4">
+                      <td className="py-2 sm:py-3 px-2 sm:px-4 font-medium bg-blue-50 border-r border-blue-100 text-xs sm:text-sm">{item.category.name}</td>
+                      <td className="text-right py-2 sm:py-3 px-1 sm:px-4"></td>
+                      <td className="text-right py-2 sm:py-3 px-1 sm:px-4 text-xs sm:text-sm">{formatCurrency(item.budgeted)}</td>
+                      <td className="text-right py-2 sm:py-3 px-1 sm:px-4 font-semibold text-xs sm:text-sm">{formatCurrency(item.actual)}</td>
+                      <td className="text-right py-2 sm:py-3 px-1 sm:px-4">
                         {expandedCategories.has(item.category.id) ? (
                           <ChevronUp className="h-4 w-4 text-gray-400" />
                         ) : (
@@ -275,16 +353,62 @@ export function BudgetVarianceDashboard({
           <CardTitle>Expenses</CardTitle>
           <CardDescription>Your spending by category for {monthName}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full table-fixed">
+        <CardContent className="px-3 sm:px-6">
+          {/* Mobile Card Layout */}
+          <div className="block md:hidden space-y-3">
+            {expenseData.map((item) => (
+              <div key={item.category.id} className="border rounded-lg">
+                <div 
+                  className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                  onClick={() => toggleCategoryExpansion(item.category.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">{item.category.icon}</span>
+                      <div>
+                        <div className="font-semibold text-base">{item.category.name}</div>
+                        <div className="text-sm space-y-1">
+                          <div className="text-muted-foreground">
+                            Actual: <span className="font-medium text-red-600">{formatCurrency(item.actual)}</span>
+                          </div>
+                          <div className="text-muted-foreground">
+                            Budget: <span className="font-medium">{formatCurrency(item.budgeted)}</span>
+                          </div>
+                          <div className={cn("font-medium", getExpenseStatusColor(item.variance, item.monthlyPaceStatus))}>
+                            {getExpenseStatusText(item.variance, item.monthlyPaceStatus)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {expandedCategories.has(item.category.id) ? (
+                      <ChevronUp className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-gray-400" />
+                    )}
+                  </div>
+                </div>
+                {expandedCategories.has(item.category.id) && (
+                  <div className="border-t bg-gray-50/50">
+                    <TransactionTable 
+                      transactions={item.recentTransactions} 
+                      variant="expense" 
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table Layout */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full table-fixed min-w-[500px]">
               <thead>
                 <tr className="border-b bg-gray-50">
-                  <th className="text-left py-3 px-4 font-medium rounded-tl-lg w-1/4">Category</th>
-                  <th className="text-right py-3 px-4 font-medium w-1/6">On Track</th>
-                  <th className="text-right py-3 px-4 font-medium w-1/4">Budgeted</th>
-                  <th className="text-right py-3 px-4 font-medium w-1/4">Actual</th>
-                  <th className="text-right py-3 px-4 font-medium rounded-tr-lg w-1/12"></th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium rounded-tl-lg text-xs sm:text-sm w-1/4">Category</th>
+                  <th className="text-right py-2 sm:py-3 px-1 sm:px-4 font-medium text-xs sm:text-sm w-1/6">On Track</th>
+                  <th className="text-right py-2 sm:py-3 px-1 sm:px-4 font-medium text-xs sm:text-sm w-1/4">Budgeted</th>
+                  <th className="text-right py-2 sm:py-3 px-1 sm:px-4 font-medium text-xs sm:text-sm w-1/4">Actual</th>
+                  <th className="text-right py-2 sm:py-3 px-1 sm:px-4 font-medium rounded-tr-lg text-xs sm:text-sm w-1/12"></th>
                 </tr>
               </thead>
               <tbody>
@@ -294,13 +418,13 @@ export function BudgetVarianceDashboard({
                       className="border-b hover:bg-gray-50 cursor-pointer"
                       onClick={() => toggleCategoryExpansion(item.category.id)}
                     >
-                      <td className="py-3 px-4 font-medium bg-red-50 border-r border-red-100">{item.category.name}</td>
-                      <td className={cn("text-right py-3 px-4 text-sm font-medium", getExpenseStatusColor(item.variance, item.monthlyPaceStatus))}>
+                      <td className="py-2 sm:py-3 px-2 sm:px-4 font-medium bg-red-50 border-r border-red-100 text-xs sm:text-sm">{item.category.name}</td>
+                      <td className={cn("text-right py-2 sm:py-3 px-1 sm:px-4 text-xs sm:text-sm font-medium", getExpenseStatusColor(item.variance, item.monthlyPaceStatus))}>
                         {getExpenseStatusText(item.variance, item.monthlyPaceStatus)}
                       </td>
-                      <td className="text-right py-3 px-4">{formatCurrency(item.budgeted)}</td>
-                      <td className="text-right py-3 px-4 font-semibold">{formatCurrency(item.actual)}</td>
-                      <td className="text-right py-3 px-4">
+                      <td className="text-right py-2 sm:py-3 px-1 sm:px-4 text-xs sm:text-sm">{formatCurrency(item.budgeted)}</td>
+                      <td className="text-right py-2 sm:py-3 px-1 sm:px-4 font-semibold text-xs sm:text-sm">{formatCurrency(item.actual)}</td>
+                      <td className="text-right py-2 sm:py-3 px-1 sm:px-4">
                         {expandedCategories.has(item.category.id) ? (
                           <ChevronUp className="h-4 w-4 text-gray-400" />
                         ) : (
