@@ -1,16 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, X } from "lucide-react";
 import { InvitePartnerModal } from "@/components/ui/invitePartnerModal";
+import { dismissInvitePrompt, getInvitePromptStatus } from "@/lib/api/userPreferencesApi";
 
 export function InvitePrompt() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (isDismissed) {
+  useEffect(() => {
+    const checkDismissalStatus = async () => {
+      try {
+        const status = await getInvitePromptStatus();
+        setIsDismissed(status.dismissed);
+      } catch (error: unknown) {
+        console.error('Error checking invite prompt status:', error);
+        // Default to showing prompt on error
+        setIsDismissed(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkDismissalStatus();
+  }, []);
+
+  const handleDismiss = async () => {
+    try {
+      await dismissInvitePrompt();
+      setIsDismissed(true);
+    } catch (error: unknown) {
+      console.error('Error dismissing invite prompt:', error);
+      // Still dismiss locally as fallback
+      setIsDismissed(true);
+    }
+  };
+
+  // Show loading state or nothing while checking
+  if (isLoading || isDismissed) {
     return null;
   }
 
@@ -27,7 +58,7 @@ export function InvitePrompt() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setIsDismissed(true)}
+            onClick={handleDismiss}
             className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800"
           >
             <X className="h-4 w-4" />

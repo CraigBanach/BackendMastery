@@ -7,4 +7,6 @@ public interface IUserContext
     int? AccountId { get; }
     bool IsAuthenticated { get; }
     Task<bool> HasAccessToAccountAsync(int accountId);
+    Task<bool> DismissInvitePromptAsync();
+    Task<bool> IsInvitePromptDismissedAsync();
 }
