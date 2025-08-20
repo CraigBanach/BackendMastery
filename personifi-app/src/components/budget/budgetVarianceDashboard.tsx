@@ -144,7 +144,33 @@ export function BudgetVarianceDashboard({
       <Card>
         <CardHeader className="space-y-4 sm:space-y-0">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-            <div className="flex items-center justify-center space-x-2 sm:space-x-4">
+            {/* Mobile: Full-width navigation with pinned arrows */}
+            <div className="flex sm:hidden items-center justify-between w-full">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateMonth('prev')}
+                disabled={loading}
+                className="flex-shrink-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <CardTitle className="text-lg font-semibold text-center flex-1">
+                {monthNameMobile}
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateMonth('next')}
+                disabled={loading}
+                className="flex-shrink-0"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* Desktop: Grouped navigation */}
+            <div className="hidden sm:flex items-center space-x-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -153,9 +179,8 @@ export function BudgetVarianceDashboard({
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <CardTitle className="text-lg sm:text-xl font-semibold min-w-0 text-center">
-                <span className="sm:hidden">{monthNameMobile}</span>
-                <span className="hidden sm:inline">{monthName}</span>
+              <CardTitle className="text-xl font-semibold">
+                {monthName}
               </CardTitle>
               <Button
                 variant="outline"
@@ -166,6 +191,7 @@ export function BudgetVarianceDashboard({
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
+            
             <Button 
               variant="outline" 
               size="sm"
