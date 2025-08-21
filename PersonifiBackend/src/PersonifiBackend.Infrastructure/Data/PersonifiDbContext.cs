@@ -15,6 +15,8 @@ public class PersonifiDbContext : DbContext
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<UserAccount> UserAccounts => Set<UserAccount>();
     public DbSet<InvitationToken> InvitationTokens => Set<InvitationToken>();
+    public DbSet<PendingTransaction> PendingTransactions => Set<PendingTransaction>();
+    public DbSet<TransactionImport> TransactionImports => Set<TransactionImport>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -200,6 +202,75 @@ public class PersonifiDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.AcceptedByUserId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // PendingTransaction configuration
+        modelBuilder.Entity<PendingTransaction>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.Property(e => e.Balance).HasPrecision(18, 2);
+            entity.Property(e => e.Description).HasMaxLength(200);
+            entity.Property(e => e.CounterParty).HasMaxLength(200);
+            entity.Property(e => e.Reference).HasMaxLength(200);
+            entity.Property(e => e.Type).HasMaxLength(50);
+            entity.Property(e => e.ExternalTransactionId).HasMaxLength(100);
+            entity.Property(e => e.ExternalSpendingCategory).HasMaxLength(100);
+            entity.Property(e => e.Notes).HasMaxLength(1000);
+            entity.HasIndex(e => new { e.AccountId, e.ExternalTransactionId }).IsUnique();
+            entity.HasIndex(e => new { e.AccountId, e.TransactionDate });
+
+            // Configure DateTime columns to use timestamp without time zone
+            entity.Property(e => e.TransactionDate).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+
+            entity
+                .HasOne(e => e.Account)
+                .WithMany()
+                .HasForeignKey(e => e.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity
+                .HasOne(e => e.Category)
+                .WithMany()
+                .HasForeignKey(e => e.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity
+                .HasOne(e => e.ImportedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.ImportedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity
+                .HasOne(e => e.TransactionImport)
+                .WithMany(ti => ti.PendingTransactions)
+                .HasForeignKey(e => e.TransactionImportId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // TransactionImport configuration
+        modelBuilder.Entity<TransactionImport>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.FileName).HasMaxLength(255);
+
+            // Configure DateTime columns to use timestamp without time zone
+            entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.CompletedAt).HasColumnType("timestamp without time zone");
+
+            entity
+                .HasOne(e => e.Account)
+                .WithMany()
+                .HasForeignKey(e => e.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity
+                .HasOne(e => e.ImportedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.ImportedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

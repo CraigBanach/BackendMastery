@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { auth0 } from "@/lib/auth0";
-import { PieChart, Receipt } from "lucide-react";
+import { PieChart, Receipt, Upload } from "lucide-react";
 import { headers } from "next/headers";
 import { MobileNavMenu } from "./mobileNavMenu";
 import { hasAccount } from "@/lib/api/accountApi";
@@ -20,6 +20,7 @@ const TopNavigation = async () => {
   const isBudgetPage = pathName?.includes("/budget") ?? false;
   const isTransactionsPage = pathName?.includes("/transactions") ?? false;
   const isCategoriesPage = pathName?.includes("/categories") ?? false;
+  const isImportPage = pathName?.includes("/import") ?? false;
 
   return (
     <>
@@ -46,6 +47,16 @@ const TopNavigation = async () => {
               Transactions
             </a>
           </Button>
+          <Button
+            asChild
+            variant={isImportPage ? "default" : "ghost"}
+            size="sm"
+          >
+            <a href="/import" className="flex items-center">
+              <Upload className="h-4 w-4 mr-2" />
+              Import
+            </a>
+          </Button>
         </div>
       </div>
 
@@ -55,6 +66,7 @@ const TopNavigation = async () => {
           isBudgetPage={isBudgetPage}
           isTransactionsPage={isTransactionsPage}
           isCategoriesPage={isCategoriesPage}
+          isImportPage={isImportPage}
         />
       </div>
     </>

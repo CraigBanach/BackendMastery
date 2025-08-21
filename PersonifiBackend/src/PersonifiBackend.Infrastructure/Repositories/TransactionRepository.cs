@@ -129,4 +129,28 @@ public class TransactionRepository : ITransactionRepository
                 : query.OrderBy(t => t.TransactionDate).ThenBy(t => t.Id),
         };
     }
+
+    public async Task<List<Transaction>> FindPotentialDuplicatesAsync(int accountId, decimal amount, DateTime transactionDate, string description)
+    {
+        var startDate = transactionDate.AddDays(-1);
+        var endDate = transactionDate.AddDays(1);
+
+        return await _context.Transactions
+            .Where(t => t.AccountId == accountId 
+                && t.Amount == amount 
+                && t.TransactionDate >= startDate 
+                && t.TransactionDate <= endDate
+                && EF.Functions.Like(t.Description.ToLower(), $"%{description.ToLower()}%"))
+            .ToListAsync();
+    }
+
+    public async Task<List<Transaction>> FindExactDuplicatesAsync(int accountId, decimal amount, DateTime transactionDate, string counterParty)
+    {
+        return await _context.Transactions
+            .Where(t => t.AccountId == accountId 
+                && t.Amount == amount 
+                && t.TransactionDate.Date == transactionDate.Date
+                && EF.Functions.Like(t.Description.ToLower(), counterParty.ToLower()))
+            .ToListAsync();
+    }
 }

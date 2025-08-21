@@ -26,15 +26,8 @@ public class CategoryServiceTests
     {
         await Task.CompletedTask; // Placeholder
         /*
-        var category = new Category { Id = 1, AccountId = 1 };
-        var dto = new CategoryDto(1, "SampleName", CategoryType.Expense, null, null);
-        _repoMock.Setup(r => r.GetByIdAsync(1, 1)).ReturnsAsync(category);
-        _mapperMock.Setup(m => m.Map<CategoryDto>(category)).Returns(dto);
-
-        var result = await _service.GetByIdAsync(1, "user1");
-
-        Assert.NotNull(result);
-        Assert.Equal(1, result.Id);
+        TODO: Implement proper tests
+        */
     }
 
     [Fact]

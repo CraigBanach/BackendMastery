@@ -1,15 +1,16 @@
 "use client";
 
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
-import { PieChart, Receipt, Menu, Settings } from "lucide-react";
+import { PieChart, Receipt, Menu, Settings, Upload } from "lucide-react";
 
 interface MobileNavMenuProps {
   isBudgetPage: boolean;
   isTransactionsPage: boolean;
   isCategoriesPage: boolean;
+  isImportPage: boolean;
 }
 
-export function MobileNavMenu({ isBudgetPage, isTransactionsPage, isCategoriesPage }: MobileNavMenuProps) {
+export function MobileNavMenu({ isBudgetPage, isTransactionsPage, isCategoriesPage, isImportPage }: MobileNavMenuProps) {
   const handleNavigation = (value: string) => {
     if (value && value !== "placeholder") {
       window.location.href = value;
@@ -20,6 +21,7 @@ export function MobileNavMenu({ isBudgetPage, isTransactionsPage, isCategoriesPa
     if (isBudgetPage) return "/budget";
     if (isTransactionsPage) return "/transactions";
     if (isCategoriesPage) return "/categories";
+    if (isImportPage) return "/import";
     return "placeholder";
   };
 
@@ -27,6 +29,7 @@ export function MobileNavMenu({ isBudgetPage, isTransactionsPage, isCategoriesPa
     if (isBudgetPage) return "Budget";
     if (isTransactionsPage) return "Transactions";
     if (isCategoriesPage) return "Categories";
+    if (isImportPage) return "Import";
     return "Menu";
   };
 
@@ -57,6 +60,12 @@ export function MobileNavMenu({ isBudgetPage, isTransactionsPage, isCategoriesPa
           <div className="flex items-center">
             <Settings className="h-4 w-4 mr-2" />
             Categories
+          </div>
+        </SelectItem>
+        <SelectItem value="/import">
+          <div className="flex items-center">
+            <Upload className="h-4 w-4 mr-2" />
+            Import
           </div>
         </SelectItem>
       </SelectContent>
