@@ -2,3 +2,5 @@
 - Edit category is shit right now, no data is pre-populated
 - Split Categories by type on category page
 - Creating a category doesn't apply budget
+- Validate duplicate import functionality
+- Fix skeleton on import page for infinite scrolling
