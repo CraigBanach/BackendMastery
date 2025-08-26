@@ -6,3 +6,6 @@
 - Fix skeleton on import page for infinite scrolling
 - Can't refresh budget while keeping month
 - Make budgets use date query params
+- Add user feedback on import history (approved/rejected transaction counts) - removed temporarily as always showed 0
+- Can only press the invite partner button once
+- Invite partner flow should only expose a token to be sent to your partner

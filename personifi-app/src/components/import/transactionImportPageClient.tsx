@@ -7,17 +7,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AccountRequiredWrapper } from "@/components/ui/accountRequiredWrapper";
 import { PageHeader } from "@/components/ui/pageHeader";
-import { Upload, FileText, CheckCircle, XCircle, Clock, AlertCircle, ArrowRight } from "lucide-react";
-import { importTransactionsFromCSV, getImportHistory, getPendingTransactions, TransactionImportDto } from "@/lib/api/transactionImportApi";
+import {
+  Upload,
+  CheckCircle,
+  XCircle,
+  Clock,
+  AlertCircle,
+  ArrowRight,
+} from "lucide-react";
+import {
+  importTransactionsFromCSV,
+  getImportHistory,
+  getPendingTransactions,
+  TransactionImportDto,
+} from "@/lib/api/transactionImportApi";
 import { useEffect } from "react";
 import { format } from "date-fns";
 
 export default function TransactionImportPageClient() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadResult, setUploadResult] = useState<TransactionImportDto | null>(null);
+  const [uploadResult, setUploadResult] = useState<TransactionImportDto | null>(
+    null
+  );
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [importHistory, setImportHistory] = useState<TransactionImportDto[]>([]);
+  const [importHistory, setImportHistory] = useState<TransactionImportDto[]>(
+    []
+  );
   const [hasPendingTransactions, setHasPendingTransactions] = useState(false);
   const [isCheckingPending, setIsCheckingPending] = useState(true);
 
@@ -48,38 +64,53 @@ export default function TransactionImportPageClient() {
     }
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (!file.name.toLowerCase().endsWith('.csv')) {
+      if (!file.name.toLowerCase().endsWith(".csv")) {
         setUploadError("Please select a CSV file");
         return;
       }
+
       setSelectedFile(file);
       setUploadError(null);
       setUploadResult(null);
+
+      // Auto-import the file
+      await handleUpload(file);
     }
   };
 
-  const handleUpload = async () => {
-    if (!selectedFile) return;
+  const handleUpload = async (file?: File) => {
+    const fileToUpload = file || selectedFile;
+    if (!fileToUpload) return;
 
     setIsUploading(true);
     setUploadError(null);
 
     try {
-      const result = await importTransactionsFromCSV(selectedFile);
+      const result = await importTransactionsFromCSV(fileToUpload);
       setUploadResult(result);
       setSelectedFile(null);
       // Reset file input
-      const fileInput = document.getElementById('csv-file') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
-      
+      const fileInput = document.getElementById("csv-file") as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
+
       // Refresh import history and check pending
       await loadImportHistory();
       await checkPendingTransactions();
+
+      // Auto-redirect to review page if there are processed transactions
+      if (result.processedTransactions > 0) {
+        setTimeout(() => {
+          window.location.href = "/import/review";
+        }, 1500); // Brief delay to show success message
+      }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Upload failed";
+      const errorMessage =
+        error instanceof Error ? error.message : "Upload failed";
       setUploadError(errorMessage);
     } finally {
       setIsUploading(false);
@@ -88,11 +119,11 @@ export default function TransactionImportPageClient() {
 
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'completed':
+      case "completed":
         return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'failed':
+      case "failed":
         return <XCircle className="h-4 w-4 text-red-600" />;
-      case 'processing':
+      case "processing":
         return <Clock className="h-4 w-4 text-blue-600 animate-spin" />;
       default:
         return <Clock className="h-4 w-4 text-gray-600" />;
@@ -106,7 +137,10 @@ export default function TransactionImportPageClient() {
   return (
     <AccountRequiredWrapper>
       <div className="container mx-auto px-4 py-6">
-        <PageHeader title="Import Transactions" subTitle="Upload and process bank transaction files" />
+        <PageHeader
+          title="Import Transactions"
+          subTitle="Upload and process bank transaction files"
+        />
 
         {/* Pending Transactions Alert */}
         {!isCheckingPending && hasPendingTransactions && (
@@ -116,14 +150,17 @@ export default function TransactionImportPageClient() {
                 <div className="flex items-center gap-3">
                   <AlertCircle className="h-5 w-5 text-orange-600" />
                   <div>
-                    <h4 className="font-medium text-orange-800">Pending Transactions Need Review</h4>
+                    <h4 className="font-medium text-orange-800">
+                      Pending Transactions Need Review
+                    </h4>
                     <p className="text-sm text-orange-700">
-                      You have transactions waiting to be reviewed and categorized.
+                      You have transactions waiting to be reviewed and
+                      categorized.
                     </p>
                   </div>
                 </div>
-                <Button 
-                  onClick={() => window.location.href = '/import/review'}
+                <Button
+                  onClick={() => (window.location.href = "/import/review")}
                   className="bg-orange-600 hover:bg-orange-700"
                 >
                   Review Now
@@ -153,26 +190,17 @@ export default function TransactionImportPageClient() {
                 disabled={isUploading}
               />
               <p className="text-sm text-gray-600">
-                Currently supports Starling Bank CSV exports. Ensure your file includes Date, Counter Party, Amount, and other standard fields.
+                Currently supports Starling Bank CSV exports. Ensure your file
+                includes Date, Counter Party, Amount, and other standard fields.
               </p>
             </div>
 
-            {selectedFile && (
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  <span className="text-sm font-medium">{selectedFile.name}</span>
-                  <span className="text-xs text-gray-500">
-                    ({(selectedFile.size / 1024).toFixed(1)} KB)
-                  </span>
-                </div>
-                <Button 
-                  onClick={handleUpload} 
-                  disabled={isUploading}
-                  size="sm"
-                >
-                  {isUploading ? "Uploading..." : "Import"}
-                </Button>
+            {isUploading && (
+              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-md">
+                <Clock className="h-4 w-4 text-blue-600 animate-spin" />
+                <span className="text-sm text-blue-800">
+                  Importing transactions...
+                </span>
               </div>
             )}
 
@@ -186,26 +214,25 @@ export default function TransactionImportPageClient() {
               <div className="p-4 bg-green-50 border border-green-200 rounded-md">
                 <div className="flex items-center gap-2 mb-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
-                  <h4 className="font-medium text-green-800">Import Successful!</h4>
+                  <h4 className="font-medium text-green-800">
+                    Import Successful!
+                  </h4>
                 </div>
                 <div className="text-sm text-green-700 space-y-1">
                   <p>File: {uploadResult.fileName}</p>
                   <p>Total transactions: {uploadResult.totalTransactions}</p>
                   <p>Processed: {uploadResult.processedTransactions}</p>
                   {uploadResult.duplicateTransactions > 0 && (
-                    <p className="text-amber-700">Duplicates detected: {uploadResult.duplicateTransactions}</p>
+                    <p className="text-amber-700">
+                      Duplicates detected: {uploadResult.duplicateTransactions}
+                    </p>
+                  )}
+                  {uploadResult.processedTransactions > 0 && (
+                    <p className="text-blue-700 font-medium mt-2">
+                      Redirecting to review page...
+                    </p>
                   )}
                 </div>
-                {uploadResult.processedTransactions > 0 && (
-                  <div className="mt-3">
-                    <Button 
-                      onClick={() => window.location.href = '/import/review'}
-                      size="sm"
-                    >
-                      Review Pending Transactions
-                    </Button>
-                  </div>
-                )}
               </div>
             )}
           </CardContent>
@@ -222,7 +249,10 @@ export default function TransactionImportPageClient() {
             ) : (
               <div className="space-y-3">
                 {importHistory.map((importRecord) => (
-                  <div key={importRecord.id} className="flex items-center justify-between p-3 border rounded-md">
+                  <div
+                    key={importRecord.id}
+                    className="flex items-center justify-between p-3 border rounded-md"
+                  >
                     <div className="flex items-center gap-3">
                       {getStatusIcon(importRecord.status)}
                       <div>
@@ -234,13 +264,13 @@ export default function TransactionImportPageClient() {
                     </div>
                     <div className="text-right text-sm">
                       <p>{importRecord.totalTransactions} transactions</p>
-                      <div className="flex gap-4 text-xs text-gray-500">
-                        <span className="text-green-600">✓ {importRecord.approvedTransactions}</span>
-                        <span className="text-red-600">✗ {importRecord.rejectedTransactions}</span>
-                        {importRecord.duplicateTransactions > 0 && (
-                          <span className="text-amber-600">⚠ {importRecord.duplicateTransactions}</span>
-                        )}
-                      </div>
+                      {importRecord.duplicateTransactions > 0 && (
+                        <div className="flex gap-4 text-xs text-gray-500">
+                          <span className="text-amber-600">
+                            ⚠ {importRecord.duplicateTransactions} duplicates
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
