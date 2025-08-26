@@ -36,6 +36,7 @@ export function TransactionSplitter({
 }: TransactionSplitterProps) {
   const [splits, setSplits] = useState<SplitItem[]>([]);
   const [hasManuallyModified, setHasManuallyModified] = useState(false);
+  const [selectedCategoryType, setSelectedCategoryType] = useState<string | null>(null);
 
   // Always work with positive amounts in the UI for simplicity
   const getDisplayAmount = (amount: number) => Math.abs(amount);
@@ -53,8 +54,8 @@ export function TransactionSplitter({
   useEffect(() => {
     const halfDisplay = getDisplayAmount(originalAmount) / 2;
     const initialSplits: SplitItem[] = [
-      { tempId: "1", categoryId: 0, amount: halfDisplay, description: defaultDescription || "" },
-      { tempId: "2", categoryId: 0, amount: halfDisplay, description: defaultDescription || "" }
+      { tempId: "1", categoryId: 0, amount: halfDisplay, description: "" },
+      { tempId: "2", categoryId: 0, amount: halfDisplay, description: "" }
     ];
     setSplits(initialSplits);
   }, [originalAmount, defaultDescription]);
@@ -69,7 +70,7 @@ export function TransactionSplitter({
       tempId: Date.now().toString(),
       categoryId: 0,
       amount: Math.max(0, remainingAmount / (splits.length + 1)),
-      description: defaultDescription || ""
+      description: ""
     };
 
     // Auto-distribute remaining amount if not manually modified
@@ -104,6 +105,40 @@ export function TransactionSplitter({
   };
 
   const updateSplit = (tempId: string, field: keyof TransactionSplit, value: string | number) => {
+    if (field === 'categoryId') {
+      const categoryId = Number(value);
+      const category = categories.find(c => c.id === categoryId);
+      
+      // Set the category type when first category is selected
+      if (category && !selectedCategoryType) {
+        setSelectedCategoryType(category.type);
+      }
+      
+      // Prevent selecting categories of different types
+      if (category && selectedCategoryType && category.type !== selectedCategoryType) {
+        return; // Don't allow the update
+      }
+      
+      // If deselecting (setting to 0), check if we should reset the category type
+      if (categoryId === 0) {
+        // Update the split first
+        setSplits(prevSplits => {
+          const updatedSplits = prevSplits.map(split => 
+            split.tempId === tempId ? { ...split, categoryId: 0 } : split
+          );
+          
+          // Check if any splits still have categories selected
+          const hasSelectedCategories = updatedSplits.some(split => split.categoryId > 0);
+          if (!hasSelectedCategories) {
+            setSelectedCategoryType(null);
+          }
+          
+          return updatedSplits;
+        });
+        return;
+      }
+    }
+    
     setSplits(splits.map(split => 
       split.tempId === tempId 
         ? { 
@@ -132,16 +167,6 @@ export function TransactionSplitter({
   };
 
   const canSubmit = splits.filter(split => split.categoryId > 0).length >= 2;
-
-  const formatCurrency = (amount: number) => {
-    const absAmount = Math.abs(amount);
-    const formattedAmount = new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP'
-    }).format(absAmount);
-    
-    return amount >= 0 ? `+${formattedAmount}` : formattedAmount;
-  };
 
   return (
     <div className="border rounded-lg p-4 bg-gray-50 space-y-4">
@@ -181,11 +206,13 @@ export function TransactionSplitter({
                   className="w-full text-sm border rounded px-2 py-1"
                 >
                   <option value={0}>Select category...</option>
-                  {categories.map(category => (
-                    <option key={category.id} value={category.id}>
-                      {category.icon && `${category.icon} `}{category.name}
-                    </option>
-                  ))}
+                  {categories
+                    .filter(category => !selectedCategoryType || category.type === selectedCategoryType)
+                    .map(category => (
+                      <option key={category.id} value={category.id}>
+                        {category.icon && `${category.icon} `}{category.name}
+                      </option>
+                    ))}
                 </select>
               </div>
               
@@ -197,8 +224,14 @@ export function TransactionSplitter({
                   type="number"
                   step="0.01"
                   min="0"
-                  value={split.amount}
-                  onChange={(e) => updateSplit(split.tempId, 'amount', Number(e.target.value))}
+                  value={split.amount || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Allow empty string or valid numbers (including partial like "12.")
+                    if (value === '' || !isNaN(Number(value))) {
+                      updateSplit(split.tempId, 'amount', value === '' ? 0 : Number(value));
+                    }
+                  }}
                   disabled={isProcessing}
                   className="text-sm"
                 />
@@ -211,7 +244,7 @@ export function TransactionSplitter({
                   value={split.description || ""}
                   onChange={(e) => updateSplit(split.tempId, 'description', e.target.value)}
                   disabled={isProcessing}
-                  placeholder="Description..."
+                  placeholder={defaultDescription || "Description..."}
                   className="text-sm"
                 />
               </div>
