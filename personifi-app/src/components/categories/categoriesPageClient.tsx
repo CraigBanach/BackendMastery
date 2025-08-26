@@ -13,6 +13,7 @@ import {
   updateCategory, 
   deleteCategory 
 } from "@/lib/api/categoryApi";
+import { setBudgetsForMonth } from "@/lib/api/budgetApi";
 
 interface CategoriesPageClientProps {
   initialCategories: CategoryDto[];
@@ -23,11 +24,9 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryDto | null>(null);
   const [deletingCategory, setDeletingCategory] = useState<CategoryDto | null>(null);
-  const [typeFilter, setTypeFilter] = useState<"all" | CategoryType>("all");
 
-  const filteredCategories = categories.filter(category => 
-    typeFilter === "all" || category.type === typeFilter
-  );
+  const expenseCategories = categories.filter(category => category.type === CategoryType.Expense);
+  const incomeCategories = categories.filter(category => category.type === CategoryType.Income);
 
   const refreshCategories = async () => {
     try {
@@ -45,14 +44,25 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
     budgetAmount?: number;
   }) => {
     try {
-      await createCategory({
+      const newCategory = await createCategory({
         name: categoryData.name,
         type: categoryData.type,
         icon: categoryData.icon,
       });
       
-      // TODO: If budgetAmount provided, create budget for current month
-      // This would require integrating with budget API
+      // If budgetAmount provided, create budget for current month
+      if (categoryData.budgetAmount && categoryData.budgetAmount > 0) {
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1; // JavaScript months are 0-based
+        
+        await setBudgetsForMonth(year, month, [
+          {
+            categoryId: newCategory.id,
+            amount: categoryData.budgetAmount,
+          }
+        ]);
+      }
       
       await refreshCategories();
       setIsCreateModalOpen(false);
@@ -77,7 +87,19 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
         icon: categoryData.icon,
       });
 
-      // TODO: If budgetAmount provided, update budget for current month
+      // If budgetAmount provided, update budget for current month
+      if (typeof categoryData.budgetAmount === 'number' && categoryData.budgetAmount >= 0) {
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1; // JavaScript months are 0-based
+        
+        await setBudgetsForMonth(year, month, [
+          {
+            categoryId: editingCategory.id,
+            amount: categoryData.budgetAmount,
+          }
+        ]);
+      }
       
       await refreshCategories();
       setEditingCategory(null);
@@ -101,87 +123,60 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
   };
 
   return (
-    <div className="space-y-6">
-      {/* Mobile: Stacked Layout */}
-      <div className="block sm:hidden space-y-4">
-        {/* Filter Buttons - Stacked */}
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <Button
-              variant={typeFilter === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTypeFilter("all")}
-              className="flex-1"
-            >
-              All Categories
-            </Button>
-            <Button
-              variant={typeFilter === CategoryType.Expense ? "default" : "outline"}
-              size="sm"
-              onClick={() => setTypeFilter(CategoryType.Expense)}
-              className="flex-1"
-            >
-              Expenses
-            </Button>
-          </div>
-          <Button
-            variant={typeFilter === CategoryType.Income ? "default" : "outline"}
-            size="sm"
-            onClick={() => setTypeFilter(CategoryType.Income)}
-            className="w-full"
-          >
-            Income
-          </Button>
-        </div>
-        
-        {/* Add Category Button - Full Width */}
-        <Button 
-          onClick={() => setIsCreateModalOpen(true)}
-          className="w-full"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Category
-        </Button>
-      </div>
-
-      {/* Desktop: Original Horizontal Layout */}
-      <div className="hidden sm:flex justify-between items-center">
-        <div className="flex gap-2">
-          <Button
-            variant={typeFilter === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setTypeFilter("all")}
-          >
-            All Categories
-          </Button>
-          <Button
-            variant={typeFilter === CategoryType.Expense ? "default" : "outline"}
-            size="sm"
-            onClick={() => setTypeFilter(CategoryType.Expense)}
-          >
-            Expenses
-          </Button>
-          <Button
-            variant={typeFilter === CategoryType.Income ? "default" : "outline"}
-            size="sm"
-            onClick={() => setTypeFilter(CategoryType.Income)}
-          >
-            Income
-          </Button>
-        </div>
-
+    <div className="space-y-8">
+      {/* Add Category Button */}
+      <div className="flex justify-end">
         <Button onClick={() => setIsCreateModalOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add Category
         </Button>
       </div>
 
-      {/* Categories Table */}
-      <CategoriesTable
-        categories={filteredCategories}
-        onEdit={setEditingCategory}
-        onDelete={setDeletingCategory}
-      />
+      {/* Expense Categories Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-gray-900">Expense Categories</h2>
+          <span className="text-sm text-gray-500">
+            {expenseCategories.length} {expenseCategories.length === 1 ? 'category' : 'categories'}
+          </span>
+        </div>
+        
+        {expenseCategories.length > 0 ? (
+          <CategoriesTable
+            categories={expenseCategories}
+            onEdit={setEditingCategory}
+            onDelete={setDeletingCategory}
+          />
+        ) : (
+          <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+            <p className="text-gray-500">No expense categories created yet.</p>
+            <p className="text-sm text-gray-400 mt-1">Create categories to track your spending.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Income Categories Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-gray-900">Income Categories</h2>
+          <span className="text-sm text-gray-500">
+            {incomeCategories.length} {incomeCategories.length === 1 ? 'category' : 'categories'}
+          </span>
+        </div>
+        
+        {incomeCategories.length > 0 ? (
+          <CategoriesTable
+            categories={incomeCategories}
+            onEdit={setEditingCategory}
+            onDelete={setDeletingCategory}
+          />
+        ) : (
+          <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+            <p className="text-gray-500">No income categories created yet.</p>
+            <p className="text-sm text-gray-400 mt-1">Create categories to track your income sources.</p>
+          </div>
+        )}
+      </div>
 
       {/* Modals */}
       <CategoryModal

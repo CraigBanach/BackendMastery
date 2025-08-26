@@ -31,6 +31,7 @@ export default function TransactionReviewPageClient() {
   const [pendingTransactions, setPendingTransactions] = useState<PendingTransactionDto[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedTransactions, setExpandedTransactions] = useState<Set<number>>(new Set());
@@ -55,7 +56,7 @@ export default function TransactionReviewPageClient() {
       const documentHeight = document.documentElement.offsetHeight;
       
       if (scrollPosition >= documentHeight - threshold) {
-        if (hasMore && !isLoading) {
+        if (hasMore && !isLoading && !isLoadingMore) {
           loadData(page + 1, true);
         }
       }
@@ -73,11 +74,15 @@ export default function TransactionReviewPageClient() {
       window.removeEventListener('scroll', throttledHandleScroll);
       clearTimeout(scrollTimeout);
     };
-  }, [hasMore, isLoading, page]);
+  }, [hasMore, isLoading, isLoadingMore, page]);
 
   const loadData = async (pageToLoad = 1, append = false) => {
     try {
-      if (!append) setIsLoading(true);
+      if (append) {
+        setIsLoadingMore(true);
+      } else {
+        setIsLoading(true);
+      }
       
       const [transactionsResult, categoriesResult] = await Promise.all([
         getPendingTransactions(pageToLoad, 20),
@@ -108,6 +113,7 @@ export default function TransactionReviewPageClient() {
       setError(errorMessage);
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
@@ -782,7 +788,7 @@ export default function TransactionReviewPageClient() {
                 </div>
                 
                 {/* Loading skeletons for infinite scroll */}
-                {(isLoading && page > 1) && (
+                {isLoadingMore && (
                   <div className="space-y-4 pt-4">
                     <TransactionSkeleton />
                     <TransactionSkeleton />

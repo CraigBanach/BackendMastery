@@ -38,6 +38,7 @@ public class ErrorHandlingMiddleware
         {
             UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Access denied"),
             ArgumentException => (HttpStatusCode.BadRequest, "Invalid request data"),
+            InvalidOperationException ex => (HttpStatusCode.BadRequest, ex.Message),
             KeyNotFoundException => (HttpStatusCode.NotFound, "Resource not found"),
             DuplicateResourceException ex => (HttpStatusCode.Conflict, ex.Message),
             InvalidCategoriesException ex => (HttpStatusCode.NotFound, ex.Message),

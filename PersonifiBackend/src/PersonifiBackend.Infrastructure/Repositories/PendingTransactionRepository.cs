@@ -48,6 +48,13 @@ public class PendingTransactionRepository : IPendingTransactionRepository
             .ToListAsync();
     }
 
+    public async Task<List<PendingTransaction>> GetByImportIdAsync(int transactionImportId)
+    {
+        return await _context.PendingTransactions
+            .Where(pt => pt.TransactionImportId == transactionImportId)
+            .ToListAsync();
+    }
+
     public async Task<PendingTransaction> CreateAsync(PendingTransaction pendingTransaction)
     {
         pendingTransaction.CreatedAt = DateTime.UtcNow;
@@ -98,5 +105,12 @@ public class PendingTransactionRepository : IPendingTransactionRepository
                 && pt.TransactionDate <= endDate
                 && EF.Functions.Like(pt.Description.ToLower(), $"%{description.ToLower()}%"))
             .ToListAsync();
+    }
+
+    public async Task<bool> HasPendingTransactionsForCategoryAsync(int categoryId, int accountId)
+    {
+        return await _context.PendingTransactions
+            .Where(pt => pt.CategoryId == categoryId && pt.AccountId == accountId)
+            .AnyAsync();
     }
 }

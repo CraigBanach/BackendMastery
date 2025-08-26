@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { BudgetVarianceDashboard } from "./budgetVarianceDashboard";
 import { BudgetVarianceWithTransactions } from "@/lib/hooks/useBudgetData";
 import { getBudgetVariance } from "@/lib/api/budgetApi";
@@ -14,6 +15,7 @@ interface BudgetPageClientProps {
 }
 
 export function BudgetPageClient({ initialData, currentYear, currentMonth }: BudgetPageClientProps) {
+  const router = useRouter();
   const [data, setData] = useState(initialData);
   const [year, setYear] = useState(currentYear);
   const [month, setMonth] = useState(currentMonth);
@@ -41,6 +43,13 @@ export function BudgetPageClient({ initialData, currentYear, currentMonth }: Bud
   const handleMonthChange = async (newYear: number, newMonth: number): Promise<BudgetVarianceWithTransactions[]> => {
     setYear(newYear);
     setMonth(newMonth);
+    
+    // Update URL to preserve month on refresh
+    const url = new URL(window.location.href);
+    url.searchParams.set('year', newYear.toString());
+    url.searchParams.set('month', newMonth.toString());
+    router.push(url.pathname + url.search, { scroll: false });
+    
     const newData = await fetchData(newYear, newMonth);
     setData(newData);
     return newData;
