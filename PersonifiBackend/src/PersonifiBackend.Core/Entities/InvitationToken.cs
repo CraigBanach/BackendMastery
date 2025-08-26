@@ -4,7 +4,7 @@ public class InvitationToken
 {
     public int Id { get; set; }
     public string Token { get; set; } = string.Empty; // Unique token for invitation URL
-    public string Email { get; set; } = string.Empty; // Email of invited user
+    public string? Email { get; set; } // Email of invited user (nullable for token-only invitations)
     public string? PersonalMessage { get; set; } // Optional message from inviter
     public DateTime ExpiresAt { get; set; } // Hard-coded 7 days from creation
     public bool IsAccepted { get; set; } = false;

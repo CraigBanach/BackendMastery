@@ -33,6 +33,11 @@ interface SendInvitationResponse {
   expiresAt: string;
 }
 
+interface GenerateTokenResponse {
+  token: string;
+  expiresAt: string;
+}
+
 interface InvitationDetailsResponse {
   accountName: string;
   inviterEmail: string;
@@ -89,6 +94,13 @@ export async function sendInvitation(email: string, personalMessage?: string): P
   const response = await fetchWithAuth(`${API_BASE_URL}/Account/invite`, {
     method: 'POST',
     body: JSON.stringify({ email, personalMessage } as SendInvitationRequest),
+  });
+  return response.json();
+}
+
+export async function generateInviteToken(): Promise<GenerateTokenResponse> {
+  const response = await fetchWithAuth(`${API_BASE_URL}/Account/generate-invite-token`, {
+    method: 'POST',
   });
   return response.json();
 }

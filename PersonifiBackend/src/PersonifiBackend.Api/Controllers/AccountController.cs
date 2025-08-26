@@ -56,6 +56,35 @@ public class AccountController : ControllerBase
         }
     }
 
+    [HttpPost("generate-invite-token")]
+    public async Task<IActionResult> GenerateInviteToken()
+    {
+        if (!_userContext.UserId.HasValue || !_userContext.AccountId.HasValue)
+        {
+            return Unauthorized("User context not properly initialized");
+        }
+
+        try
+        {
+            var invitation = await _accountService.CreateInvitationAsync(
+                _userContext.AccountId.Value,
+                _userContext.UserId.Value,
+                null, // No email required
+                null); // No personal message
+
+            return Ok(new GenerateTokenResponse
+            {
+                Token = invitation.Token,
+                ExpiresAt = invitation.ExpiresAt
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating invite token for user {UserId}", _userContext.UserId);
+            return BadRequest("Failed to generate invite token");
+        }
+    }
+
     [HttpGet("invitation/{token}")]
     public async Task<IActionResult> GetInvitation(string token)
     {
@@ -219,4 +248,10 @@ public class CreateAccountResponse
     public int AccountId { get; set; }
     public string Name { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+}
+
+public class GenerateTokenResponse
+{
+    public string Token { get; set; } = string.Empty;
+    public DateTime ExpiresAt { get; set; }
 }
