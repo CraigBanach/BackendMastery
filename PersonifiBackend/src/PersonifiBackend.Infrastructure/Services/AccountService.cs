@@ -98,7 +98,7 @@ public class AccountService : IAccountService
         }
     }
 
-    public async Task<InvitationToken> CreateInvitationAsync(int accountId, int inviterUserId, string email, string? personalMessage = null)
+    public async Task<InvitationToken> CreateInvitationAsync(int accountId, int inviterUserId, string? email, string? personalMessage = null)
     {
         var token = GenerateInvitationToken();
         var invitation = new InvitationToken

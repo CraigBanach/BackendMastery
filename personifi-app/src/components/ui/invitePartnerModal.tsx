@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Modal } from "@/components/ui/modal";
-import { sendInvitation } from "@/lib/api/accountApi";
+import { generateInviteToken } from "@/lib/api/accountApi";
+import { Copy, RefreshCw } from "lucide-react";
 
 interface InvitePartnerModalProps {
   isOpen: boolean;
@@ -14,87 +13,66 @@ interface InvitePartnerModalProps {
 }
 
 export function InvitePartnerModal({ isOpen, onClose }: InvitePartnerModalProps) {
-  const [email, setEmail] = useState("");
-  const [personalMessage, setPersonalMessage] = useState("");
+  const [token, setToken] = useState<string | null>(null);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [copySuccess, setCopySuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email.trim()) {
-      setError("Email is required");
-      return;
+  // Generate token when modal opens
+  useEffect(() => {
+    if (isOpen && !token) {
+      generateToken();
     }
+  }, [isOpen, token]);
 
+  const generateToken = async () => {
     setIsLoading(true);
     setError(null);
-    setSuccess(null);
 
     try {
-      const result = await sendInvitation(email.trim(), personalMessage.trim() || undefined);
-      
-      setSuccess(`Invitation sent successfully! Your partner can accept the invitation using this link: ${result.invitationUrl}`);
-      
-      // Reset form
-      setEmail("");
-      setPersonalMessage("");
+      const result = await generateInviteToken();
+      setToken(result.token);
+      setExpiresAt(result.expiresAt);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to send invitation";
+      const errorMessage = err instanceof Error ? err.message : "Failed to generate invite token";
       setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const copyToken = async () => {
+    if (token) {
+      await navigator.clipboard.writeText(token);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    }
+  };
+
   const handleClose = () => {
-    setEmail("");
-    setPersonalMessage("");
+    setToken(null);
+    setExpiresAt(null);
     setError(null);
-    setSuccess(null);
+    setCopySuccess(false);
     onClose();
   };
 
-  const copyInvitationUrl = () => {
-    if (success) {
-      const urlMatch = success.match(/https?:\/\/[^\s]+/);
-      if (urlMatch) {
-        navigator.clipboard.writeText(urlMatch[0]);
-      }
-    }
+  const formatExpiryDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Invite Your Partner">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="email">Partner&apos;s Email Address</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="partner@example.com"
-            required
-            disabled={isLoading}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="message">Personal Message (Optional)</Label>
-          <Textarea
-            id="message"
-            value={personalMessage}
-            onChange={(e) => setPersonalMessage(e.target.value)}
-            placeholder="Let's manage our finances together!"
-            rows={3}
-            disabled={isLoading}
-          />
-          <p className="text-sm text-gray-500 mt-1">
-            Add a personal touch to your invitation
-          </p>
-        </div>
+      <div className="space-y-6">
+        <p className="text-gray-600 text-sm">
+          Share this invite token with your partner. They can use it to join your account by entering it after creating their own account.
+        </p>
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -102,37 +80,68 @@ export function InvitePartnerModal({ isOpen, onClose }: InvitePartnerModalProps)
           </div>
         )}
 
-        {success && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-            <p className="text-green-700 text-sm mb-2">{success}</p>
-            <Button
-              type="button"
-              onClick={copyInvitationUrl}
-              variant="outline"
-              size="sm"
-            >
-              Copy Invitation Link
-            </Button>
+        {isLoading ? (
+          <div className="bg-gray-50 border rounded-lg p-6 text-center">
+            <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-gray-600" />
+            <p className="text-gray-600 text-sm">Generating invite token...</p>
           </div>
-        )}
+        ) : token ? (
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Invite Token
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  value={token}
+                  readOnly
+                  className="font-mono text-sm bg-gray-50"
+                />
+                <Button
+                  type="button"
+                  onClick={copyToken}
+                  variant="outline"
+                  size="icon"
+                  className="flex-shrink-0"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              {copySuccess && (
+                <p className="text-green-600 text-xs mt-1">✓ Copied to clipboard!</p>
+              )}
+            </div>
 
-        <div className="flex justify-end space-x-3 pt-4">
+            {expiresAt && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-blue-800 text-sm">
+                  <strong>Expires:</strong> {formatExpiryDate(expiresAt)}
+                </p>
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        <div className="flex justify-between items-center pt-4">
           <Button
             type="button"
             variant="outline"
-            onClick={handleClose}
+            onClick={generateToken}
             disabled={isLoading}
+            className="flex items-center gap-2"
           >
-            Cancel
+            <RefreshCw className="h-4 w-4" />
+            Generate New Token
           </Button>
+          
           <Button
-            type="submit"
-            disabled={isLoading || !email.trim()}
+            type="button"
+            onClick={handleClose}
           >
-            {isLoading ? "Sending..." : "Send Invitation"}
+            Done
           </Button>
         </div>
-      </form>
+      </div>
     </Modal>
   );
 }

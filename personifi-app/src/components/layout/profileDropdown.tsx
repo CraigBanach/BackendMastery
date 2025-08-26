@@ -10,6 +10,7 @@ export function ProfileDropdown() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [userHasAccount, setUserHasAccount] = useState(false);
   const [, setIsCheckingAccount] = useState(true);
+  const [selectValue, setSelectValue] = useState("");
 
   useEffect(() => {
     const checkAccount = async () => {
@@ -33,11 +34,13 @@ export function ProfileDropdown() {
     } else if (value === "invite" && userHasAccount) {
       setIsInviteModalOpen(true);
     }
+    // Reset the select value to allow re-selection
+    setSelectValue("");
   };
 
   return (
     <>
-      <Select onValueChange={handleValueChange}>
+      <Select value={selectValue} onValueChange={handleValueChange}>
         <SelectTrigger className="w-auto border-0 bg-transparent hover:bg-muted p-2">
           <div className="flex items-center gap-2">
             <User className="h-4 w-4" />

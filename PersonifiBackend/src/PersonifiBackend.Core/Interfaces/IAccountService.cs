@@ -10,7 +10,7 @@ public interface IAccountService
     Task<List<Account>> GetUserAccountsAsync(int userId);
     Task<bool> HasUserAccessToAccountAsync(int userId, int accountId);
     Task AddUserToAccountAsync(int userId, int accountId);
-    Task<InvitationToken> CreateInvitationAsync(int accountId, int inviterUserId, string email, string? personalMessage = null);
+    Task<InvitationToken> CreateInvitationAsync(int accountId, int inviterUserId, string? email, string? personalMessage = null);
     Task<InvitationToken?> GetValidInvitationAsync(string token);
     Task<bool> AcceptInvitationAsync(string token, int acceptingUserId);
 }
