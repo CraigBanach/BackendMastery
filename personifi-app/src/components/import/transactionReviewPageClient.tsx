@@ -6,12 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AccountRequiredWrapper } from "@/components/ui/accountRequiredWrapper";
 import { PageHeader } from "@/components/ui/pageHeader";
-import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ChevronUp, Split, ArrowLeft } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { TransactionSplitter } from "./transactionSplitter";
 import { 
   getPendingTransactions, 
   approvePendingTransaction, 
   rejectPendingTransaction,
-  PendingTransactionDto 
+  approvePendingTransactionSplit,
+  PendingTransactionDto,
+  TransactionSplit
 } from "@/lib/api/transactionImportApi";
 import { getCategories } from "@/lib/api/categoryApi";
 import { format } from "date-fns";
@@ -33,6 +37,9 @@ export default function TransactionReviewPageClient() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
+  const [splittingTransactions, setSplittingTransactions] = useState<Set<number>>(new Set());
+  const [customDescriptions, setCustomDescriptions] = useState<Map<number, string>>(new Map());
+  const [splitAssignments, setSplitAssignments] = useState<Map<number, TransactionSplit[]>>(new Map());
 
   useEffect(() => {
     loadData();
@@ -118,7 +125,8 @@ export default function TransactionReviewPageClient() {
   const handleApproveTransaction = async (transactionId: number, categoryId: number) => {
     try {
       setIsProcessing(true);
-      await approvePendingTransaction(transactionId, categoryId);
+      const customDescription = customDescriptions.get(transactionId);
+      await approvePendingTransaction(transactionId, categoryId, undefined, customDescription);
       
       // Update the transaction in place instead of refreshing
       setPendingTransactions(prev => 
@@ -129,12 +137,72 @@ export default function TransactionReviewPageClient() {
         )
       );
       setTotalCount(prev => prev - 1);
+      // Clear custom description
+      setCustomDescriptions(prev => {
+        const updated = new Map(prev);
+        updated.delete(transactionId);
+        return updated;
+      });
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Failed to approve transaction";
       setError(errorMessage);
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleSplitTransaction = (transactionId: number) => {
+    setSplittingTransactions(prev => new Set([...prev, transactionId]));
+  };
+
+  const handleCancelSplit = (transactionId: number) => {
+    setSplittingTransactions(prev => {
+      const updated = new Set(prev);
+      updated.delete(transactionId);
+      return updated;
+    });
+  };
+
+  const handleSplitComplete = async (transactionId: number, splits: TransactionSplit[]) => {
+    try {
+      setIsProcessing(true);
+      await approvePendingTransactionSplit(transactionId, splits);
+      
+      // Store split assignments for display
+      setSplitAssignments(prev => {
+        const updated = new Map(prev);
+        updated.set(transactionId, splits);
+        return updated;
+      });
+      
+      // Update the transaction in place
+      setPendingTransactions(prev => 
+        prev.map(t => 
+          t.id === transactionId 
+            ? { ...t, status: 'Approved' }
+            : t
+        )
+      );
+      setTotalCount(prev => prev - 1);
+      handleCancelSplit(transactionId);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to approve split transaction";
+      setError(errorMessage);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const updateCustomDescription = (transactionId: number, description: string) => {
+    setCustomDescriptions(prev => {
+      const updated = new Map(prev);
+      if (description.trim()) {
+        updated.set(transactionId, description);
+      } else {
+        updated.delete(transactionId);
+      }
+      return updated;
+    });
   };
 
   const handleRejectTransaction = async (transactionId: number) => {
@@ -184,11 +252,15 @@ export default function TransactionReviewPageClient() {
       currency: 'GBP'
     }).format(absAmount);
     
-    return amount >= 0 ? `+${formattedAmount}` : formattedAmount;
+    // In DB: positive = spending, negative = income
+    // Display: spending (positive DB) = no +, income (negative DB) = +
+    return amount < 0 ? `+${formattedAmount}` : formattedAmount;
   };
 
   const getAmountColor = (amount: number) => {
-    return amount >= 0 ? 'text-green-600' : 'text-red-600';
+    // In DB: positive = spending, negative = income
+    // Display: spending (positive DB) = red, income (negative DB) = green
+    return amount >= 0 ? 'text-red-600' : 'text-green-600';
   };
 
   const formatDate = (dateString: string) => {
@@ -253,6 +325,17 @@ export default function TransactionReviewPageClient() {
   return (
     <AccountRequiredWrapper>
       <div className="container mx-auto px-4 py-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => window.location.href = '/import'}
+            className="text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Import
+          </Button>
+        </div>
         <PageHeader title="Review Transactions" subTitle="Review and categorize imported transactions" />
 
         {error && (
@@ -344,6 +427,33 @@ export default function TransactionReviewPageClient() {
                             </div>
                           )}
 
+                          {/* Split transaction status */}
+                          {splitAssignments.has(transaction.id) && (
+                            <div className="text-green-600 font-medium bg-green-50 px-3 py-2 rounded">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span>✓ Split into {splitAssignments.get(transaction.id)!.length} categories:</span>
+                              </div>
+                              <div className="space-y-1 text-sm">
+                                {splitAssignments.get(transaction.id)!.map((split, index) => {
+                                  const category = categories.find(c => c.id === split.categoryId);
+                                  return (
+                                    <div key={index} className="flex justify-between items-center">
+                                      <span>
+                                        {category?.icon && `${category.icon} `}{category?.name}
+                                        {split.description && split.description !== transaction.counterParty && (
+                                          <span className="text-gray-600 ml-1">({split.description})</span>
+                                        )}
+                                      </span>
+                                      <span className="font-mono">
+                                        {formatCurrency(split.amount)}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
                           {/* Potential duplicate warning */}
                           {transaction.status === 'PotentialDuplicate' && (
                             <div className="bg-orange-100 border border-orange-200 rounded p-3 text-sm text-orange-800">
@@ -358,36 +468,79 @@ export default function TransactionReviewPageClient() {
 
                           {/* Action buttons */}
                           {(transaction.status === 'Pending' || transaction.status === 'PotentialDuplicate') && (
-                            <div className="flex gap-3">
-                              <select
-                                onChange={(e) => {
-                                  const categoryId = Number(e.target.value);
-                                  if (categoryId) {
-                                    handleApproveTransaction(transaction.id, categoryId);
-                                  }
-                                }}
-                                disabled={isProcessing}
-                                className="flex-1 border rounded px-3 py-2"
-                                defaultValue=""
-                              >
-                                <option value="">Approve as...</option>
-                                {categories.map(category => (
-                                  <option key={category.id} value={category.id}>
-                                    {category.icon && `${category.icon} `}{category.name}
-                                  </option>
-                                ))}
-                              </select>
-                              <Button
-                                onClick={() => handleRejectTransaction(transaction.id)}
-                                disabled={isProcessing}
-                                variant="destructive"
-                                size="default"
-                                className="px-4"
-                              >
-                                <XCircle className="h-4 w-4 mr-2" />
-                                Reject
-                              </Button>
-                            </div>
+                            <>
+                              {splittingTransactions.has(transaction.id) ? (
+                                <TransactionSplitter
+                                  originalAmount={transaction.amount}
+                                  categories={categories}
+                                  onSplitComplete={(splits) => handleSplitComplete(transaction.id, splits)}
+                                  onCancel={() => handleCancelSplit(transaction.id)}
+                                  isProcessing={isProcessing}
+                                  defaultDescription={transaction.counterParty}
+                                />
+                              ) : (
+                                <div className="space-y-3">
+                                  {/* Description Input */}
+                                  <div>
+                                    <label className="text-sm text-gray-600 block mb-1">
+                                      Description (optional)
+                                    </label>
+                                    <Input
+                                      type="text"
+                                      placeholder={transaction.counterParty}
+                                      value={customDescriptions.get(transaction.id) || ""}
+                                      onChange={(e) => updateCustomDescription(transaction.id, e.target.value)}
+                                      disabled={isProcessing}
+                                      className="text-sm"
+                                    />
+                                  </div>
+
+                                  {/* Action Buttons */}
+                                  <div className="flex gap-3">
+                                    <select
+                                      onChange={(e) => {
+                                        const categoryId = Number(e.target.value);
+                                        if (categoryId) {
+                                          handleApproveTransaction(transaction.id, categoryId);
+                                        }
+                                      }}
+                                      disabled={isProcessing}
+                                      className="flex-1 border rounded px-3 py-2"
+                                      defaultValue=""
+                                    >
+                                      <option value="">Approve as...</option>
+                                      {categories.map(category => (
+                                        <option key={category.id} value={category.id}>
+                                          {category.icon && `${category.icon} `}{category.name}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    
+                                    <Button
+                                      onClick={() => handleSplitTransaction(transaction.id)}
+                                      disabled={isProcessing}
+                                      variant="outline"
+                                      size="default"
+                                      className="px-4"
+                                    >
+                                      <Split className="h-4 w-4 mr-2" />
+                                      Split
+                                    </Button>
+                                    
+                                    <Button
+                                      onClick={() => handleRejectTransaction(transaction.id)}
+                                      disabled={isProcessing}
+                                      variant="destructive"
+                                      size="default"
+                                      className="px-4"
+                                    >
+                                      <XCircle className="h-4 w-4 mr-2" />
+                                      Reject
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                            </>
                           )}
 
                           {/* Show details toggle */}
@@ -474,6 +627,33 @@ export default function TransactionReviewPageClient() {
                           </div>
                         )}
 
+                        {/* Split transaction status - mobile */}
+                        {splitAssignments.has(transaction.id) && (
+                          <div className="text-sm text-green-600 font-medium bg-green-50 px-2 py-1 rounded">
+                            <div className="mb-1">
+                              ✓ Split into {splitAssignments.get(transaction.id)!.length} categories:
+                            </div>
+                            <div className="space-y-1 text-xs">
+                              {splitAssignments.get(transaction.id)!.map((split, index) => {
+                                const category = categories.find(c => c.id === split.categoryId);
+                                return (
+                                  <div key={index} className="flex justify-between items-center">
+                                    <span>
+                                      {category?.icon && `${category.icon} `}{category?.name}
+                                      {split.description && split.description !== transaction.counterParty && (
+                                        <span className="text-gray-600 ml-1">({split.description})</span>
+                                      )}
+                                    </span>
+                                    <span className="font-mono">
+                                      {formatCurrency(split.amount)}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
                         {/* Potential duplicate warning - mobile */}
                         {transaction.status === 'PotentialDuplicate' && (
                           <div className="bg-orange-100 border border-orange-200 rounded p-2 text-xs text-orange-800">
@@ -488,53 +668,91 @@ export default function TransactionReviewPageClient() {
 
                         {/* Mobile Actions */}
                         {(transaction.status === 'Pending' || transaction.status === 'PotentialDuplicate') && (
-                          <div className="space-y-2">
-                            <select
-                              onChange={(e) => {
-                                const categoryId = Number(e.target.value);
-                                if (categoryId) {
-                                  handleApproveTransaction(transaction.id, categoryId);
-                                }
-                              }}
-                              disabled={isProcessing}
-                              className="w-full text-sm border rounded px-3 py-2"
-                              defaultValue=""
-                            >
-                              <option value="">Approve as...</option>
-                              {categories.map(category => (
-                                <option key={category.id} value={category.id}>
-                                  {category.icon && `${category.icon} `}{category.name}
-                                </option>
-                              ))}
-                            </select>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => toggleTransactionExpanded(transaction.id)}
-                                className="flex-1"
-                              >
-                                {expandedTransactions.has(transaction.id) ? (
-                                  <>
-                                    Hide <ChevronUp className="h-3 w-3 ml-1" />
-                                  </>
-                                ) : (
-                                  <>
-                                    More <ChevronDown className="h-3 w-3 ml-1" />
-                                  </>
-                                )}
-                              </Button>
-                              <Button
-                                onClick={() => handleRejectTransaction(transaction.id)}
-                                disabled={isProcessing}
-                                variant="destructive"
-                                size="sm"
-                                className="px-3"
-                              >
-                                <XCircle className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
+                          <>
+                            {splittingTransactions.has(transaction.id) ? (
+                              <TransactionSplitter
+                                originalAmount={transaction.amount}
+                                categories={categories}
+                                onSplitComplete={(splits) => handleSplitComplete(transaction.id, splits)}
+                                onCancel={() => handleCancelSplit(transaction.id)}
+                                isProcessing={isProcessing}
+                                defaultDescription={transaction.counterParty}
+                              />
+                            ) : (
+                              <div className="space-y-2">
+                                {/* Description Input */}
+                                <div>
+                                  <label className="text-xs text-gray-600 block mb-1">
+                                    Description (optional)
+                                  </label>
+                                  <Input
+                                    type="text"
+                                    placeholder={transaction.counterParty}
+                                    value={customDescriptions.get(transaction.id) || ""}
+                                    onChange={(e) => updateCustomDescription(transaction.id, e.target.value)}
+                                    disabled={isProcessing}
+                                    className="text-sm"
+                                  />
+                                </div>
+
+                                <select
+                                  onChange={(e) => {
+                                    const categoryId = Number(e.target.value);
+                                    if (categoryId) {
+                                      handleApproveTransaction(transaction.id, categoryId);
+                                    }
+                                  }}
+                                  disabled={isProcessing}
+                                  className="w-full text-sm border rounded px-3 py-2"
+                                  defaultValue=""
+                                >
+                                  <option value="">Approve as...</option>
+                                  {categories.map(category => (
+                                    <option key={category.id} value={category.id}>
+                                      {category.icon && `${category.icon} `}{category.name}
+                                    </option>
+                                  ))}
+                                </select>
+                                <div className="flex gap-2">
+                                  <Button
+                                    onClick={() => handleSplitTransaction(transaction.id)}
+                                    disabled={isProcessing}
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1"
+                                  >
+                                    <Split className="h-3 w-3 mr-1" />
+                                    Split
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => toggleTransactionExpanded(transaction.id)}
+                                    className="flex-1"
+                                  >
+                                    {expandedTransactions.has(transaction.id) ? (
+                                      <>
+                                        Hide <ChevronUp className="h-3 w-3 ml-1" />
+                                      </>
+                                    ) : (
+                                      <>
+                                        More <ChevronDown className="h-3 w-3 ml-1" />
+                                      </>
+                                    )}
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleRejectTransaction(transaction.id)}
+                                    disabled={isProcessing}
+                                    variant="destructive"
+                                    size="sm"
+                                    className="px-3"
+                                  >
+                                    <XCircle className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </>
                         )}
 
                         {/* Mobile expanded details */}

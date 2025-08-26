@@ -1,0 +1,11 @@
+Date,Counter party,Reference,Type,Amount (GBP),Balance (GBP),Spending Category,Notes
+2025-01-15,TESCO STORE,Card Payment,FPO,-45.67,1254.33,Groceries,Weekly shopping
+2025-01-16,AMAZON PRIME,Direct Debit,DD,-12.99,1241.34,Subscriptions,Monthly subscription
+2025-01-17,SALARY PAYMENT,BACS Credit,FPI,2500.00,3741.34,Salary,Monthly salary
+2025-01-18,SHELL PETROL,Card Payment,FPO,-38.90,3702.44,Transport,Fuel for car
+2025-01-19,COFFEE SHOP,Card Payment,FPO,-4.50,3697.94,Dining,Morning coffee
+2025-01-20,FREELANCE CLIENT,BACS Credit,FPI,750.00,4447.94,Freelance,Project payment
+2025-01-21,RENT PAYMENT,Standing Order,SO,-1200.00,3247.94,Housing,Monthly rent
+2025-01-22,GROCERY STORE,Card Payment,FPO,-67.23,3180.71,Groceries,Weekend shopping
+2025-01-23,DIVIDEND PAYMENT,BACS Credit,FPI,45.50,3226.21,Investments,Stock dividend
+2025-01-24,RESTAURANT,Card Payment,FPO,-85.40,3140.81,Dining,Dinner with friends

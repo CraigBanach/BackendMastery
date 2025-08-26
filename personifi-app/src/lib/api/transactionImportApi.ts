@@ -109,12 +109,13 @@ export async function getPendingTransactionById(id: number): Promise<PendingTran
 export async function approvePendingTransaction(
   id: number,
   categoryId: number,
-  notes?: string
+  notes?: string,
+  description?: string
 ): Promise<void> {
   const url = `${API_BASE_URL}/TransactionImport/pending/${id}/approve`;
   await fetchWithAuth(url, {
     method: 'POST',
-    body: JSON.stringify({ categoryId, notes }),
+    body: JSON.stringify({ categoryId, notes, description }),
   });
 }
 
@@ -122,6 +123,23 @@ export async function rejectPendingTransaction(id: number): Promise<void> {
   const url = `${API_BASE_URL}/TransactionImport/pending/${id}/reject`;
   await fetchWithAuth(url, {
     method: 'POST',
+  });
+}
+
+export interface TransactionSplit {
+  categoryId: number;
+  amount: number;
+  description?: string;
+}
+
+export async function approvePendingTransactionSplit(
+  id: number,
+  splits: TransactionSplit[]
+): Promise<void> {
+  const url = `${API_BASE_URL}/TransactionImport/pending/${id}/approve-split`;
+  await fetchWithAuth(url, {
+    method: 'POST',
+    body: JSON.stringify({ splits }),
   });
 }
 

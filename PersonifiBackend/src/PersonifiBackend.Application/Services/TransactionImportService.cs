@@ -11,15 +11,18 @@ public class TransactionImportService : ITransactionImportService
     private readonly IPendingTransactionRepository _pendingTransactionRepository;
     private readonly ITransactionImportRepository _transactionImportRepository;
     private readonly ITransactionRepository _transactionRepository;
+    private readonly ICategoryRepository _categoryRepository;
 
     public TransactionImportService(
         IPendingTransactionRepository pendingTransactionRepository,
         ITransactionImportRepository transactionImportRepository,
-        ITransactionRepository transactionRepository)
+        ITransactionRepository transactionRepository,
+        ICategoryRepository categoryRepository)
     {
         _pendingTransactionRepository = pendingTransactionRepository;
         _transactionImportRepository = transactionImportRepository;
         _transactionRepository = transactionRepository;
+        _categoryRepository = categoryRepository;
     }
 
     public async Task<TransactionImportDto> ImportTransactionsFromCsvAsync(IFormFile file, int accountId, int userId)
@@ -226,7 +229,7 @@ public class TransactionImportService : ITransactionImportService
         {
             AccountId = accountId,
             Amount = pendingTransaction.Amount,
-            Description = pendingTransaction.Description,
+            Description = request.Description ?? pendingTransaction.Description,
             TransactionDate = pendingTransaction.TransactionDate,
             CategoryId = request.CategoryId,
             CreatedByUserId = pendingTransaction.ImportedByUserId,
@@ -238,6 +241,72 @@ public class TransactionImportService : ITransactionImportService
         // Update pending transaction status
         pendingTransaction.Status = PendingTransactionStatus.Approved;
         pendingTransaction.CategoryId = request.CategoryId;
+        await _pendingTransactionRepository.UpdateAsync(pendingTransaction);
+
+        return true;
+    }
+
+    public async Task<bool> ApprovePendingTransactionSplitAsync(int id, int accountId, ApprovePendingTransactionSplitRequest request)
+    {
+        var pendingTransaction = await _pendingTransactionRepository.GetByIdAsync(id, accountId);
+        if (pendingTransaction == null || pendingTransaction.Status != PendingTransactionStatus.Pending)
+            return false;
+
+        if (request.Splits == null || request.Splits.Count < 2)
+            return false;
+
+        // Create multiple transactions from splits
+        var transactions = new List<Transaction>();
+        foreach (var split in request.Splits)
+        {
+            // Get category to determine proper amount sign
+            var category = await _categoryRepository.GetByIdAsync(split.CategoryId, accountId);
+            if (category == null)
+                return false;
+
+            // Determine correct amount sign based on original transaction type vs category type
+            var finalAmount = split.Amount;
+            var isOriginalExpense = pendingTransaction.Amount > 0; // Positive after import = expense
+            var isExpenseCategory = category.Type == CategoryType.Expense;
+            
+            if (isOriginalExpense && isExpenseCategory)
+            {
+                // Expense → Expense category: Positive amount
+                finalAmount = Math.Abs(split.Amount);
+            }
+            else if (!isOriginalExpense && !isExpenseCategory)
+            {
+                // Income → Income category: Positive amount  
+                finalAmount = Math.Abs(split.Amount);
+            }
+            else
+            {
+                // Cross-type assignment: Negative amount
+                finalAmount = -Math.Abs(split.Amount);
+            }
+
+            var transaction = new Transaction
+            {
+                AccountId = accountId,
+                Amount = finalAmount,
+                Description = split.Description ?? pendingTransaction.Description,
+                TransactionDate = pendingTransaction.TransactionDate,
+                CategoryId = split.CategoryId,
+                CreatedByUserId = pendingTransaction.ImportedByUserId,
+                Notes = pendingTransaction.Notes
+            };
+            
+            transactions.Add(transaction);
+        }
+
+        // Create all split transactions
+        foreach (var transaction in transactions)
+        {
+            await _transactionRepository.CreateAsync(transaction);
+        }
+
+        // Update pending transaction status
+        pendingTransaction.Status = PendingTransactionStatus.Approved;
         await _pendingTransactionRepository.UpdateAsync(pendingTransaction);
 
         return true;

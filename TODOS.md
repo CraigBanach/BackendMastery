@@ -4,3 +4,8 @@
 - Creating a category doesn't apply budget
 - Validate duplicate import functionality
 - Fix skeleton on import page for infinite scrolling
+- Can't refresh budget while keeping month
+- Split transaction description should be a placeholder
+- Make budgets use date query params
+- Only let a user split a transaction between a single (income/expense) category type
+- Can't remove the last 0 from import split

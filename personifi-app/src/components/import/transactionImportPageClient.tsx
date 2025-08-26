@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AccountRequiredWrapper } from "@/components/ui/accountRequiredWrapper";
 import { PageHeader } from "@/components/ui/pageHeader";
-import { Upload, FileText, CheckCircle, XCircle, Clock } from "lucide-react";
-import { importTransactionsFromCSV, getImportHistory, TransactionImportDto } from "@/lib/api/transactionImportApi";
+import { Upload, FileText, CheckCircle, XCircle, Clock, AlertCircle, ArrowRight } from "lucide-react";
+import { importTransactionsFromCSV, getImportHistory, getPendingTransactions, TransactionImportDto } from "@/lib/api/transactionImportApi";
 import { useEffect } from "react";
 import { format } from "date-fns";
 
@@ -18,10 +18,26 @@ export default function TransactionImportPageClient() {
   const [uploadResult, setUploadResult] = useState<TransactionImportDto | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [importHistory, setImportHistory] = useState<TransactionImportDto[]>([]);
+  const [hasPendingTransactions, setHasPendingTransactions] = useState(false);
+  const [isCheckingPending, setIsCheckingPending] = useState(true);
 
   useEffect(() => {
     loadImportHistory();
+    checkPendingTransactions();
   }, []);
+
+  const checkPendingTransactions = async () => {
+    try {
+      setIsCheckingPending(true);
+      const pendingResult = await getPendingTransactions(1, 1);
+      setHasPendingTransactions(pendingResult.totalCount > 0);
+    } catch (error: unknown) {
+      console.error("Failed to check pending transactions:", error);
+      setHasPendingTransactions(false);
+    } finally {
+      setIsCheckingPending(false);
+    }
+  };
 
   const loadImportHistory = async () => {
     try {
@@ -59,8 +75,9 @@ export default function TransactionImportPageClient() {
       const fileInput = document.getElementById('csv-file') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
       
-      // Refresh import history
+      // Refresh import history and check pending
       await loadImportHistory();
+      await checkPendingTransactions();
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Upload failed";
       setUploadError(errorMessage);
@@ -90,6 +107,32 @@ export default function TransactionImportPageClient() {
     <AccountRequiredWrapper>
       <div className="container mx-auto px-4 py-6">
         <PageHeader title="Import Transactions" subTitle="Upload and process bank transaction files" />
+
+        {/* Pending Transactions Alert */}
+        {!isCheckingPending && hasPendingTransactions && (
+          <Card className="mb-6 border-orange-200 bg-orange-50">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="h-5 w-5 text-orange-600" />
+                  <div>
+                    <h4 className="font-medium text-orange-800">Pending Transactions Need Review</h4>
+                    <p className="text-sm text-orange-700">
+                      You have transactions waiting to be reviewed and categorized.
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => window.location.href = '/import/review'}
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  Review Now
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Upload Section */}
         <Card className="mb-6">
