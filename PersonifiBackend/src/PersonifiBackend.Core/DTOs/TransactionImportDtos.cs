@@ -36,6 +36,7 @@ public class ApprovePendingTransactionRequest
 {
     public int CategoryId { get; set; }
     public string? Notes { get; set; }
+    public string? Description { get; set; }
 }
 
 public class BulkApproveTransactionsRequest
@@ -47,4 +48,16 @@ public class BulkApproveTransactionsRequest
 public class BulkRejectTransactionsRequest
 {
     public List<int> TransactionIds { get; set; } = new();
+}
+
+public class TransactionSplitItem
+{
+    public int CategoryId { get; set; }
+    public decimal Amount { get; set; }
+    public string? Description { get; set; }
+}
+
+public class ApprovePendingTransactionSplitRequest
+{
+    public List<TransactionSplitItem> Splits { get; set; } = new();
 }

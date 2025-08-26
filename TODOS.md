@@ -4,3 +4,5 @@
 - Creating a category doesn't apply budget
 - Validate duplicate import functionality
 - Fix skeleton on import page for infinite scrolling
+- Can't refresh budget while keeping month
+- Make budgets use date query params

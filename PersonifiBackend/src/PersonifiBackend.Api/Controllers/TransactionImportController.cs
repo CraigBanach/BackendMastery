@@ -108,6 +108,21 @@ public class TransactionImportController : ControllerBase
         return Ok();
     }
 
+    [HttpPost("pending/{id}/approve-split")]
+    public async Task<ActionResult> ApprovePendingTransactionSplit(int id, [FromBody] ApprovePendingTransactionSplitRequest request)
+    {
+        if (!_userContext.AccountId.HasValue)
+            return BadRequest("Please create an account first using POST /api/account/create");
+
+        var success = await _transactionImportService.ApprovePendingTransactionSplitAsync(
+            id, _userContext.AccountId.Value, request);
+        
+        if (!success)
+            return NotFound("Transaction not found or already processed");
+        
+        return Ok();
+    }
+
     [HttpPost("pending/bulk-approve")]
     public async Task<ActionResult<int>> BulkApproveTransactions([FromBody] BulkApproveTransactionsRequest request)
     {
