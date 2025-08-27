@@ -220,7 +220,9 @@ public class TransactionImportService : ITransactionImportService
     public async Task<bool> ApprovePendingTransactionAsync(int id, int accountId, ApprovePendingTransactionRequest request)
     {
         var pendingTransaction = await _pendingTransactionRepository.GetByIdAsync(id, accountId);
-        if (pendingTransaction == null || pendingTransaction.Status != PendingTransactionStatus.Pending)
+        if (pendingTransaction == null || 
+            (pendingTransaction.Status != PendingTransactionStatus.Pending && 
+             pendingTransaction.Status != PendingTransactionStatus.PotentialDuplicate))
             return false;
 
         // Create actual transaction
@@ -251,7 +253,9 @@ public class TransactionImportService : ITransactionImportService
     public async Task<bool> ApprovePendingTransactionSplitAsync(int id, int accountId, ApprovePendingTransactionSplitRequest request)
     {
         var pendingTransaction = await _pendingTransactionRepository.GetByIdAsync(id, accountId);
-        if (pendingTransaction == null || pendingTransaction.Status != PendingTransactionStatus.Pending)
+        if (pendingTransaction == null || 
+            (pendingTransaction.Status != PendingTransactionStatus.Pending && 
+             pendingTransaction.Status != PendingTransactionStatus.PotentialDuplicate))
             return false;
 
         if (request.Splits == null || request.Splits.Count < 2)

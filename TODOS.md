@@ -1,3 +1,4 @@
 - Validate duplicate import functionality
 - Align the expense & income categories
 - Allow deleting of categories with transactions
+- Clarify CSV format for upload
