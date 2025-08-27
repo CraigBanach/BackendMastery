@@ -13,7 +13,7 @@ const SessionHeader = async () => {
       <Button
         asChild
         size="lg"
-        className="bg-finance-green hover:bg-finance-green-dark"
+        className="bg-finance-green hover:bg-finance-green-dark text-white font-semibold px-6 py-2 rounded-lg transition-all duration-200 relative z-10"
       >
         <a href="/auth/login">Login</a>
       </Button>

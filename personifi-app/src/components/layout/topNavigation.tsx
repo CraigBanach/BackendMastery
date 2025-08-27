@@ -8,7 +8,11 @@ import { hasAccount } from "@/lib/api/accountApi";
 const TopNavigation = async () => {
   const session = await auth0.getSession();
 
-  if (!session) return <div></div>;
+  if (!session) return (
+    <div className="flex items-center">
+      <h1 className="text-xl font-bold text-finance-green">personifi</h1>
+    </div>
+  );
 
   const userHasAccount = await hasAccount();
   
