@@ -242,7 +242,7 @@ export default function Home() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-16 sm:py-20 px-4 bg-gray-50">
+      <section className="py-16 sm:py-20 px-4 bg-gray-50">
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-2xl sm:text-3xl font-bold mb-4">Get started in 3 simple steps</h2>
@@ -403,7 +403,7 @@ export default function Home() {
             <div>
               <h3 className="text-xl font-bold text-finance-green mb-2">personifi</h3>
               <p className="text-muted-foreground mb-4">Personal finance for your family</p>
-              <p className="text-sm text-finance-green font-semibold">
+              <p className="text-sm text-muted-foreground">
                 ✅ 30-day money-back guarantee
               </p>
             </div>
@@ -411,14 +411,14 @@ export default function Home() {
             {/* Quick Links */}
             <div>
               <h4 className="font-semibold mb-4">Quick Links</h4>
-              <div className="space-y-2">
+              <div className="space-y-2 flex flex-col items-center md:items-start">
                 <button 
                   onClick={() => {
                     document.getElementById('how-it-works')?.scrollIntoView({ 
                       behavior: 'smooth' 
                     });
                   }}
-                  className="block text-muted-foreground hover:text-finance-green transition-colors duration-200"
+                  className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium cursor-pointer"
                 >
                   How it works
                 </button>
@@ -428,7 +428,7 @@ export default function Home() {
                       behavior: 'smooth' 
                     });
                   }}
-                  className="block text-muted-foreground hover:text-finance-green transition-colors duration-200"
+                  className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium cursor-pointer"
                 >
                   Pricing
                 </button>
