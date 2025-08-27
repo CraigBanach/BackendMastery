@@ -24,4 +24,5 @@ public interface ITransactionRepository
     Task<bool> DeleteAsync(int id, int accountId);
     Task<List<Transaction>> FindPotentialDuplicatesAsync(int accountId, decimal amount, DateTime transactionDate, string description);
     Task<List<Transaction>> FindExactDuplicatesAsync(int accountId, decimal amount, DateTime transactionDate, string counterParty);
+    Task<bool> HasTransactionsForCategoryAsync(int categoryId, int accountId);
 }

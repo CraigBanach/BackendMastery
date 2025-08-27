@@ -21,6 +21,12 @@ public class TransactionImportRepository : ITransactionImportRepository
             .FirstOrDefaultAsync(ti => ti.Id == id && ti.AccountId == accountId);
     }
 
+    public async Task<TransactionImport?> GetByIdAsync(int id)
+    {
+        return await _context.TransactionImports
+            .FirstOrDefaultAsync(ti => ti.Id == id);
+    }
+
     public async Task<List<TransactionImport>> GetByAccountIdAsync(int accountId)
     {
         return await _context.TransactionImports

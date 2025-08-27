@@ -25,7 +25,8 @@ public class PendingTransactionRepository : IPendingTransactionRepository
     {
         return await _context.PendingTransactions
             .Include(pt => pt.Category)
-            .Where(pt => pt.AccountId == accountId)
+            .Where(pt => pt.AccountId == accountId && 
+                (pt.Status == PendingTransactionStatus.Pending || pt.Status == PendingTransactionStatus.PotentialDuplicate))
             .OrderBy(pt => pt.TransactionDate)
             .ThenBy(pt => pt.Id)
             .Skip((page - 1) * pageSize)
@@ -36,7 +37,8 @@ public class PendingTransactionRepository : IPendingTransactionRepository
     public async Task<int> GetCountByAccountIdAsync(int accountId)
     {
         return await _context.PendingTransactions
-            .CountAsync(pt => pt.AccountId == accountId);
+            .CountAsync(pt => pt.AccountId == accountId && 
+                (pt.Status == PendingTransactionStatus.Pending || pt.Status == PendingTransactionStatus.PotentialDuplicate));
     }
 
     public async Task<List<PendingTransaction>> GetByStatusAsync(int accountId, PendingTransactionStatus status)
@@ -45,6 +47,13 @@ public class PendingTransactionRepository : IPendingTransactionRepository
             .Include(pt => pt.Category)
             .Where(pt => pt.AccountId == accountId && pt.Status == status)
             .OrderByDescending(pt => pt.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<List<PendingTransaction>> GetByImportIdAsync(int transactionImportId)
+    {
+        return await _context.PendingTransactions
+            .Where(pt => pt.TransactionImportId == transactionImportId)
             .ToListAsync();
     }
 
@@ -98,5 +107,12 @@ public class PendingTransactionRepository : IPendingTransactionRepository
                 && pt.TransactionDate <= endDate
                 && EF.Functions.Like(pt.Description.ToLower(), $"%{description.ToLower()}%"))
             .ToListAsync();
+    }
+
+    public async Task<bool> HasPendingTransactionsForCategoryAsync(int categoryId, int accountId)
+    {
+        return await _context.PendingTransactions
+            .Where(pt => pt.CategoryId == categoryId && pt.AccountId == accountId)
+            .AnyAsync();
     }
 }

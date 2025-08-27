@@ -11,6 +11,7 @@ public interface IBudgetRepository
     Task<Budget?> UpdateAsync(Budget budget);
     Task<bool> DeleteAsync(int id, int accountId);
     Task<IEnumerable<Budget>> SetBudgetsForMonthAsync(int accountId, int year, int month, IEnumerable<SetBudgetRequest> budgets);
+    Task DeleteBudgetsByCategoryAsync(int categoryId, int accountId);
 }
 
 public record SetBudgetRequest(int CategoryId, decimal Amount);

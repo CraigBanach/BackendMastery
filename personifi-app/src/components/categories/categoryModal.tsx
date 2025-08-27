@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { IconPicker } from "@/components/ui/iconPicker";
 import { CategoryDto, CategoryType } from "@/types/budget";
 import { PoundSterlingIcon } from "lucide-react";
+import { getBudget } from "@/lib/api/budgetApi";
 
 const formSchema = z.object({
   name: z
@@ -61,9 +62,43 @@ export function CategoryModal({
       name: category?.name || "",
       type: category?.type || CategoryType.Expense,
       icon: category?.icon || "",
-      budgetAmount: undefined,
+      budgetAmount: 0,
     },
   });
+
+  // Reset and populate form when modal opens or category changes
+  useEffect(() => {
+    if (isOpen) {
+      // Reset form with category data
+      form.reset({
+        name: category?.name || "",
+        type: category?.type || CategoryType.Expense,
+        icon: category?.icon || "",
+        budgetAmount: 0,
+      });
+
+      // Load budget if editing an existing category
+      const loadBudget = async () => {
+        if (category) {
+          try {
+            const currentDate = new Date();
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth() + 1; // JavaScript months are 0-based
+            
+            const budget = await getBudget(category.id, year, month);
+            if (budget) {
+              form.setValue('budgetAmount', budget.amount);
+            }
+          } catch (error) {
+            console.error('Failed to load budget:', error);
+            // Don't show error to user, just leave field empty
+          }
+        }
+      };
+
+      loadBudget();
+    }
+  }, [category, isOpen, form]);
 
   const selectedType = form.watch("type");
 
@@ -90,7 +125,12 @@ export function CategoryModal({
   };
 
   const handleClose = () => {
-    form.reset();
+    form.reset({
+      name: "",
+      type: CategoryType.Expense,
+      icon: "",
+      budgetAmount: undefined,
+    });
     setSubmitError("");
     onClose();
   };
@@ -147,28 +187,38 @@ export function CategoryModal({
               control={form.control}
               name="type"
               render={({ field }) => (
-                <FormItem className="space-y-3">
+                <FormItem>
                   <FormLabel>Type</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex space-x-4"
+                      value={field.value}
+                      className="flex space-x-4 mt-2"
+                      disabled={!!category} // Disable when editing existing category
                     >
                       <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>
-                          <RadioGroupItem value={CategoryType.Expense} />
+                          <RadioGroupItem value={CategoryType.Expense} disabled={!!category} />
                         </FormControl>
-                        <FormLabel className="font-normal">Expense</FormLabel>
+                        <FormLabel className={`font-normal ${category ? 'text-muted-foreground' : ''}`}>
+                          Expense
+                        </FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>
-                          <RadioGroupItem value={CategoryType.Income} />
+                          <RadioGroupItem value={CategoryType.Income} disabled={!!category} />
                         </FormControl>
-                        <FormLabel className="font-normal">Income</FormLabel>
+                        <FormLabel className={`font-normal ${category ? 'text-muted-foreground' : ''}`}>
+                          Income
+                        </FormLabel>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
+                  {category && (
+                    <p className="text-xs text-muted-foreground">
+                      Category type cannot be changed after creation to maintain data consistency.
+                    </p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -196,7 +246,12 @@ export function CategoryModal({
             name="budgetAmount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Monthly Budget (Optional)</FormLabel>
+                <FormLabel>
+                  {selectedType === CategoryType.Income 
+                    ? "Monthly Expected Income (Optional)" 
+                    : "Monthly Budget (Optional)"
+                  }
+                </FormLabel>
                 <FormControl>
                   <div className="relative">
                     <PoundSterlingIcon className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -210,7 +265,10 @@ export function CategoryModal({
                   </div>
                 </FormControl>
                 <p className="text-sm text-muted-foreground">
-                  Set a budget amount for this category for the current month
+                  {selectedType === CategoryType.Income
+                    ? "Set an expected income amount for this category for the current month"
+                    : "Set a budget amount for this category for the current month"
+                  }
                 </p>
                 <FormMessage />
               </FormItem>

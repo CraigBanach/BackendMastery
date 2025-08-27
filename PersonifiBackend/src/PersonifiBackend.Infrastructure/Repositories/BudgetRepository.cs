@@ -106,4 +106,17 @@ public class BudgetRepository : IBudgetRepository
         // Return with loaded categories
         return await GetBudgetsForMonthAsync(accountId, year, month);
     }
+
+    public async Task DeleteBudgetsByCategoryAsync(int categoryId, int accountId)
+    {
+        var budgets = await _context.Budgets
+            .Where(b => b.CategoryId == categoryId && b.AccountId == accountId)
+            .ToListAsync();
+
+        if (budgets.Any())
+        {
+            _context.Budgets.RemoveRange(budgets);
+            await _context.SaveChangesAsync();
+        }
+    }
 }

@@ -1,11 +1,4 @@
-- Creating an income category sets a 'budget'. This wording is potentially strange.
-- Edit category is shit right now, no data is pre-populated
-- Split Categories by type on category page
-- Creating a category doesn't apply budget
 - Validate duplicate import functionality
-- Fix skeleton on import page for infinite scrolling
-- Can't refresh budget while keeping month
-- Make budgets use date query params
-- Add user feedback on import history (approved/rejected transaction counts) - removed temporarily as always showed 0
-- Can only press the invite partner button once
-- Invite partner flow should only expose a token to be sent to your partner
+- Align the expense & income categories
+- Allow deleting of categories with transactions
+- Clarify CSV format for upload

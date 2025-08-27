@@ -42,11 +42,25 @@ export default function TransactionImportPageClient() {
     checkPendingTransactions();
   }, []);
 
+  // Refresh pending check when the page becomes visible (user returns from review page)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkPendingTransactions();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
   const checkPendingTransactions = async () => {
     try {
       setIsCheckingPending(true);
       const pendingResult = await getPendingTransactions(1, 1);
-      setHasPendingTransactions(pendingResult.totalCount > 0);
+      const hasPending = pendingResult.totalCount > 0;
+      console.log('Pending transactions check:', { totalCount: pendingResult.totalCount, hasPending });
+      setHasPendingTransactions(hasPending);
     } catch (error: unknown) {
       console.error("Failed to check pending transactions:", error);
       setHasPendingTransactions(false);
@@ -264,13 +278,23 @@ export default function TransactionImportPageClient() {
                     </div>
                     <div className="text-right text-sm">
                       <p>{importRecord.totalTransactions} transactions</p>
-                      {importRecord.duplicateTransactions > 0 && (
-                        <div className="flex gap-4 text-xs text-gray-500">
-                          <span className="text-amber-600">
-                            ⚠ {importRecord.duplicateTransactions} duplicates
+                      <div className="flex gap-3 text-xs mt-1">
+                        {importRecord.approvedTransactions > 0 && (
+                          <span className="text-green-600">
+                            ✓ {importRecord.approvedTransactions} approved
                           </span>
-                        </div>
-                      )}
+                        )}
+                        {importRecord.rejectedTransactions > 0 && (
+                          <span className="text-red-600">
+                            ✗ {importRecord.rejectedTransactions} rejected
+                          </span>
+                        )}
+                        {(importRecord.totalTransactions - importRecord.approvedTransactions - importRecord.rejectedTransactions) > 0 && (
+                          <span className="text-blue-600">
+                            ⏳ {importRecord.totalTransactions - importRecord.approvedTransactions - importRecord.rejectedTransactions} pending
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

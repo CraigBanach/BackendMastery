@@ -48,7 +48,6 @@ public class TransactionImportService : ITransactionImportService
             var pendingTransactions = await ParseCsvFileAsync(file, transactionImport.Id, accountId, userId);
             
             // Detect potential duplicates against approved transactions only
-            var duplicateCount = 0;
             var potentialDuplicateCount = 0;
             foreach (var transaction in pendingTransactions)
             {
@@ -136,7 +135,7 @@ public class TransactionImportService : ITransactionImportService
 
                 pendingTransactions.Add(pendingTransaction);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Log parsing error but continue with other records
                 // You could add to an errors collection if needed
@@ -221,7 +220,9 @@ public class TransactionImportService : ITransactionImportService
     public async Task<bool> ApprovePendingTransactionAsync(int id, int accountId, ApprovePendingTransactionRequest request)
     {
         var pendingTransaction = await _pendingTransactionRepository.GetByIdAsync(id, accountId);
-        if (pendingTransaction == null || pendingTransaction.Status != PendingTransactionStatus.Pending)
+        if (pendingTransaction == null || 
+            (pendingTransaction.Status != PendingTransactionStatus.Pending && 
+             pendingTransaction.Status != PendingTransactionStatus.PotentialDuplicate))
             return false;
 
         // Create actual transaction
@@ -243,13 +244,18 @@ public class TransactionImportService : ITransactionImportService
         pendingTransaction.CategoryId = request.CategoryId;
         await _pendingTransactionRepository.UpdateAsync(pendingTransaction);
 
+        // Update import counts
+        await UpdateImportCountsAsync(pendingTransaction.TransactionImportId);
+
         return true;
     }
 
     public async Task<bool> ApprovePendingTransactionSplitAsync(int id, int accountId, ApprovePendingTransactionSplitRequest request)
     {
         var pendingTransaction = await _pendingTransactionRepository.GetByIdAsync(id, accountId);
-        if (pendingTransaction == null || pendingTransaction.Status != PendingTransactionStatus.Pending)
+        if (pendingTransaction == null || 
+            (pendingTransaction.Status != PendingTransactionStatus.Pending && 
+             pendingTransaction.Status != PendingTransactionStatus.PotentialDuplicate))
             return false;
 
         if (request.Splits == null || request.Splits.Count < 2)
@@ -309,6 +315,9 @@ public class TransactionImportService : ITransactionImportService
         pendingTransaction.Status = PendingTransactionStatus.Approved;
         await _pendingTransactionRepository.UpdateAsync(pendingTransaction);
 
+        // Update import counts
+        await UpdateImportCountsAsync(pendingTransaction.TransactionImportId);
+
         return true;
     }
 
@@ -321,24 +330,56 @@ public class TransactionImportService : ITransactionImportService
         pendingTransaction.Status = PendingTransactionStatus.Rejected;
         await _pendingTransactionRepository.UpdateAsync(pendingTransaction);
 
+        // Update import counts
+        await UpdateImportCountsAsync(pendingTransaction.TransactionImportId);
+
         return true;
     }
 
     public async Task<int> BulkApproveTransactionsAsync(int accountId, BulkApproveTransactionsRequest request)
     {
         var approvedCount = 0;
+        var affectedImports = new HashSet<int>();
         
         foreach (var transactionId in request.TransactionIds)
         {
+            var pendingTransaction = await _pendingTransactionRepository.GetByIdAsync(transactionId, accountId);
+            if (pendingTransaction == null || pendingTransaction.Status != PendingTransactionStatus.Pending)
+                continue;
+
             var approveRequest = new ApprovePendingTransactionRequest
             {
-                CategoryId = request.DefaultCategoryId ?? 1, // You might want to handle this better
+                CategoryId = request.DefaultCategoryId ?? 1,
                 Notes = null
             };
-            
-            var success = await ApprovePendingTransactionAsync(transactionId, accountId, approveRequest);
-            if (success)
-                approvedCount++;
+
+            // Create actual transaction
+            var transaction = new Transaction
+            {
+                AccountId = accountId,
+                Amount = pendingTransaction.Amount,
+                Description = approveRequest.Description ?? pendingTransaction.Description,
+                TransactionDate = pendingTransaction.TransactionDate,
+                CategoryId = approveRequest.CategoryId,
+                CreatedByUserId = pendingTransaction.ImportedByUserId,
+                Notes = approveRequest.Notes ?? pendingTransaction.Notes
+            };
+
+            await _transactionRepository.CreateAsync(transaction);
+
+            // Update pending transaction status
+            pendingTransaction.Status = PendingTransactionStatus.Approved;
+            pendingTransaction.CategoryId = approveRequest.CategoryId;
+            await _pendingTransactionRepository.UpdateAsync(pendingTransaction);
+
+            affectedImports.Add(pendingTransaction.TransactionImportId);
+            approvedCount++;
+        }
+
+        // Update import counts once per affected import
+        foreach (var importId in affectedImports)
+        {
+            await UpdateImportCountsAsync(importId);
         }
         
         return approvedCount;
@@ -347,12 +388,25 @@ public class TransactionImportService : ITransactionImportService
     public async Task<int> BulkRejectTransactionsAsync(int accountId, BulkRejectTransactionsRequest request)
     {
         var rejectedCount = 0;
+        var affectedImports = new HashSet<int>();
         
         foreach (var transactionId in request.TransactionIds)
         {
-            var success = await RejectPendingTransactionAsync(transactionId, accountId);
-            if (success)
-                rejectedCount++;
+            var pendingTransaction = await _pendingTransactionRepository.GetByIdAsync(transactionId, accountId);
+            if (pendingTransaction == null || pendingTransaction.Status != PendingTransactionStatus.Pending)
+                continue;
+
+            pendingTransaction.Status = PendingTransactionStatus.Rejected;
+            await _pendingTransactionRepository.UpdateAsync(pendingTransaction);
+
+            affectedImports.Add(pendingTransaction.TransactionImportId);
+            rejectedCount++;
+        }
+
+        // Update import counts once per affected import
+        foreach (var importId in affectedImports)
+        {
+            await UpdateImportCountsAsync(importId);
         }
         
         return rejectedCount;
@@ -400,5 +454,20 @@ public class TransactionImportService : ITransactionImportService
             CategoryName = transaction.Category?.Name,
             CreatedAt = transaction.CreatedAt
         };
+    }
+
+    private async Task UpdateImportCountsAsync(int transactionImportId)
+    {
+        var import = await _transactionImportRepository.GetByIdAsync(transactionImportId);
+        if (import == null) return;
+
+        // Count transactions by status for this import
+        var pendingTransactions = await _pendingTransactionRepository.GetByImportIdAsync(transactionImportId);
+        
+        import.ApprovedTransactions = pendingTransactions.Count(t => t.Status == PendingTransactionStatus.Approved);
+        import.RejectedTransactions = pendingTransactions.Count(t => t.Status == PendingTransactionStatus.Rejected);
+
+        // Update the import
+        await _transactionImportRepository.UpdateAsync(import);
     }
 }

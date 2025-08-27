@@ -153,4 +153,11 @@ public class TransactionRepository : ITransactionRepository
                 && EF.Functions.Like(t.Description.ToLower(), counterParty.ToLower()))
             .ToListAsync();
     }
+
+    public async Task<bool> HasTransactionsForCategoryAsync(int categoryId, int accountId)
+    {
+        return await _context.Transactions
+            .Where(t => t.CategoryId == categoryId && t.AccountId == accountId)
+            .AnyAsync();
+    }
 }
