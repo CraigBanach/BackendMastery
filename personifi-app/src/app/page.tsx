@@ -122,10 +122,10 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 sm:py-20 px-4">
+      <section id="how-it-works" className="py-16 sm:py-20 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4">Show, don't tell</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4">Show, don&apos;t tell</h2>
             <p className="text-lg sm:text-xl text-muted-foreground">See how Personifi makes financial transparency effortless</p>
           </div>
           
@@ -294,7 +294,7 @@ export default function Home() {
                   </div>
                 </div>
                 <p className="text-muted-foreground mb-6 text-center text-base sm:text-lg">
-                  "We replaced our 9-year-old Google Sheets budget tracker with Personifi. The real-time syncing is a game-changer."
+                  &ldquo;We replaced our 9-year-old Google Sheets budget tracker with Personifi. The real-time syncing is a game-changer.&rdquo;
                 </p>
                 <div className="flex items-center justify-center">
                   <div className="w-12 h-12 bg-finance-green rounded-full flex items-center justify-center mr-4">
@@ -312,7 +312,7 @@ export default function Home() {
       </section>
 
       {/* Pricing */}
-      <section className="py-16 sm:py-20 px-4 bg-finance-green text-white">
+      <section id="pricing" className="py-16 sm:py-20 px-4 bg-finance-green text-white">
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">Simple, transparent pricing</h2>
           <p className="text-lg sm:text-xl text-finance-green-light mb-8 sm:mb-12">One price, both partners included. No hidden fees.</p>
@@ -379,7 +379,7 @@ export default function Home() {
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">Ready to transform your finances together?</h2>
           <p className="text-lg sm:text-xl text-muted-foreground mb-6 sm:mb-8">
-            Join the couples who've stopped arguing about money and started achieving their goals.
+            Join the couples who&apos;ve stopped arguing about money and started achieving their goals.
           </p>
           <Button
             asChild
@@ -393,6 +393,69 @@ export default function Home() {
           </Button>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-50 border-t py-12 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-3 gap-8 text-center md:text-left">
+            
+            {/* Company Section */}
+            <div>
+              <h3 className="text-xl font-bold text-finance-green mb-2">personifi</h3>
+              <p className="text-muted-foreground mb-4">Personal finance for your family</p>
+              <p className="text-sm text-finance-green font-semibold">
+                ✅ 30-day money-back guarantee
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="font-semibold mb-4">Quick Links</h4>
+              <div className="space-y-2">
+                <button 
+                  onClick={() => {
+                    document.getElementById('how-it-works')?.scrollIntoView({ 
+                      behavior: 'smooth' 
+                    });
+                  }}
+                  className="block text-muted-foreground hover:text-finance-green transition-colors duration-200"
+                >
+                  How it works
+                </button>
+                <button 
+                  onClick={() => {
+                    document.getElementById('pricing')?.scrollIntoView({ 
+                      behavior: 'smooth' 
+                    });
+                  }}
+                  className="block text-muted-foreground hover:text-finance-green transition-colors duration-200"
+                >
+                  Pricing
+                </button>
+              </div>
+            </div>
+
+            {/* Contact & Social */}
+            <div>
+              <h4 className="font-semibold mb-4">Connect</h4>
+              <div className="space-y-2">
+                <p className="text-muted-foreground text-sm">Follow us for updates:</p>
+                <div className="flex justify-center md:justify-start space-x-4">
+                  <div className="text-muted-foreground text-sm">
+                    Social media links coming soon
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          
+          {/* Copyright */}
+          <div className="border-t mt-8 pt-6 text-center text-sm text-muted-foreground">
+            <p>&copy; {new Date().getFullYear()} personifi. Made with ❤️ for couples who want financial clarity.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
