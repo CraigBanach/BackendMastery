@@ -10,7 +10,7 @@ export async function RequireAccount({ children }: RequireAccountProps) {
   const userHasAccount = await hasAccount();
 
   if (!userHasAccount) {
-    redirect("/dashboard");
+    redirect("/onboarding");
   }
 
   return <>{children}</>;

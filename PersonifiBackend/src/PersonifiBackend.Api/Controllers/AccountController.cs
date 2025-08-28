@@ -143,23 +143,31 @@ public class AccountController : ControllerBase
     }
 
     [HttpGet("members")]
-    public Task<IActionResult> GetAccountMembers()
+    public async Task<IActionResult> GetAccountMembers()
     {
         if (!_userContext.AccountId.HasValue)
         {
-            return Task.FromResult<IActionResult>(Unauthorized("No active account"));
+            return Unauthorized("No active account");
         }
 
         try
         {
-            // This would require a new method in AccountService to get account members
-            // For now, return a placeholder response
-            return Task.FromResult<IActionResult>(Ok(new List<AccountMemberResponse>()));
+            var members = await _accountService.GetAccountMembersAsync(_userContext.AccountId.Value);
+            
+            var memberResponses = members.Select(m => new AccountMemberResponse
+            {
+                UserId = m.Id,
+                Email = m.Email,
+                Role = m.Role,
+                JoinedAt = m.CreatedAt // Using CreatedAt as a proxy for joined date in new schema
+            }).ToList();
+
+            return Ok(memberResponses);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving account members for account {AccountId}", _userContext.AccountId);
-            return Task.FromResult<IActionResult>(BadRequest("Failed to retrieve account members"));
+            return BadRequest("Failed to retrieve account members");
         }
     }
 
@@ -173,8 +181,8 @@ public class AccountController : ControllerBase
 
         try
         {
-            var account = await _accountService.CreateAccountAsync(request.Name);
-            await _accountService.AddUserToAccountAsync(_userContext.UserId.Value, account.Id);
+            // Use the new method that creates account with subscription in one go
+            var account = await _accountService.CreateAccountWithSubscriptionAsync(request.Name, _userContext.UserId.Value);
 
             // Refresh user context to include the new account
             if (_userContext is UserContext userContextImpl)
@@ -198,6 +206,26 @@ public class AccountController : ControllerBase
         {
             _logger.LogError(ex, "Error creating account {AccountName} for user {UserId}", request.Name, _userContext.UserId);
             return BadRequest("Failed to create account");
+        }
+    }
+
+    [HttpGet("has-account")]
+    public async Task<ActionResult<bool>> HasAccount()
+    {
+        if (!_userContext.UserId.HasValue)
+        {
+            return Unauthorized("User context not properly initialized");
+        }
+
+        try
+        {
+            var account = await _accountService.GetUserPrimaryAccountAsync(_userContext.UserId.Value);
+            return Ok(account != null);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking if user {UserId} has account", _userContext.UserId);
+            return Ok(false); // Return false on error to avoid redirect loops
         }
     }
 }
@@ -235,6 +263,7 @@ public class AccountMemberResponse
 {
     public int UserId { get; set; }
     public string Email { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
     public DateTime JoinedAt { get; set; }
 }
 

@@ -5,6 +5,8 @@ import { getBudgetVariance } from "@/lib/api/budgetApi";
 import { getTransactions } from "@/lib/api/transactionApi";
 import { calculateVarianceData } from "@/lib/hooks/useBudgetData";
 
+export const dynamic = 'force-dynamic';
+
 interface BudgetPageProps {
   searchParams?: Promise<{
     year?: string;

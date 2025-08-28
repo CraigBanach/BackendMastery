@@ -49,10 +49,12 @@ public class UserContextMiddleware
                             if (primaryAccount != null)
                             {
                                 userContextImpl.AccountId = primaryAccount.Id;
+                                _logger.LogInformation("User context set - UserId: {UserId}, AccountId: {AccountId}", user.Id, primaryAccount.Id);
                             }
-
-                            _logger.LogInformation("User context set for authenticated user - UserId: {UserId}, AccountId: {AccountId}, PrimaryAccount: {PrimaryAccountFound}", 
-                                user.Id, primaryAccount?.Id, primaryAccount != null);
+                            else
+                            {
+                                _logger.LogWarning("No primary account found for user {UserId} - they may need to create an account", user.Id);
+                            }
                         }
                     }
                     catch (Exception ex)

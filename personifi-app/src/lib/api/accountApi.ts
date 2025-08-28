@@ -124,10 +124,10 @@ export async function getAccountMembers(): Promise<AccountMemberResponse[]> {
 
 export async function hasAccount(): Promise<boolean> {
   try {
-    await fetchWithAuth(`${API_BASE_URL}/Account/members`);
-    return true;
+    const response = await fetchWithAuth(`${API_BASE_URL}/Account/has-account`);
+    return response.json();
   } catch {
-    // If we get an error (like 400 Bad Request), user doesn't have an account
+    // If we get an error, assume user doesn't have an account to avoid redirect loops
     return false;
   }
 }

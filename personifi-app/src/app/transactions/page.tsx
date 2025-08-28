@@ -6,6 +6,8 @@ import { RequireAccount } from "@/components/ui/requireAccount";
 import { getTransactions } from "@/lib/api/transactionApi";
 import { getCategories } from "@/lib/api/categoryApi";
 
+export const dynamic = 'force-dynamic';
+
 interface TransactionsPageProps {
   searchParams?: Promise<{
     year?: string;

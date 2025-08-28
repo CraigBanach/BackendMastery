@@ -63,8 +63,8 @@ export default function InvitationPage({ params }: PageProps) {
 
     try {
       await acceptInvitation(token);
-      // Redirect to dashboard on success
-      router.push("/dashboard");
+      // Redirect to budget on success
+      router.push("/budget");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to accept invitation";
       setError(errorMessage);
