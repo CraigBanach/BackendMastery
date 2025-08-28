@@ -9,7 +9,12 @@ public class User
     public DateTime? UpdatedAt { get; set; }
     public bool InvitePromptDismissed { get; set; } = false;
 
-    public ICollection<UserAccount> UserAccounts { get; set; } = new List<UserAccount>();
+    // New subscription-based fields
+    public int? SubscriptionId { get; set; }
+    public string Role { get; set; } = "owner"; // 'owner' or 'member'
+
+    // Navigation properties
+    public Subscription? Subscription { get; set; }
     public ICollection<Transaction> CreatedTransactions { get; set; } = new List<Transaction>();
     public ICollection<InvitationToken> SentInvitations { get; set; } = new List<InvitationToken>();
 }

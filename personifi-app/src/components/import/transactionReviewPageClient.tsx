@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,41 +42,7 @@ export default function TransactionReviewPageClient() {
   const [customDescriptions, setCustomDescriptions] = useState<Map<number, string>>(new Map());
   const [splitAssignments, setSplitAssignments] = useState<Map<number, TransactionSplit[]>>(new Map());
 
-  useEffect(() => {
-    loadData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Infinite scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      // Check if we're near the bottom of the page
-      const threshold = 1000;
-      const scrollPosition = window.innerHeight + document.documentElement.scrollTop;
-      const documentHeight = document.documentElement.offsetHeight;
-      
-      if (scrollPosition >= documentHeight - threshold) {
-        if (hasMore && !isLoading && !isLoadingMore) {
-          loadData(page + 1, true);
-        }
-      }
-    };
-
-    // Throttle scroll events to prevent excessive API calls
-    let scrollTimeout: NodeJS.Timeout;
-    const throttledHandleScroll = () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(handleScroll, 100);
-    };
-
-    window.addEventListener('scroll', throttledHandleScroll);
-    return () => {
-      window.removeEventListener('scroll', throttledHandleScroll);
-      clearTimeout(scrollTimeout);
-    };
-  }, [hasMore, isLoading, isLoadingMore, page]);
-
-  const loadData = async (pageToLoad = 1, append = false) => {
+  const loadData = useCallback(async (pageToLoad = 1, append = false) => {
     try {
       if (append) {
         setIsLoadingMore(true);
@@ -115,7 +81,41 @@ export default function TransactionReviewPageClient() {
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  };
+  }, [categories]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Infinite scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      // Check if we're near the bottom of the page
+      const threshold = 1000;
+      const scrollPosition = window.innerHeight + document.documentElement.scrollTop;
+      const documentHeight = document.documentElement.offsetHeight;
+      
+      if (scrollPosition >= documentHeight - threshold) {
+        if (hasMore && !isLoading && !isLoadingMore) {
+          loadData(page + 1, true);
+        }
+      }
+    };
+
+    // Throttle scroll events to prevent excessive API calls
+    let scrollTimeout: NodeJS.Timeout;
+    const throttledHandleScroll = () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(handleScroll, 100);
+    };
+
+    window.addEventListener('scroll', throttledHandleScroll);
+    return () => {
+      window.removeEventListener('scroll', throttledHandleScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, [hasMore, isLoading, isLoadingMore, page, loadData]);
+
 
 
   const toggleTransactionExpanded = (transactionId: number) => {

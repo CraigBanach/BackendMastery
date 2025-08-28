@@ -5,6 +5,8 @@ import { PageHeader } from "@/components/ui/pageHeader";
 import { RequireAccount } from "@/components/ui/requireAccount";
 import { Category } from "@/types/transaction";
 
+export const dynamic = 'force-dynamic';
+
 export default async function CategoriesPage() {
   let categories: Category[];
   

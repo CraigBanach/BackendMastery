@@ -12,7 +12,7 @@ export async function createAccountAction(accountName: string) {
     const { token } = await getAccessToken();
     
     if (!token) {
-      throw new Error('No access token available');
+      return { error: 'No access token available' };
     }
 
     // Call the backend API directly
@@ -33,18 +33,17 @@ export async function createAccountAction(accountName: string) {
       } catch {
         errorMessage = response.statusText || errorMessage;
       }
-      throw new Error(errorMessage);
+      return { error: errorMessage };
     }
 
-    // TODO: Fix NEXT_REDIRECT error flash in account creation UI
-    // The redirect() function in server actions causes a brief error flash
-    // Consider using client-side navigation (router.push) or loading states
-    // Redirect to dashboard after successful account creation
-    redirect("/dashboard");
+    // Account created successfully - redirect will happen outside try-catch
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Failed to create account";
     return { error: errorMessage };
   }
+  
+  // Only redirect if we get here (success case)
+  redirect("/budget");
 }
 
 export async function joinAccountAction(invitationToken: string) {
@@ -60,10 +59,12 @@ export async function joinAccountAction(invitationToken: string) {
     // Accept the invitation
     await acceptInvitation(token);
     
-    // Redirect to dashboard after successful join
-    redirect("/dashboard");
+    // Invitation accepted successfully - redirect will happen outside try-catch
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Failed to join account";
     return { error: errorMessage };
   }
+  
+  // Only redirect if we get here (success case)
+  redirect("/budget");
 }

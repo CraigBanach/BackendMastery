@@ -7,7 +7,11 @@ public class Account
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    public ICollection<UserAccount> UserAccounts { get; set; } = new List<UserAccount>();
+    // New subscription-based field
+    public int? SubscriptionId { get; set; }
+
+    // Navigation properties
+    public Subscription? Subscription { get; set; }
     public ICollection<Category> Categories { get; set; } = new List<Category>();
     public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
     public ICollection<Budget> Budgets { get; set; } = new List<Budget>();

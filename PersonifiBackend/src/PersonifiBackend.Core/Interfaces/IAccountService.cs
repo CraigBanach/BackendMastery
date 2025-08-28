@@ -6,8 +6,10 @@ public interface IAccountService
 {
     Task<User?> GetOrCreateUserAsync(string auth0UserId, string email);
     Task<Account> CreateAccountAsync(string name);
+    Task<Account> CreateAccountWithSubscriptionAsync(string name, int ownerUserId);
     Task<Account?> GetUserPrimaryAccountAsync(int userId);
     Task<List<Account>> GetUserAccountsAsync(int userId);
+    Task<List<User>> GetAccountMembersAsync(int accountId);
     Task<bool> HasUserAccessToAccountAsync(int userId, int accountId);
     Task AddUserToAccountAsync(int userId, int accountId);
     Task<InvitationToken> CreateInvitationAsync(int accountId, int inviterUserId, string? email, string? personalMessage = null);

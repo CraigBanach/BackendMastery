@@ -13,7 +13,7 @@ public class PersonifiDbContext : DbContext
     public DbSet<Budget> Budgets => Set<Budget>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Account> Accounts => Set<Account>();
-    public DbSet<UserAccount> UserAccounts => Set<UserAccount>();
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<InvitationToken> InvitationTokens => Set<InvitationToken>();
     public DbSet<PendingTransaction> PendingTransactions => Set<PendingTransaction>();
     public DbSet<TransactionImport> TransactionImports => Set<TransactionImport>();
@@ -130,6 +130,7 @@ public class PersonifiDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Auth0UserId).HasMaxLength(255);
             entity.Property(e => e.Email).HasMaxLength(255);
+            entity.Property(e => e.Role).HasMaxLength(50).HasDefaultValue("owner");
             entity.HasIndex(e => e.Auth0UserId).IsUnique();
             entity.HasIndex(e => e.Email);
 
@@ -149,24 +150,30 @@ public class PersonifiDbContext : DbContext
             entity.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
         });
 
-        // UserAccount configuration (Many-to-Many)
-        modelBuilder.Entity<UserAccount>(entity =>
+        // Subscription configuration
+        modelBuilder.Entity<Subscription>(entity =>
         {
-            entity.HasKey(e => new { e.UserId, e.AccountId });
+            entity.HasKey(e => e.Id);
 
-            entity.Property(e => e.JoinedAt).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
 
             entity
-                .HasOne(e => e.User)
-                .WithMany(u => u.UserAccounts)
-                .HasForeignKey(e => e.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasOne(e => e.OwnerUser)
+                .WithMany()
+                .HasForeignKey(e => e.OwnerUserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity
                 .HasOne(e => e.Account)
-                .WithMany(a => a.UserAccounts)
-                .HasForeignKey(e => e.AccountId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .WithOne(a => a.Subscription)
+                .HasForeignKey<Subscription>(e => e.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity
+                .HasMany(e => e.Users)
+                .WithOne(u => u.Subscription)
+                .HasForeignKey(u => u.SubscriptionId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // InvitationToken configuration
