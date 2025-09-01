@@ -25,6 +25,52 @@ public class TransactionImportController : ControllerBase
         _logger = logger;
     }
 
+    [HttpPost("preview")]
+    public async Task<ActionResult<CsvPreviewResponse>> PreviewCsv([FromForm] CsvPreviewRequest request)
+    {
+        try
+        {
+            var result = await _transactionImportService.PreviewCsvAsync(request.File);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error previewing CSV for user {UserId}", _userContext.UserId);
+            return StatusCode(500, "An error occurred while previewing the CSV file");
+        }
+    }
+
+    [HttpPost("with-mapping")]
+    public async Task<ActionResult<TransactionImportDto>> ImportTransactionsWithMapping([FromForm] ImportTransactionsWithMappingRequest request)
+    {
+        if (!_userContext.AccountId.HasValue)
+            return BadRequest("Please create an account first using POST /api/account/create");
+
+        try
+        {
+            var result = await _transactionImportService.ImportTransactionsFromCsvWithMappingAsync(
+                request.File,
+                request.Mapping,
+                _userContext.AccountId.Value, 
+                _userContext.UserId!.Value);
+            
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error importing transactions for user {UserId}", _userContext.UserId);
+            return StatusCode(500, "An error occurred while importing transactions");
+        }
+    }
+
     [HttpPost]
     public async Task<ActionResult<TransactionImportDto>> ImportTransactions([FromForm] ImportTransactionsRequest request)
     {

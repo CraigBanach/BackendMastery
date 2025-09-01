@@ -25,13 +25,61 @@ public class TransactionImportService : ITransactionImportService
         _categoryRepository = categoryRepository;
     }
 
-    public async Task<TransactionImportDto> ImportTransactionsFromCsvAsync(IFormFile file, int accountId, int userId)
+    public async Task<CsvPreviewResponse> PreviewCsvAsync(IFormFile file)
     {
         if (file == null || file.Length == 0)
             throw new ArgumentException("File is required");
 
         if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("Only CSV files are supported");
+
+        using var reader = new StreamReader(file.OpenReadStream());
+        
+        var headerLine = await reader.ReadLineAsync();
+        if (string.IsNullOrEmpty(headerLine))
+            throw new ArgumentException("CSV file appears to be empty");
+
+        var headers = ParseCsvLine(headerLine);
+        var previewRows = new List<List<string>>();
+        var totalRows = 0;
+        
+        // Read up to 5 preview rows
+        string? line;
+        while ((line = await reader.ReadLineAsync()) != null && previewRows.Count < 5)
+        {
+            totalRows++;
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+                
+            var fields = ParseCsvLine(line);
+            previewRows.Add(fields.ToList());
+        }
+        
+        // Count remaining rows
+        while ((line = await reader.ReadLineAsync()) != null)
+        {
+            if (!string.IsNullOrWhiteSpace(line))
+                totalRows++;
+        }
+
+        return new CsvPreviewResponse
+        {
+            Headers = headers.ToList(),
+            PreviewRows = previewRows,
+            TotalRows = totalRows
+        };
+    }
+
+    public async Task<TransactionImportDto> ImportTransactionsFromCsvWithMappingAsync(IFormFile file, CsvColumnMapping mapping, int accountId, int userId)
+    {
+        if (file == null || file.Length == 0)
+            throw new ArgumentException("File is required");
+
+        if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("Only CSV files are supported");
+
+        if (string.IsNullOrEmpty(mapping.DateColumn) || string.IsNullOrEmpty(mapping.DescriptionColumn) || string.IsNullOrEmpty(mapping.AmountColumn))
+            throw new ArgumentException("Date, Description, and Amount columns must be specified");
 
         var transactionImport = new TransactionImport
         {
@@ -45,7 +93,7 @@ public class TransactionImportService : ITransactionImportService
 
         try
         {
-            var pendingTransactions = await ParseCsvFileAsync(file, transactionImport.Id, accountId, userId);
+            var pendingTransactions = await ParseCsvFileWithMappingAsync(file, mapping, transactionImport.Id, accountId, userId);
             
             // Detect potential duplicates against approved transactions only
             var potentialDuplicateCount = 0;
@@ -80,6 +128,20 @@ public class TransactionImportService : ITransactionImportService
             await _transactionImportRepository.UpdateAsync(transactionImport);
             throw;
         }
+    }
+
+    public async Task<TransactionImportDto> ImportTransactionsFromCsvAsync(IFormFile file, int accountId, int userId)
+    {
+        // Use default Starling Bank mapping for backwards compatibility
+        var starlingMapping = new CsvColumnMapping
+        {
+            DateColumn = "Date",
+            DescriptionColumn = "Counter Party",
+            AmountColumn = "Amount (GBP)",
+            ExpensesArePositive = true
+        };
+        
+        return await ImportTransactionsFromCsvWithMappingAsync(file, starlingMapping, accountId, userId);
     }
 
     private async Task<List<PendingTransaction>> ParseCsvFileAsync(IFormFile file, int transactionImportId, int accountId, int userId)
@@ -147,6 +209,86 @@ public class TransactionImportService : ITransactionImportService
         return pendingTransactions;
     }
 
+    private async Task<List<PendingTransaction>> ParseCsvFileWithMappingAsync(IFormFile file, CsvColumnMapping mapping, int transactionImportId, int accountId, int userId)
+    {
+        var pendingTransactions = new List<PendingTransaction>();
+        
+        using var reader = new StreamReader(file.OpenReadStream());
+        var headerLine = await reader.ReadLineAsync();
+        
+        if (string.IsNullOrEmpty(headerLine))
+            throw new ArgumentException("CSV file appears to be empty");
+
+        var headers = ParseCsvLine(headerLine);
+        
+        // Find column indexes based on mapping
+        var dateIndex = Array.IndexOf(headers, mapping.DateColumn);
+        var descriptionIndex = Array.IndexOf(headers, mapping.DescriptionColumn);
+        var amountIndex = Array.IndexOf(headers, mapping.AmountColumn);
+        
+        if (dateIndex == -1)
+            throw new ArgumentException($"Date column '{mapping.DateColumn}' not found in CSV headers");
+        if (descriptionIndex == -1)
+            throw new ArgumentException($"Description column '{mapping.DescriptionColumn}' not found in CSV headers");
+        if (amountIndex == -1)
+            throw new ArgumentException($"Amount column '{mapping.AmountColumn}' not found in CSV headers");
+        
+        string? line;
+        var lineNumber = 2;
+        
+        while ((line = await reader.ReadLineAsync()) != null)
+        {
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            try
+            {
+                var fields = ParseCsvLine(line);
+                
+                if (fields.Length <= Math.Max(dateIndex, Math.Max(descriptionIndex, amountIndex)))
+                    continue; // Skip rows that don't have enough columns
+
+                var rawAmount = ParseAmount(fields[amountIndex]);
+                var transactionDate = ParseDateFlexible(fields[dateIndex]);
+                var description = fields[descriptionIndex].Trim();
+                
+                // Create canonical storage: Positive = Income, Negative = Expense
+                var isIncomeTransaction = mapping.ExpensesArePositive ? (rawAmount < 0) : (rawAmount > 0);
+                var finalAmount = isIncomeTransaction ? Math.Abs(rawAmount) : -Math.Abs(rawAmount);
+                
+                var pendingTransaction = new PendingTransaction
+                {
+                    TransactionImportId = transactionImportId,
+                    AccountId = accountId,
+                    ImportedByUserId = userId,
+                    ExternalTransactionId = $"{transactionImportId}-{lineNumber}",
+                    TransactionDate = transactionDate,
+                    CounterParty = description,
+                    Reference = description, // Map description to reference as requested
+                    Type = "GENERIC", // Generic type for mapped imports
+                    Amount = finalAmount,
+                    Balance = null, // Not mapped in simplified version
+                    ExternalSpendingCategory = null, // Not mapped in simplified version
+                    Notes = null, // Not mapped in simplified version
+                    Description = description,
+                    Status = PendingTransactionStatus.Pending,
+                    RawData = line
+                };
+
+                pendingTransactions.Add(pendingTransaction);
+            }
+            catch (Exception)
+            {
+                // Log parsing error but continue with other records
+                // You could add to an errors collection if needed
+            }
+
+            lineNumber++;
+        }
+
+        return pendingTransactions;
+    }
+
     private string[] ParseCsvLine(string line)
     {
         var fields = new List<string>();
@@ -187,6 +329,37 @@ public class TransactionImportService : ITransactionImportService
         throw new ArgumentException($"Unable to parse date: {dateStr}");
     }
 
+    private DateTime ParseDateFlexible(string dateStr)
+    {
+        if (string.IsNullOrEmpty(dateStr))
+            throw new ArgumentException("Date is required");
+        
+        // Try common date formats
+        var formats = new[]
+        {
+            "dd/MM/yyyy",   // UK format
+            "MM/dd/yyyy",   // US format
+            "yyyy-MM-dd",   // ISO format
+            "dd-MM-yyyy",   // Alternative UK format
+            "MM-dd-yyyy",   // Alternative US format
+            "d/M/yyyy",     // Single digit day/month
+            "M/d/yyyy",     // Single digit month/day
+            "yyyy/MM/dd"    // Alternative ISO format
+        };
+        
+        foreach (var format in formats)
+        {
+            if (DateTime.TryParseExact(dateStr, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+                return date;
+        }
+        
+        // Fallback to general parsing
+        if (DateTime.TryParse(dateStr, out var parsedDate))
+            return parsedDate;
+            
+        throw new ArgumentException($"Unable to parse date '{dateStr}'. Supported formats: dd/MM/yyyy, MM/dd/yyyy, yyyy-MM-dd");
+    }
+
     private decimal ParseAmount(string amountStr)
     {
         if (string.IsNullOrEmpty(amountStr))
@@ -225,11 +398,28 @@ public class TransactionImportService : ITransactionImportService
              pendingTransaction.Status != PendingTransactionStatus.PotentialDuplicate))
             return false;
 
+        // Get category to determine final amount sign
+        var category = await _categoryRepository.GetByIdAsync(request.CategoryId, accountId);
+        if (category == null)
+            return false;
+
+        // Apply canonical storage logic: 
+        // - Income (positive) → Income category = positive
+        // - Income (positive) → Expense category = negative (credit)  
+        // - Expense (negative) → Expense category = positive
+        // - Expense (negative) → Income category = negative (debit)
+        var isIncomeTransaction = pendingTransaction.Amount > 0;
+        var isIncomeCategory = category.Type == CategoryType.Income;
+        
+        var finalAmount = (isIncomeTransaction == isIncomeCategory) 
+            ? Math.Abs(pendingTransaction.Amount)  // Same type: positive
+            : -Math.Abs(pendingTransaction.Amount); // Cross type: negative
+
         // Create actual transaction
         var transaction = new Transaction
         {
             AccountId = accountId,
-            Amount = pendingTransaction.Amount,
+            Amount = finalAmount,
             Description = request.Description ?? pendingTransaction.Description,
             TransactionDate = pendingTransaction.TransactionDate,
             CategoryId = request.CategoryId,
@@ -270,26 +460,12 @@ public class TransactionImportService : ITransactionImportService
             if (category == null)
                 return false;
 
-            // Determine correct amount sign based on original transaction type vs category type
-            var finalAmount = split.Amount;
-            var isOriginalExpense = pendingTransaction.Amount > 0; // Positive after import = expense
-            var isExpenseCategory = category.Type == CategoryType.Expense;
-            
-            if (isOriginalExpense && isExpenseCategory)
-            {
-                // Expense → Expense category: Positive amount
-                finalAmount = Math.Abs(split.Amount);
-            }
-            else if (!isOriginalExpense && !isExpenseCategory)
-            {
-                // Income → Income category: Positive amount  
-                finalAmount = Math.Abs(split.Amount);
-            }
-            else
-            {
-                // Cross-type assignment: Negative amount
-                finalAmount = -Math.Abs(split.Amount);
-            }
+            // Apply canonical storage logic for split transactions
+            var isIncomeTransaction = pendingTransaction.Amount > 0;
+            var isIncomeCategory = category.Type == CategoryType.Income;
+            var finalAmount = (isIncomeTransaction == isIncomeCategory) 
+                ? Math.Abs(split.Amount)  // Same type: positive
+                : -Math.Abs(split.Amount); // Cross type: negative
 
             var transaction = new Transaction
             {
@@ -353,11 +529,23 @@ public class TransactionImportService : ITransactionImportService
                 Notes = null
             };
 
+            // Get category to determine correct amount sign
+            var category = await _categoryRepository.GetByIdAsync(approveRequest.CategoryId, accountId);
+            if (category == null)
+                continue;
+
+            // Apply canonical storage logic
+            var isIncomeTransaction = pendingTransaction.Amount > 0;
+            var isIncomeCategory = category.Type == CategoryType.Income;
+            var finalAmount = (isIncomeTransaction == isIncomeCategory) 
+                ? Math.Abs(pendingTransaction.Amount)  // Same type: positive
+                : -Math.Abs(pendingTransaction.Amount); // Cross type: negative
+
             // Create actual transaction
             var transaction = new Transaction
             {
                 AccountId = accountId,
-                Amount = pendingTransaction.Amount,
+                Amount = finalAmount,
                 Description = approveRequest.Description ?? pendingTransaction.Description,
                 TransactionDate = pendingTransaction.TransactionDate,
                 CategoryId = approveRequest.CategoryId,

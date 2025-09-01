@@ -16,17 +16,24 @@ import {
   ArrowRight,
 } from "lucide-react";
 import {
-  importTransactionsFromCSV,
+  importTransactionsFromCSVWithMapping,
+  previewCSV,
   getImportHistory,
   getPendingTransactions,
   TransactionImportDto,
+  CsvPreviewResponse,
+  CsvColumnMapping,
 } from "@/lib/api/transactionImportApi";
 import { useEffect } from "react";
 import { format } from "date-fns";
+import { CsvPreviewTable } from "./csvPreviewTable";
+import { ColumnMappingForm } from "./columnMappingForm";
 
 export default function TransactionImportPageClient() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [csvPreview, setCsvPreview] = useState<CsvPreviewResponse | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [uploadResult, setUploadResult] = useState<TransactionImportDto | null>(
     null
   );
@@ -91,24 +98,42 @@ export default function TransactionImportPageClient() {
       setSelectedFile(file);
       setUploadError(null);
       setUploadResult(null);
+      setCsvPreview(null);
 
-      // Auto-import the file
-      await handleUpload(file);
+      // Load preview for column mapping
+      await loadPreview(file);
     }
   };
 
-  const handleUpload = async (file?: File) => {
-    const fileToUpload = file || selectedFile;
-    if (!fileToUpload) return;
-
-    setIsUploading(true);
+  const loadPreview = async (file: File) => {
+    setIsLoadingPreview(true);
     setUploadError(null);
 
     try {
-      const result = await importTransactionsFromCSV(fileToUpload);
+      const preview = await previewCSV(file);
+      setCsvPreview(preview);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to preview CSV file";
+      setUploadError(errorMessage);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  };
+
+  const handleImportWithMapping = async (mapping: CsvColumnMapping) => {
+    if (!selectedFile) return;
+
+    setIsImporting(true);
+    setUploadError(null);
+
+    try {
+      const result = await importTransactionsFromCSVWithMapping(selectedFile, mapping);
       setUploadResult(result);
+      
+      // Reset state
       setSelectedFile(null);
-      // Reset file input
+      setCsvPreview(null);
       const fileInput = document.getElementById("csv-file") as HTMLInputElement;
       if (fileInput) fileInput.value = "";
 
@@ -124,10 +149,10 @@ export default function TransactionImportPageClient() {
       }
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : "Upload failed";
+        error instanceof Error ? error.message : "Import failed";
       setUploadError(errorMessage);
     } finally {
-      setIsUploading(false);
+      setIsImporting(false);
     }
   };
 
@@ -201,15 +226,24 @@ export default function TransactionImportPageClient() {
                 type="file"
                 accept=".csv"
                 onChange={handleFileSelect}
-                disabled={isUploading}
+                disabled={isLoadingPreview || isImporting}
               />
               <p className="text-sm text-gray-600">
-                Currently supports Starling Bank CSV exports. Ensure your file
-                includes Date, Counter Party, Amount, and other standard fields.
+                Upload any bank&apos;s CSV file. You&apos;ll be able to map columns after upload.
+                Supported formats: Date, Description, and Amount columns required.
               </p>
             </div>
 
-            {isUploading && (
+            {isLoadingPreview && (
+              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-md">
+                <Clock className="h-4 w-4 text-blue-600 animate-spin" />
+                <span className="text-sm text-blue-800">
+                  Loading CSV preview...
+                </span>
+              </div>
+            )}
+
+            {isImporting && (
               <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-md">
                 <Clock className="h-4 w-4 text-blue-600 animate-spin" />
                 <span className="text-sm text-blue-800">
@@ -251,6 +285,23 @@ export default function TransactionImportPageClient() {
             )}
           </CardContent>
         </Card>
+
+        {/* CSV Preview and Column Mapping */}
+        {csvPreview && (
+          <>
+            <CsvPreviewTable
+              headers={csvPreview.headers}
+              previewRows={csvPreview.previewRows}
+              totalRows={csvPreview.totalRows}
+            />
+            <ColumnMappingForm
+              headers={csvPreview.headers}
+              previewRows={csvPreview.previewRows}
+              onImport={handleImportWithMapping}
+              isImporting={isImporting}
+            />
+          </>
+        )}
 
         {/* Import History */}
         <Card>

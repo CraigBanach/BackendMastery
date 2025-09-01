@@ -258,15 +258,15 @@ export default function TransactionReviewPageClient() {
       currency: 'GBP'
     }).format(absAmount);
     
-    // In DB: positive = spending, negative = income
-    // Display: spending (positive DB) = no +, income (negative DB) = +
-    return amount < 0 ? `+${formattedAmount}` : formattedAmount;
+    // New canonical storage: positive = income, negative = expense
+    // Display: income (positive DB) = +, expense (negative DB) = no +
+    return amount > 0 ? `+${formattedAmount}` : formattedAmount;
   };
 
   const getAmountColor = (amount: number) => {
-    // In DB: positive = spending, negative = income
-    // Display: spending (positive DB) = red, income (negative DB) = green
-    return amount >= 0 ? 'text-red-600' : 'text-green-600';
+    // New canonical storage: positive = income, negative = expense
+    // Display: income (positive DB) = green, expense (negative DB) = red
+    return amount > 0 ? 'text-green-600' : 'text-red-600';
   };
 
   const formatDate = (dateString: string) => {

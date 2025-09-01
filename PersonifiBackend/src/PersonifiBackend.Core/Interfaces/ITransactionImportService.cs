@@ -5,6 +5,8 @@ namespace PersonifiBackend.Core.Interfaces;
 
 public interface ITransactionImportService
 {
+    Task<CsvPreviewResponse> PreviewCsvAsync(IFormFile file);
+    Task<TransactionImportDto> ImportTransactionsFromCsvWithMappingAsync(IFormFile file, CsvColumnMapping mapping, int accountId, int userId);
     Task<TransactionImportDto> ImportTransactionsFromCsvAsync(IFormFile file, int accountId, int userId);
     Task<PaginationResult<PendingTransactionDto>> GetPendingTransactionsAsync(int accountId, int page = 1, int pageSize = 20);
     Task<PendingTransactionDto?> GetPendingTransactionByIdAsync(int id, int accountId);
