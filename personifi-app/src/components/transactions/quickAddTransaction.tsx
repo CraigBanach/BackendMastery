@@ -6,9 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { format } from "date-fns";
 import { Category } from "@/types/transaction";
 import { createTransaction } from "@/lib/api/createTransaction";
@@ -144,25 +142,15 @@ export function QuickAddTransaction({ categories, onTransactionAdded }: QuickAdd
 
           <div>
             <label className="text-sm font-medium">Date</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {format(formData.transactionDate, "PPP")}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={formData.transactionDate}
-                  onSelect={(date) => date && setFormData({ ...formData, transactionDate: date })}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <Input
+              type="date"
+              value={format(formData.transactionDate, "yyyy-MM-dd")}
+              onChange={(e) => setFormData({ 
+                ...formData, 
+                transactionDate: new Date(e.target.value) 
+              })}
+              className="w-full"
+            />
           </div>
 
           <div>

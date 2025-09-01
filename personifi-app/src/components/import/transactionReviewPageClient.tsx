@@ -52,7 +52,7 @@ export default function TransactionReviewPageClient() {
       
       const [transactionsResult, categoriesResult] = await Promise.all([
         getPendingTransactions(pageToLoad, 20),
-        pageToLoad === 1 ? getCategories() : Promise.resolve(categories)
+        pageToLoad === 1 ? getCategories() : Promise.resolve(null)
       ]);
       
       if (append) {
@@ -67,7 +67,7 @@ export default function TransactionReviewPageClient() {
         setTotalCount(transactionsResult.totalCount);
       }
       
-      if (pageToLoad === 1) setCategories(categoriesResult);
+      if (pageToLoad === 1 && categoriesResult) setCategories(categoriesResult);
       setHasMore(transactionsResult.items.length === 20);
       
       // Only update page if we're appending (not on initial load or refresh)
@@ -81,7 +81,7 @@ export default function TransactionReviewPageClient() {
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  }, [categories]);
+  }, []);
 
   useEffect(() => {
     loadData();
