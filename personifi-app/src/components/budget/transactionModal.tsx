@@ -14,16 +14,9 @@ import {
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, PoundSterlingIcon } from "lucide-react";
+import { PoundSterlingIcon } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Select,
   SelectContent,
@@ -215,37 +208,26 @@ export function TransactionModal({
                   control={form.control}
                   name="date"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
+                    <FormItem>
                       <FormLabel>Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                new Intl.DateTimeFormat('en-GB').format(field.value)
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date > new Date()}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          value={
+                            field.value && !isNaN(field.value.getTime()) 
+                              ? field.value.toISOString().split('T')[0] 
+                              : ''
+                          }
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              field.onChange(new Date(e.target.value));
+                            } else {
+                              field.onChange(new Date()); // Default to today when cleared
+                            }
+                          }}
+                          max={new Date().toISOString().split('T')[0]} // Prevent future dates
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

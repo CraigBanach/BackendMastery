@@ -4,7 +4,7 @@ export const toDisplayFormat = (number: number): string =>
   numberFormat.format(number);
 
 export const formatCurrency = (number: number): string =>
-  new Intl.NumberFormat('en-US', {
+  new Intl.NumberFormat('en-GB', {
     style: 'currency',
-    currency: 'USD'
+    currency: 'GBP'
   }).format(number);
