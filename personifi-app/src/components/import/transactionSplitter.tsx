@@ -41,13 +41,19 @@ export function TransactionSplitter({
   // Always work with positive amounts in the UI for simplicity
   const getDisplayAmount = (amount: number) => Math.abs(amount);
   
-  // Get the correct signed amount based on category type
+  // Get the correct signed amount based on category type and original transaction type
   const getCorrectAmount = (displayAmount: number, categoryId: number) => {
     const category = categories.find(c => c.id === categoryId);
     if (!category) return displayAmount;
     
-    // In DB: Income = negative, Expense = positive
-    return category.type === 'Income' ? -Math.abs(displayAmount) : Math.abs(displayAmount);
+    // With canonical storage: positive = income, negative = expense
+    // Apply same logic as approval process for cross-type assignments
+    const isOriginalIncome = originalAmount > 0;
+    const isIncomeCategory = category.type === 'Income';
+    
+    return (isOriginalIncome === isIncomeCategory)
+      ? Math.abs(displayAmount)  // Same type: positive
+      : -Math.abs(displayAmount); // Cross type: negative
   };
 
   // Initialize with two empty splits

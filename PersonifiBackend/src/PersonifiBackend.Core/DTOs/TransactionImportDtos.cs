@@ -61,3 +61,18 @@ public class ApprovePendingTransactionSplitRequest
 {
     public List<TransactionSplitItem> Splits { get; set; } = new();
 }
+
+public class CsvPreviewResponse
+{
+    public List<string> Headers { get; set; } = new();
+    public List<List<string>> PreviewRows { get; set; } = new();
+    public int TotalRows { get; set; }
+}
+
+public class CsvColumnMapping
+{
+    public string DateColumn { get; set; } = string.Empty;
+    public string DescriptionColumn { get; set; } = string.Empty;
+    public string AmountColumn { get; set; } = string.Empty;
+    public bool ExpensesArePositive { get; set; } = true; // true = expenses positive (Starling), false = expenses negative (most banks)
+}
