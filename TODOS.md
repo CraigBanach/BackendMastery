@@ -2,55 +2,42 @@
 - Align the expense & income categories
 - Allow deleting of categories with transactions
 - Clarify CSV format for upload
-- Onboarding flow
-  - Default category setup
-  - Default budgets
+- Allow re-ordering of categories
+- Allow enter submit forms
+- First time I went forward a month on budget, there were no categories
+- Branding of Auth0 pages
+- E-mail in DB is the sub, not the e-mail
 
-# Next Prompt
+● Excellent! ✅ The fix is complete and compiles successfully.
 
-● Refined Schema Design:
+🎯 Issue Fixed: Salary Import Sign Problem
 
-Core Relationships:
+Root Cause:
 
-Subscription (1) → Users (many)
-Subscription (1) → Account (1)
-Account (1) → Financial Data (many)
+The approval process was directly using pendingTransaction.Amount without considering the final storage convention.
 
-Entity Structure:
+Solution Applied:
 
-Subscriptions: - id - stripe_customer_id - stripe_subscription_id - plan_type ('couples', 'family') - status ('active', 'trialing', 'canceled') - owner_user_id (billing contact) - account_id (the household account) - billing_period_start/end
+1. Modified ApprovePendingTransactionAsync to use Math.Abs(pendingTransaction.Amount)
+2. Modified BulkApproveTransactionsAsync to use Math.Abs(pendingTransaction.Amount)
+3. Added category validation in the individual approval method
 
-Users: - id - auth0_user_id - email - subscription_id (FK to Subscriptions) - role ('owner', 'member')
+How It Works Now:
 
-Account: (stays mostly the same) - id - name - subscription_id (FK to Subscriptions) - Financial data relationships remain unchanged
+1. CSV Import: Stores amounts with correct signs based on user's amount convention choice
+2. Preview: Shows correctly how transactions will appear
+3. Approval: Always stores positive amounts in final transactions
+4. UI Display: Handles showing income as positive, expenses as contextually appropriate
 
-Benefits of This Design:
+Your Test Case:
 
-✅ Simpler relationships - no complex many-to-many UserAccount junction
-✅ Clear ownership - subscription has one owner who handles billing
-✅ Natural couples model - one subscription = one household
-✅ Easy plan enforcement - subscription controls user limits and features
-✅ Cleaner billing - one subscription, one account, multiple users
+- CSV: Salary Payment,2500.00 (positive)
+- Convention: "Expenses Negative"
+- Import: Stored as 2500.00 (positive, correctly identified as income)
+- Approval: Stored as 2500.00 (positive via Math.Abs())
+- Result: ✅ Income appears as positive amount
 
-Key Changes Needed:
+The fix ensures consistent positive storage while preserving the import convention logic for proper classification during the
+preview phase. Your salary should now import and approve correctly as a positive income transaction! 🚀
 
-1. Remove UserAccount junction table (no longer needed)
-2. Add subscription_id to Users (direct relationship)
-3. Add account_id to Subscriptions (1:1 relationship)
-4. Add user roles directly on Users table
-5. Update all queries to use Users.subscription_id instead of UserAccount joins
-
-Migration Strategy:
-
-1. Create Subscriptions for each existing Account
-2. Link all Users in each Account to the new Subscription
-3. Set first User as subscription owner
-4. Remove UserAccount relationships
-5. Update all data access patterns
-
-This is much cleaner! Does this refined approach align with your vision? Should we start implementing these schema changes?
-
-> Let's strip out everything from subscriptions & users that are not needed right now, like the stripe stuff, plan type, status
-> & billing period. We can add them later.
-
-Also, can you dump this to a markdown file so we can pick it up later?
+> Ok, now I need you to create me a test plan and test CSV(s) to test this comprehensively. Save these in the base directory.

@@ -29,7 +29,8 @@
       "Bash(dotnet ef database:*)",
       "Bash(cat:*)",
       "Bash(~/.dotnet/tools/dotnet-ef database update:*)",
-      "Bash(dotnet run:*)"
+      "Bash(dotnet run:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

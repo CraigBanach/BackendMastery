@@ -73,6 +73,49 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Re
   return response;
 }
 
+export interface CsvPreviewResponse {
+  headers: string[];
+  previewRows: string[][];
+  totalRows: number;
+}
+
+export interface CsvColumnMapping {
+  dateColumn: string;
+  descriptionColumn: string;
+  amountColumn: string;
+  expensesArePositive: boolean;
+}
+
+export async function previewCSV(file: File): Promise<CsvPreviewResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const url = `${API_BASE_URL}/TransactionImport/preview`;
+  const response = await fetchWithAuth(url, {
+    method: 'POST',
+    body: formData,
+  });
+  
+  return response.json();
+}
+
+export async function importTransactionsFromCSVWithMapping(file: File, mapping: CsvColumnMapping): Promise<TransactionImportDto> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('mapping.dateColumn', mapping.dateColumn);
+  formData.append('mapping.descriptionColumn', mapping.descriptionColumn);
+  formData.append('mapping.amountColumn', mapping.amountColumn);
+  formData.append('mapping.expensesArePositive', mapping.expensesArePositive.toString());
+
+  const url = `${API_BASE_URL}/TransactionImport/with-mapping`;
+  const response = await fetchWithAuth(url, {
+    method: 'POST',
+    body: formData,
+  });
+  
+  return response.json();
+}
+
 export async function importTransactionsFromCSV(file: File): Promise<TransactionImportDto> {
   const formData = new FormData();
   formData.append('file', file);
