@@ -7,3 +7,6 @@
 - Branding of Auth0 pages
 - E-mail in DB is the sub, not the e-mail
 - Choose colour when creating/editing categories
+- On transactions page, show a total spend for each day
+- On the budget screen, show a percentage for how far through the month we are
+- Make sure when switching to a future month on the budget screen, we don't show a budget from months ago if our budget has updated
