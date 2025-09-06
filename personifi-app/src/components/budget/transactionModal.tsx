@@ -38,7 +38,7 @@ const now = new Date();
 
 const formSchema = z.object({
   type: z.nativeEnum(TransactionType),
-  amount: z.coerce.number().nonnegative().safe(),
+  amount: z.coerce.number().safe(),
   description: z
     .string()
     .min(1, { message: "Description must be provided" })
