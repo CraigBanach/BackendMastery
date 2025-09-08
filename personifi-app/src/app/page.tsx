@@ -1,26 +1,38 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Users, Target, PoundSterling, TrendingUp, Heart, ArrowRight, MessageCircle, ChevronRight } from "lucide-react";
+import { CheckCircle, Users, Target, PoundSterling, TrendingUp, Heart, ArrowRight, MessageCircle, ChevronRight, Download } from "lucide-react";
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Personifi | Personal Finance App for UK Couples | Budget Together',
+  description: 'The UK\'s personal finance app built for couples. Track spending, manage budgets, and reach financial goals together with real-time syncing. Free 30-day trial.',
+  keywords: 'UK couples finance app, personal finance UK, couples budgeting UK, joint budget app, UK money management, couples financial planning, household budget app UK',
+  robots: 'index, follow',
+  openGraph: {
+    title: 'Personifi | Personal Finance App for UK Couples',
+    description: 'The UK\'s personal finance app built for couples. Track spending, manage budgets together.',
+    type: 'website',
+    locale: 'en_GB',
+  }
+};
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-finance-green-light/20 to-white pt-36 pb-20 px-4 -mt-16">
+      <section className="relative overflow-hidden bg-gradient-to-br from-finance-green-light/20 to-white -mt-16 pt-40 pb-20 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center">
-            <Badge variant="secondary" className="mb-4 bg-finance-green-light text-finance-green-dark hover:bg-finance-green-light/70 cursor-pointer">
+            <Badge variant="secondary" className="mb-4 bg-finance-green-light text-finance-green-dark hover:bg-finance-green-light/70">
               🚀 Early Access Now Available
             </Badge>
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl mb-6 leading-tight">
               Finally, finance management{" "}
-              <span className="text-finance-green">built for couples</span>
+              <span className="text-finance-green">built for UK couples</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
-              Stop juggling spreadsheets and surprise overspending. Personifi lets couples track spending, 
+              Stop juggling spreadsheets and surprise overspending. Personifi lets UK couples track spending, 
               manage budgets, and reach financial goals together - with real-time syncing and complete transparency.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
@@ -35,17 +47,15 @@ export default function Home() {
                 </a>
               </Button>
               <Button
+                asChild
                 variant="outline"
                 size="lg"
                 className="border-finance-green text-finance-green hover:bg-finance-green-light hover:text-finance-green-dark text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 w-full sm:w-auto"
-                onClick={() => {
-                  document.getElementById('how-it-works')?.scrollIntoView({ 
-                    behavior: 'smooth' 
-                  });
-                }}
               >
-                <Heart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                See How It Works
+                <a href="#how-it-works">
+                  <Heart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  See How It Works
+                </a>
               </Button>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
@@ -60,7 +70,7 @@ export default function Home() {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12 md:mb-16 px-4">
             <h2 className="text-2xl sm:text-3xl font-bold mb-4">Stop the money miscommunication</h2>
-            <p className="text-lg sm:text-xl text-muted-foreground">Finally, a solution designed for how couples actually manage money</p>
+            <p className="text-lg sm:text-xl text-muted-foreground">Finally, a UK personal finance solution designed for how couples actually manage money</p>
           </div>
           
           <div className="grid sm:grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 px-4">
@@ -311,6 +321,76 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Free Resources Section */}
+      <section className="py-16 sm:py-20 px-4 bg-gradient-to-br from-finance-green-light/10 to-finance-green-light/5">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-12 md:mb-16">
+            <Badge variant="secondary" className="mb-4 bg-finance-green-light text-finance-green-dark hover:bg-finance-green-light/70">
+              📊 Free Spreadsheet Template
+            </Badge>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4">Get our budget template first</h2>
+            <p className="text-lg sm:text-xl text-muted-foreground">Download our Google Sheets template - completely separate from our app</p>
+          </div>
+          
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+            <div>
+              <h3 className="text-xl sm:text-2xl font-semibold mb-4">Free Google Sheets Budget Template</h3>
+              <p className="text-lg text-muted-foreground mb-6">
+                A proven spreadsheet system for couples who want to start budgeting together. 
+                Perfect for testing our approach before trying the full Personifi app.
+              </p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start">
+                  <CheckCircle className="mr-3 h-5 w-5 text-finance-green flex-shrink-0 mt-0.5" />
+                  <span>Monthly budget planning for two people</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="mr-3 h-5 w-5 text-finance-green flex-shrink-0 mt-0.5" />
+                  <span>Expense tracking with smart categories</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="mr-3 h-5 w-5 text-finance-green flex-shrink-0 mt-0.5" />
+                  <span>Automatic calculations & progress tracking</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="mr-3 h-5 w-5 text-finance-green flex-shrink-0 mt-0.5" />
+                  <span>Instructions & tips included</span>
+                </li>
+              </ul>
+              <Button 
+                asChild
+                size="lg"
+                className="bg-finance-green hover:bg-finance-green-dark text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6"
+              >
+                <a href="/free-budget-template">
+                  Download Spreadsheet Template
+                  <Download className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                </a>
+              </Button>
+            </div>
+            
+            <div className="bg-white p-6 rounded-xl shadow-lg border">
+              <div className="bg-gradient-to-br from-finance-green-light/20 to-finance-green-light/10 p-4 rounded-lg mb-4">
+                <div className="text-sm font-medium text-finance-green-dark mb-2">This Month&apos;s Budget</div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="text-muted-foreground">Income</div>
+                    <div className="font-semibold">£4,200</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Expenses</div>
+                    <div className="font-semibold">£3,850</div>
+                  </div>
+                </div>
+              </div>
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <div className="text-sm text-green-700 font-medium">£350 under budget! 🎉</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" className="py-16 sm:py-20 px-4 bg-finance-green text-white">
         <div className="container mx-auto max-w-4xl text-center">
@@ -319,7 +399,7 @@ export default function Home() {
           
           <Card className="max-w-md mx-auto bg-white text-gray-900 border-0 shadow-xl">
             <CardContent className="p-6 sm:p-8">
-              <Badge variant="secondary" className="mb-4 bg-finance-green text-white hover:bg-finance-green/70 cursor-pointer">
+              <Badge variant="secondary" className="mb-4 bg-finance-green text-white hover:bg-finance-green/70">
                 🎉 Early Access Price
               </Badge>
               <div className="mb-6">
@@ -412,26 +492,24 @@ export default function Home() {
             <div>
               <h4 className="font-semibold mb-4">Quick Links</h4>
               <div className="space-y-2 flex flex-col items-center md:items-start">
-                <button 
-                  onClick={() => {
-                    document.getElementById('how-it-works')?.scrollIntoView({ 
-                      behavior: 'smooth' 
-                    });
-                  }}
-                  className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium cursor-pointer"
+                <a 
+                  href="#how-it-works"
+                  className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
                 >
                   How it works
-                </button>
-                <button 
-                  onClick={() => {
-                    document.getElementById('pricing')?.scrollIntoView({ 
-                      behavior: 'smooth' 
-                    });
-                  }}
-                  className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium cursor-pointer"
+                </a>
+                <a 
+                  href="#pricing"
+                  className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
                 >
                   Pricing
-                </button>
+                </a>
+                <a 
+                  href="/free-budget-template"
+                  className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
+                >
+                  Free Budget Template
+                </a>
               </div>
             </div>
 

@@ -10,3 +10,5 @@
 - On transactions page, show a total spend for each day
 - On the budget screen, show a percentage for how far through the month we are
 - Make sure when switching to a future month on the budget screen, we don't show a budget from months ago if our budget has updated
+- Use category colour for the budget row
+- Split badge on transactions page for created by and updated by

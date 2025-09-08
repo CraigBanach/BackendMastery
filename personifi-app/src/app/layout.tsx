@@ -18,13 +18,22 @@ export default async function RootLayout({
 }>) {
   const headerList = await headers();
   const pathName = headerList.get("x-current-path");
-  const isLandingPage = pathName === "/" || pathName === null;
+  const isLandingPage =
+    pathName === "/" ||
+    pathName === "/free-budget-template" ||
+    pathName === null;
 
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
         <Header></Header>
-        <main className={`flex flex-col ${isLandingPage ? '' : 'p-3 sm:p-4 md:p-6'}`}>{children}</main>
+        <main
+          className={`flex flex-col ${
+            isLandingPage ? "" : "p-3 sm:p-4 md:p-6"
+          }`}
+        >
+          {children}
+        </main>
       </body>
     </html>
   );

@@ -30,7 +30,9 @@
       "Bash(cat:*)",
       "Bash(~/.dotnet/tools/dotnet-ef database update:*)",
       "Bash(dotnet run:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "WebFetch(domain:docs.google.com)",
+      "WebFetch(domain:personifi.xyz)"
     ],
     "deny": []
   }
