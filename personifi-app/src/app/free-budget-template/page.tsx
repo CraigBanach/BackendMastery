@@ -72,7 +72,7 @@ export default function FreeBudgetTemplate() {
                   size="lg"
                   className="border-finance-green text-finance-green hover:bg-finance-green-light hover:text-finance-green-dark text-base px-6 py-3"
                 >
-                  <a href="/auth/login">
+                  <a href="/auth/login?screen_hint=signup">
                     Try Personifi App Free
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </a>
