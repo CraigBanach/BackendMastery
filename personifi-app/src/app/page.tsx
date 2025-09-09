@@ -41,8 +41,8 @@ export default function Home() {
                 size="lg"
                 className="bg-finance-green hover:bg-finance-green-dark text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 w-full sm:w-auto"
               >
-                <a href="/auth/login">
-                  Start Free Trial
+                <a href="/auth/login?screen_hint=signup">
+                  Get Started Free
                   <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </a>
               </Button>
@@ -440,8 +440,8 @@ export default function Home() {
                 size="lg" 
                 className="w-full bg-finance-green hover:bg-finance-green-dark text-base sm:text-lg py-4 sm:py-6"
               >
-                <a href="/auth/login">
-                  Start Your Free Trial
+                <a href="/auth/login?screen_hint=signup">
+                  Get Started Free
                   <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </a>
               </Button>
@@ -466,7 +466,7 @@ export default function Home() {
             size="lg"
             className="bg-finance-green hover:bg-finance-green-dark text-base sm:text-lg px-8 sm:px-12 py-4 sm:py-6"
           >
-            <a href="/auth/login">
+            <a href="/auth/login?screen_hint=signup">
               Get Started Free
               <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
             </a>

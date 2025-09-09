@@ -26,6 +26,10 @@ public class UserContextMiddleware
                              context.User.Claims.FirstOrDefault(c => c.Type == "sub")?.Value ??
                              context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
+            // Extract email from Auth0 claims
+            var email = context.User.Claims.FirstOrDefault(c => c.Type == "email")?.Value ??
+                       context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
             if (!string.IsNullOrEmpty(auth0UserId))
             {
                 // Cast to implementation to set values
@@ -35,8 +39,8 @@ public class UserContextMiddleware
 
                     try
                     {
-                        // Get or create user in our system using Auth0 user ID
-                        var user = await accountService.GetOrCreateUserAsync(auth0UserId, auth0UserId);
+                        // Get or create user in our system using Auth0 user ID and email
+                        var user = await accountService.GetOrCreateUserAsync(auth0UserId, email ?? string.Empty);
                         
                         if (user != null)
                         {

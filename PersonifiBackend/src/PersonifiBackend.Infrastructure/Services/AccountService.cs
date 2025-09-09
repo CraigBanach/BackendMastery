@@ -35,6 +35,15 @@ public class AccountService : IAccountService
 
             _logger.LogInformation("Created new user for Auth0 ID: {Auth0UserId}", auth0UserId);
         }
+        else if (!string.IsNullOrEmpty(email) && user.Email != email)
+        {
+            // Update existing user's email if it's different (fixes users who have sub claim as email)
+            user.Email = email;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Updated email for existing user {Auth0UserId}: {Email}", auth0UserId, email);
+        }
 
         return user;
     }

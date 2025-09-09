@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,8 +11,14 @@ import { createAccountAction, joinAccountAction } from "@/lib/actions/accountAct
 export function AccountSetupPrompt() {
   const [mode, setMode] = useState<"choose" | "create" | "join">("choose");
   const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  const handleCreateAccountAction = async (formData: FormData) => {
+  const handleCreateAccountSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (isPending) return; // Prevent double submission
+    
+    const formData = new FormData(e.currentTarget);
     const accountName = formData.get("accountName") as string;
     
     if (!accountName.trim()) {
@@ -21,15 +27,23 @@ export function AccountSetupPrompt() {
     }
 
     setError(null);
-    const result = await createAccountAction(accountName.trim());
     
-    if (result?.error) {
-      setError(result.error);
-    }
-    // If successful, the server action will redirect
+    startTransition(async () => {
+      const result = await createAccountAction(accountName.trim());
+      
+      if (result?.error) {
+        setError(result.error);
+      }
+      // If successful, the server action will redirect
+    });
   };
 
-  const handleJoinAccountAction = async (formData: FormData) => {
+  const handleJoinAccountSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (isPending) return; // Prevent double submission
+    
+    const formData = new FormData(e.currentTarget);
     const invitationToken = formData.get("invitationToken") as string;
     
     if (!invitationToken.trim()) {
@@ -38,12 +52,15 @@ export function AccountSetupPrompt() {
     }
 
     setError(null);
-    const result = await joinAccountAction(invitationToken.trim());
     
-    if (result?.error) {
-      setError(result.error);
-    }
-    // If successful, the server action will redirect
+    startTransition(async () => {
+      const result = await joinAccountAction(invitationToken.trim());
+      
+      if (result?.error) {
+        setError(result.error);
+      }
+      // If successful, the server action will redirect
+    });
   };
 
   if (mode === "choose") {
@@ -95,7 +112,7 @@ export function AccountSetupPrompt() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <form action={handleCreateAccountAction} className="space-y-4">
+            <form onSubmit={handleCreateAccountSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="accountName">Account Name</Label>
                 <Input
@@ -103,6 +120,7 @@ export function AccountSetupPrompt() {
                   name="accountName"
                   placeholder="e.g., Smith Family Finances"
                   required
+                  disabled={isPending}
                 />
               </div>
 
@@ -118,14 +136,23 @@ export function AccountSetupPrompt() {
                   onClick={() => setMode("choose")}
                   variant="outline"
                   className="flex-1"
+                  disabled={isPending}
                 >
                   Back
                 </Button>
                 <Button
                   type="submit"
                   className="flex-1"
+                  disabled={isPending}
                 >
-                  Create Account
+                  {isPending ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                      Creating...
+                    </div>
+                  ) : (
+                    "Create Account"
+                  )}
                 </Button>
               </div>
             </form>
@@ -146,7 +173,7 @@ export function AccountSetupPrompt() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <form action={handleJoinAccountAction} className="space-y-4">
+            <form onSubmit={handleJoinAccountSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="invitationToken">Invitation Link or Token</Label>
                 <Input
@@ -154,6 +181,7 @@ export function AccountSetupPrompt() {
                   name="invitationToken"
                   placeholder="Paste invitation link or token here"
                   required
+                  disabled={isPending}
                 />
               </div>
 
@@ -169,14 +197,23 @@ export function AccountSetupPrompt() {
                   onClick={() => setMode("choose")}
                   variant="outline"
                   className="flex-1"
+                  disabled={isPending}
                 >
                   Back
                 </Button>
                 <Button
                   type="submit"
                   className="flex-1"
+                  disabled={isPending}
                 >
-                  Join Account
+                  {isPending ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                      Joining...
+                    </div>
+                  ) : (
+                    "Join Account"
+                  )}
                 </Button>
               </div>
             </form>

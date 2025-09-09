@@ -1,7 +1,7 @@
 "use client";
 
-import { ReactNode } from "react";
-import { CreateAccountModal } from "./createAccountModal";
+import { ReactNode, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAccountRequired } from "@/lib/hooks/useAccountRequired";
 
 interface AccountRequiredWrapperProps {
@@ -9,16 +9,14 @@ interface AccountRequiredWrapperProps {
 }
 
 export function AccountRequiredWrapper({ children }: AccountRequiredWrapperProps) {
-  const { showCreateAccount, setShowCreateAccount, handleAccountCreated } = useAccountRequired();
+  const { showCreateAccount } = useAccountRequired();
+  const router = useRouter();
 
-  return (
-    <>
-      {children}
-      <CreateAccountModal
-        isOpen={showCreateAccount}
-        onClose={() => setShowCreateAccount(false)}
-        onSuccess={handleAccountCreated}
-      />
-    </>
-  );
+  useEffect(() => {
+    if (showCreateAccount) {
+      router.push("/onboarding");
+    }
+  }, [showCreateAccount, router]);
+
+  return <>{children}</>;
 }
