@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { BudgetSetupModal } from "./budgetSetupModal";
-import { TransactionModal } from "./transactionModal";
+import { TransactionModal } from "../transactions/transactionModal";
 import {
   Card,
   CardContent,
