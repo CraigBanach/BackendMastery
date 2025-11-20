@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FloatingActionButton } from "./floatingActionButton";
 import { TransactionModal } from "@/components/transactions/transactionModal";
 import { CategoryDto } from "@/types/budget";
@@ -17,7 +17,7 @@ export function PageWithFab({
   children,
   categories = [],
   onTransactionSaved,
-  fabLabel = "Add Transaction",
+  fabLabel = "[A]dd Transaction",
   disabled = false,
 }: PageWithFabProps) {
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
@@ -34,6 +34,20 @@ export function PageWithFab({
   const handleModalClose = () => {
     setIsTransactionModalOpen(false);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.shiftKey && event.key.toLowerCase() === "a") {
+        handleFabClick();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
     <>
