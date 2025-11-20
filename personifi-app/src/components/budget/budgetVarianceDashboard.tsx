@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { BudgetSetupModal } from "./budgetSetupModal";
-import { TransactionModal } from "../transactions/transactionModal";
 import {
   Card,
   CardContent,
@@ -15,7 +14,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Settings,
-  Plus,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -60,11 +58,6 @@ export function BudgetVarianceDashboard({
     useState<BudgetVarianceWithTransactions[]>(initialData);
   const [loading, setLoading] = useState(false);
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
-  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<{
-    name: string;
-    type: "income" | "expense";
-  } | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(
     new Set()
   );
@@ -123,23 +116,6 @@ export function BudgetVarianceDashboard({
       }
       return newSet;
     });
-  };
-
-  const openTransactionModal = (
-    categoryName?: string,
-    categoryType?: "income" | "expense"
-  ) => {
-    if (categoryName && categoryType) {
-      setSelectedCategory({ name: categoryName, type: categoryType });
-    } else {
-      setSelectedCategory(null);
-    }
-    setIsTransactionModalOpen(true);
-  };
-
-  const closeTransactionModal = () => {
-    setIsTransactionModalOpen(false);
-    setSelectedCategory(null);
   };
 
   const expenseData = budgetData.filter(
@@ -592,19 +568,6 @@ export function BudgetVarianceDashboard({
         </CardContent>
       </Card>
 
-      {/* Floating Action Button */}
-      <div className="fixed bottom-6 right-6">
-        <Button
-          onClick={() => openTransactionModal()}
-          size="lg"
-          className="h-12 px-6 rounded-full bg-finance-green hover:bg-finance-green-dark shadow-lg font-medium"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Transaction
-        </Button>
-      </div>
-
-      {/* Budget Setup Modal */}
       <BudgetSetupModal
         isOpen={isSetupModalOpen}
         onClose={() => setIsSetupModalOpen(false)}
@@ -615,16 +578,6 @@ export function BudgetVarianceDashboard({
           onBudgetSaved?.();
           setIsSetupModalOpen(false);
         }}
-      />
-
-      {/* Transaction Modal */}
-      <TransactionModal
-        isOpen={isTransactionModalOpen}
-        onClose={closeTransactionModal}
-        preSelectedCategory={selectedCategory?.name}
-        preSelectedType={selectedCategory?.type}
-        onTransactionSaved={onBudgetSaved}
-        categories={categories}
       />
     </div>
   );

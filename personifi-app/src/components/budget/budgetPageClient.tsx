@@ -7,6 +7,7 @@ import { BudgetVarianceWithTransactions } from "@/lib/hooks/useBudgetData";
 import { getBudgetVariance } from "@/lib/api/budgetApi";
 import { getTransactions } from "@/lib/api/transactionApi";
 import { calculateVarianceData } from "@/lib/hooks/useBudgetData";
+import { PageWithFab } from "@/components/ui/pageWithFab";
 
 interface BudgetPageClientProps {
   initialData: BudgetVarianceWithTransactions[];
@@ -74,14 +75,19 @@ export function BudgetPageClient({ initialData, currentYear, currentMonth }: Bud
   }));
 
   return (
-    <BudgetVarianceDashboard
-      initialData={data}
-      currentYear={year}
-      currentMonth={month}
-      onMonthChange={handleMonthChange}
+    <PageWithFab 
       categories={categories}
-      existingBudgets={existingBudgets}
-      onBudgetSaved={handleBudgetSaved}
-    />
+      onTransactionSaved={handleBudgetSaved}
+    >
+      <BudgetVarianceDashboard
+        initialData={data}
+        currentYear={year}
+        currentMonth={month}
+        onMonthChange={handleMonthChange}
+        categories={categories}
+        existingBudgets={existingBudgets}
+        onBudgetSaved={handleBudgetSaved}
+      />
+    </PageWithFab>
   );
 }

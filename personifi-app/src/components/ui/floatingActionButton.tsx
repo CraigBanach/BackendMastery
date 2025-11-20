@@ -10,11 +10,11 @@ interface FloatingActionButtonProps {
   className?: string;
 }
 
-export function FloatingActionButton({ 
-  onClick, 
-  label = "Add Transaction", 
+export function FloatingActionButton({
+  onClick,
+  label = "Add Transaction",
   disabled = false,
-  className = ""
+  className = "",
 }: FloatingActionButtonProps) {
   return (
     <div className={`fixed bottom-6 right-6 z-50 ${className}`}>
