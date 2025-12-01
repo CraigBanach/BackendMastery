@@ -3,7 +3,8 @@
 import { getAccessToken } from "../AuthProvider";
 import { CategoryType } from "@/types/budget";
 
-const API_BASE_URL = process.env.PERSONIFI_BACKEND_URL || 'https://localhost:7106/api';
+const API_BASE_URL =
+  process.env.PERSONIFI_BACKEND_URL || "https://localhost:7106/api";
 
 interface ApiError {
   error: {
@@ -49,22 +50,25 @@ interface PagedResponse<T> {
   hasPrevious: boolean;
 }
 
-async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
+async function fetchWithAuth(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> {
   const { token } = await getAccessToken();
-  
+
   const response = await fetch(url, {
     ...options,
     headers: {
       ...options.headers,
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
   });
 
   if (!response.ok) {
     let errorMessage = `HTTP ${response.status}`;
     try {
-      const errorData = await response.json() as ApiError;
+      const errorData = (await response.json()) as ApiError;
       errorMessage = errorData.error?.message || errorMessage;
     } catch {
       errorMessage = response.statusText || errorMessage;
@@ -82,16 +86,20 @@ export async function getTransactions(
   categoryId?: number
 ): Promise<PagedResponse<TransactionDto>> {
   const params = new URLSearchParams();
-  
-  if (pagination?.page) params.append('page', pagination.page.toString());
-  if (pagination?.pageSize) params.append('pageSize', pagination.pageSize.toString());
-  if (pagination?.sortBy) params.append('sortBy', pagination.sortBy);
-  if (pagination?.sortDescending) params.append('sortDescending', pagination.sortDescending.toString());
-  if (startDate) params.append('startDate', startDate);
-  if (endDate) params.append('endDate', endDate);
-  if (categoryId) params.append('categoryId', categoryId.toString());
 
-  const url = `${API_BASE_URL}/Transaction${params.toString() ? `?${params.toString()}` : ''}`;
+  if (pagination?.page) params.append("page", pagination.page.toString());
+  if (pagination?.pageSize)
+    params.append("pageSize", pagination.pageSize.toString());
+  if (pagination?.sortBy) params.append("sortBy", pagination.sortBy);
+  if (pagination?.sortDescending)
+    params.append("sortDescending", pagination.sortDescending.toString());
+  if (startDate) params.append("startDate", startDate);
+  if (endDate) params.append("endDate", endDate);
+  if (categoryId) params.append("categoryId", categoryId.toString());
+
+  const url = `${API_BASE_URL}/Transaction${
+    params.toString() ? `?${params.toString()}` : ""
+  }`;
   const response = await fetchWithAuth(url);
   return response.json();
 }
@@ -99,20 +107,23 @@ export async function getTransactions(
 export async function deleteTransaction(id: number): Promise<void> {
   const url = `${API_BASE_URL}/Transaction/${id}`;
   await fetchWithAuth(url, {
-    method: 'DELETE',
+    method: "DELETE",
   });
 }
 
-export async function updateTransaction(id: number, transaction: {
-  categoryId: number;
-  amount: number;
-  description: string;
-  notes?: string;
-  transactionDate: Date;
-}): Promise<TransactionDto> {
+export async function updateTransaction(
+  id: number,
+  transaction: {
+    categoryId: number;
+    amount: number;
+    description: string;
+    notes?: string;
+    transactionDate: Date;
+  }
+): Promise<TransactionDto> {
   const url = `${API_BASE_URL}/Transaction/${id}`;
   const response = await fetchWithAuth(url, {
-    method: 'PUT',
+    method: "PUT",
     body: JSON.stringify({
       categoryId: transaction.categoryId,
       amount: transaction.amount,

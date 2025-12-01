@@ -15,42 +15,57 @@ interface BudgetPageClientProps {
   currentMonth: number;
 }
 
-export function BudgetPageClient({ initialData, currentYear, currentMonth }: BudgetPageClientProps) {
+export function BudgetPageClient({
+  initialData,
+  currentYear,
+  currentMonth,
+}: BudgetPageClientProps) {
   const router = useRouter();
   const [data, setData] = useState(initialData);
   const [year, setYear] = useState(currentYear);
   const [month, setMonth] = useState(currentMonth);
 
-  const fetchData = async (targetYear: number, targetMonth: number): Promise<BudgetVarianceWithTransactions[]> => {
+  const fetchData = async (
+    targetYear: number,
+    targetMonth: number
+  ): Promise<BudgetVarianceWithTransactions[]> => {
     try {
       const [budgetVariances, transactionsResponse] = await Promise.all([
         getBudgetVariance(targetYear, targetMonth),
-        getTransactions({
-          pageSize: 100,
-          sortBy: 'TransactionDate',
-          sortDescending: true,
-        }, 
-        `${targetYear}-${targetMonth.toString().padStart(2, '0')}-01`,
-        `${targetYear}-${targetMonth.toString().padStart(2, '0')}-${new Date(targetYear, targetMonth, 0).getDate().toString().padStart(2, '0')}`)
+        getTransactions(
+          {
+            pageSize: 100,
+            sortBy: "TransactionDate",
+            sortDescending: true,
+          },
+          `${targetYear}-${targetMonth.toString().padStart(2, "0")}-01`,
+          new Date(new Date(year, month, 1).getTime() - 1).toISOString()
+        ),
       ]);
 
-      return calculateVarianceData(budgetVariances || [], transactionsResponse?.items || []);
+      return calculateVarianceData(
+        budgetVariances || [],
+        transactionsResponse?.items || []
+      );
     } catch (error: unknown) {
-      console.error('Error fetching budget data:', error);
+      console.error("Error fetching budget data:", error);
       return [];
     }
   };
 
-  const handleMonthChange = async (newYear: number, newMonth: number): Promise<BudgetVarianceWithTransactions[]> => {
+  const handleMonthChange = async (
+    newYear: number,
+    newMonth: number
+  ): Promise<BudgetVarianceWithTransactions[]> => {
     setYear(newYear);
     setMonth(newMonth);
-    
+
     // Update URL to preserve month on refresh
     const url = new URL(window.location.href);
-    url.searchParams.set('year', newYear.toString());
-    url.searchParams.set('month', newMonth.toString());
+    url.searchParams.set("year", newYear.toString());
+    url.searchParams.set("month", newMonth.toString());
     router.push(url.pathname + url.search, { scroll: false });
-    
+
     const newData = await fetchData(newYear, newMonth);
     setData(newData);
     return newData;
@@ -68,17 +83,14 @@ export function BudgetPageClient({ initialData, currentYear, currentMonth }: Bud
   };
 
   // Extract categories from current data for modal
-  const categories = data.map(item => item.category);
-  const existingBudgets = data.map(item => ({
+  const categories = data.map((item) => item.category);
+  const existingBudgets = data.map((item) => ({
     categoryId: item.category.id,
     amount: item.budgeted,
   }));
 
   return (
-    <PageWithFab 
-      categories={categories}
-      onTransactionSaved={handleBudgetSaved}
-    >
+    <PageWithFab categories={categories} onTransactionSaved={handleBudgetSaved}>
       <BudgetVarianceDashboard
         initialData={data}
         currentYear={year}
