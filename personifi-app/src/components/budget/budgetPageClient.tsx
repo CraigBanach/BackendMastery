@@ -15,7 +15,6 @@ export function BudgetPageClient({ data, year, month }: BudgetPageClientProps) {
   const router = useRouter();
 
   const handleMonthChange = async (newYear: number, newMonth: number) => {
-    // Update URL to preserve month on refresh
     const url = new URL(window.location.href);
     url.searchParams.set("year", newYear.toString());
     url.searchParams.set("month", newMonth.toString());
