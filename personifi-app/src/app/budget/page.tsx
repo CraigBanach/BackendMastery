@@ -20,7 +20,7 @@ async function fetchBudgetData(year: number, month: number) {
       getBudgetVariance(year, month),
       getTransactions(
         {
-          pageSize: 100,
+          pageSize: 1000,
           sortBy: "TransactionDate",
           sortDescending: true,
         },
@@ -67,11 +67,7 @@ export default async function BudgetPage({ searchParams }: BudgetPageProps) {
           title="Budget Overview"
           subTitle="Track your spending against budgeted amounts"
         />
-        <BudgetPageClient
-          initialData={initialData || []}
-          currentYear={year}
-          currentMonth={month}
-        />
+        <BudgetPageClient data={initialData || []} year={year} month={month} />
       </div>
     </RequireAccount>
   );
