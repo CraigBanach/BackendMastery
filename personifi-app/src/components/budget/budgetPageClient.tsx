@@ -1,74 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BudgetVarianceDashboard } from "./budgetVarianceDashboard";
 import { BudgetVarianceWithTransactions } from "@/lib/hooks/useBudgetData";
-import { getBudgetVariance } from "@/lib/api/budgetApi";
-import { getTransactions } from "@/lib/api/transactionApi";
-import { calculateVarianceData } from "@/lib/hooks/useBudgetData";
 import { PageWithFab } from "@/components/ui/pageWithFab";
 
 interface BudgetPageClientProps {
-  initialData: BudgetVarianceWithTransactions[];
-  currentYear: number;
-  currentMonth: number;
+  data: BudgetVarianceWithTransactions[];
+  year: number;
+  month: number;
 }
 
-export function BudgetPageClient({
-  initialData,
-  currentYear,
-  currentMonth,
-}: BudgetPageClientProps) {
+export function BudgetPageClient({ data, year, month }: BudgetPageClientProps) {
   const router = useRouter();
-  const [data, setData] = useState(initialData);
-  const [year, setYear] = useState(currentYear);
-  const [month, setMonth] = useState(currentMonth);
 
-  const fetchData = async (
-    targetYear: number,
-    targetMonth: number
-  ): Promise<BudgetVarianceWithTransactions[]> => {
-    try {
-      const [budgetVariances, transactionsResponse] = await Promise.all([
-        getBudgetVariance(targetYear, targetMonth),
-        getTransactions(
-          {
-            pageSize: 100,
-            sortBy: "TransactionDate",
-            sortDescending: true,
-          },
-          `${targetYear}-${targetMonth.toString().padStart(2, "0")}-01`,
-          new Date(new Date(year, month, 1).getTime() - 1).toISOString()
-        ),
-      ]);
-
-      return calculateVarianceData(
-        budgetVariances || [],
-        transactionsResponse?.items || []
-      );
-    } catch (error: unknown) {
-      console.error("Error fetching budget data:", error);
-      return [];
-    }
-  };
-
-  const handleMonthChange = async (
-    newYear: number,
-    newMonth: number
-  ): Promise<BudgetVarianceWithTransactions[]> => {
-    setYear(newYear);
-    setMonth(newMonth);
-
+  const handleMonthChange = async (newYear: number, newMonth: number) => {
     // Update URL to preserve month on refresh
     const url = new URL(window.location.href);
     url.searchParams.set("year", newYear.toString());
     url.searchParams.set("month", newMonth.toString());
     router.push(url.pathname + url.search, { scroll: false });
-
-    const newData = await fetchData(newYear, newMonth);
-    setData(newData);
-    return newData;
   };
 
   const handleBudgetSaved = async () => {
@@ -92,9 +43,9 @@ export function BudgetPageClient({
   return (
     <PageWithFab categories={categories} onTransactionSaved={handleBudgetSaved}>
       <BudgetVarianceDashboard
-        initialData={data}
-        currentYear={year}
-        currentMonth={month}
+        data={data}
+        year={year}
+        month={month}
         onMonthChange={handleMonthChange}
         categories={categories}
         existingBudgets={existingBudgets}

@@ -24,13 +24,10 @@ import { BudgetProgressBar } from "./budgetProgressBar";
 import { RadialProgress } from "./radialProgress";
 
 interface BudgetVarianceDashboardProps {
-  initialData?: BudgetVarianceWithTransactions[];
-  currentYear?: number;
-  currentMonth?: number;
-  onMonthChange?: (
-    year: number,
-    month: number
-  ) => Promise<BudgetVarianceWithTransactions[]>;
+  data?: BudgetVarianceWithTransactions[];
+  year?: number;
+  month?: number;
+  onMonthChange?: (year: number, month: number) => Promise<void>;
   categories?: CategoryDto[];
   existingBudgets?: Array<{ categoryId: number; amount: number }>;
   onBudgetSaved?: () => void;
@@ -44,33 +41,26 @@ const formatCurrency = (amount: number) => {
 };
 
 export function BudgetVarianceDashboard({
-  initialData = [],
-  currentYear = new Date().getFullYear(),
-  currentMonth: initialMonth = new Date().getMonth() + 1,
+  data: budgetData = [],
+  year = new Date().getFullYear(),
+  month = new Date().getMonth() + 1,
   onMonthChange,
   categories = [],
   existingBudgets = [],
   onBudgetSaved,
 }: BudgetVarianceDashboardProps = {}) {
-  const [currentMonth, setCurrentMonth] = useState(initialMonth);
-  const [year, setYear] = useState(currentYear);
-  const [budgetData, setBudgetData] =
-    useState<BudgetVarianceWithTransactions[]>(initialData);
   const [loading, setLoading] = useState(false);
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(
     new Set()
   );
 
-  const monthName = new Date(year, currentMonth - 1).toLocaleDateString(
-    "en-GB",
-    {
-      month: "long",
-      year: "numeric",
-    }
-  );
+  const monthName = new Date(year, month - 1).toLocaleDateString("en-GB", {
+    month: "long",
+    year: "numeric",
+  });
 
-  const monthNameMobile = new Date(year, currentMonth - 1).toLocaleDateString(
+  const monthNameMobile = new Date(year, month - 1).toLocaleDateString(
     "en-GB",
     {
       month: "short",
@@ -79,25 +69,21 @@ export function BudgetVarianceDashboard({
   );
 
   const navigateMonth = async (direction: "prev" | "next") => {
-    let newMonth = currentMonth;
+    let newMonth = month;
     let newYear = year;
 
     if (direction === "prev") {
-      newMonth = currentMonth === 1 ? 12 : currentMonth - 1;
-      newYear = currentMonth === 1 ? year - 1 : year;
+      newMonth = month === 1 ? 12 : month - 1;
+      newYear = month === 1 ? year - 1 : year;
     } else {
-      newMonth = currentMonth === 12 ? 1 : currentMonth + 1;
-      newYear = currentMonth === 12 ? year + 1 : year;
+      newMonth = month === 12 ? 1 : month + 1;
+      newYear = month === 12 ? year + 1 : year;
     }
-
-    setCurrentMonth(newMonth);
-    setYear(newYear);
 
     if (onMonthChange) {
       setLoading(true);
       try {
-        const newData = await onMonthChange(newYear, newMonth);
-        setBudgetData(newData);
+        await onMonthChange(newYear, newMonth);
       } catch (error) {
         console.error("Error loading month data:", error);
       } finally {
@@ -571,7 +557,7 @@ export function BudgetVarianceDashboard({
       <BudgetSetupModal
         isOpen={isSetupModalOpen}
         onClose={() => setIsSetupModalOpen(false)}
-        currentMonth={new Date(year, currentMonth - 1)}
+        currentMonth={new Date(year, month - 1)}
         categories={categories}
         existingBudgets={existingBudgets}
         onBudgetSaved={() => {
