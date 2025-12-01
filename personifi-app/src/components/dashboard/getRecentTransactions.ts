@@ -25,7 +25,6 @@ export const getRecentTransactions = async () => {
     
     if (res?.ok) {
       const transactionResponse = await res.json();
-      console.log("CbTest: ", transactionResponse);
       return transactionResponse.items;
     } else {
       const responseText = await res.text();

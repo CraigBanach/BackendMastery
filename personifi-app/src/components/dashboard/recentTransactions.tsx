@@ -64,7 +64,6 @@ import { Transaction } from "@/types/transaction";
 export const RecentTransactions = async () => {
   // const data = [];
   const data = await getRecentTransactions();
-  console.log("CBData: ", data);
 
   // const filteredTransactions = transactions.filter(
   //   (transaction) =>

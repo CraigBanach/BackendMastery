@@ -17,7 +17,8 @@ public class BudgetService : IBudgetService
         IBudgetRepository budgetRepository,
         ITransactionRepository transactionRepository,
         ICategoryRepository categoryRepository,
-        IMapper mapper)
+        IMapper mapper
+    )
     {
         _budgetRepository = budgetRepository;
         _transactionRepository = transactionRepository;
@@ -25,7 +26,11 @@ public class BudgetService : IBudgetService
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<BudgetVarianceDto>> GetBudgetVarianceAsync(int accountId, int year, int month)
+    public async Task<IEnumerable<BudgetVarianceDto>> GetBudgetVarianceAsync(
+        int accountId,
+        int year,
+        int month
+    )
     {
         var categories = await _categoryRepository.GetAccountCategoriesAsync(accountId);
         var budgets = await GetOrCreateBudgetsForMonthAsync(accountId, year, month);
@@ -37,24 +42,35 @@ public class BudgetService : IBudgetService
         {
             var budgetedAmount = budgetDict.GetValueOrDefault(category.Id, 0m);
             var actualAmount = await GetActualSpendingAsync(accountId, category.Id, year, month);
-            
-            var categoryDto = _mapper.Map<CategoryDto>(category);
-            var monthlyPaceStatus = CalculateMonthlyPaceStatus(budgetedAmount, actualAmount, year, month);
-            var expectedSpendToDate = CalculateExpectedSpendToDate(budgetedAmount, year, month);
 
-            variances.Add(new BudgetVarianceDto(
-                categoryDto,
+            var categoryDto = _mapper.Map<CategoryDto>(category);
+            var monthlyPaceStatus = CalculateMonthlyPaceStatus(
                 budgetedAmount,
                 actualAmount,
-                monthlyPaceStatus,
-                expectedSpendToDate
-            ));
+                year,
+                month
+            );
+            var expectedSpendToDate = CalculateExpectedSpendToDate(budgetedAmount, year, month);
+
+            variances.Add(
+                new BudgetVarianceDto(
+                    categoryDto,
+                    budgetedAmount,
+                    actualAmount,
+                    monthlyPaceStatus,
+                    expectedSpendToDate
+                )
+            );
         }
 
         return variances;
     }
 
-    public async Task<IEnumerable<BudgetDto>> GetBudgetsForMonthAsync(int accountId, int year, int month)
+    public async Task<IEnumerable<BudgetDto>> GetBudgetsForMonthAsync(
+        int accountId,
+        int year,
+        int month
+    )
     {
         var budgets = await GetOrCreateBudgetsForMonthAsync(accountId, year, month);
         return budgets.Select(b => new BudgetDto(
@@ -66,7 +82,12 @@ public class BudgetService : IBudgetService
         ));
     }
 
-    public async Task<IEnumerable<BudgetDto>> SetBudgetsForMonthAsync(int accountId, int year, int month, IEnumerable<SetBudgetDto> budgets)
+    public async Task<IEnumerable<BudgetDto>> SetBudgetsForMonthAsync(
+        int accountId,
+        int year,
+        int month,
+        IEnumerable<SetBudgetDto> budgets
+    )
     {
         // Validate that all categories belong to the account
         var categoryIds = budgets.Select(b => b.CategoryId).Distinct().ToList();
@@ -80,8 +101,13 @@ public class BudgetService : IBudgetService
         }
 
         var setBudgetRequests = budgets.Select(b => new SetBudgetRequest(b.CategoryId, b.Amount));
-        var updatedBudgets = await _budgetRepository.SetBudgetsForMonthAsync(accountId, year, month, setBudgetRequests);
-        
+        var updatedBudgets = await _budgetRepository.SetBudgetsForMonthAsync(
+            accountId,
+            year,
+            month,
+            setBudgetRequests
+        );
+
         return updatedBudgets.Select(b => new BudgetDto(
             b.Id,
             _mapper.Map<CategoryDto>(b.Category),
@@ -94,7 +120,8 @@ public class BudgetService : IBudgetService
     public async Task<BudgetDto?> GetBudgetAsync(int accountId, int categoryId, int year, int month)
     {
         var budget = await _budgetRepository.GetBudgetAsync(accountId, categoryId, year, month);
-        if (budget == null) return null;
+        if (budget == null)
+            return null;
 
         return new BudgetDto(
             budget.Id,
@@ -105,26 +132,36 @@ public class BudgetService : IBudgetService
         );
     }
 
-    private async Task<decimal> GetActualSpendingAsync(int accountId, int categoryId, int year, int month)
+    private async Task<decimal> GetActualSpendingAsync(
+        int accountId,
+        int categoryId,
+        int year,
+        int month
+    )
     {
         var startDate = new DateTime(year, month, 1);
-        var endDate = startDate.AddMonths(1).AddDays(-1);
-        
+        var endDate = startDate.AddMonths(1).AddMilliseconds(-1);
+
         var transactions = await _transactionRepository.GetTransactionsByDateRangeAsync(
-            accountId, startDate, endDate, categoryId);
-            
+            accountId,
+            startDate,
+            endDate,
+            categoryId
+        );
+
         return transactions.Sum(t => t.Amount);
     }
 
     private string CalculateMonthlyPaceStatus(decimal budgeted, decimal actual, int year, int month)
     {
-        if (budgeted == 0) return "on-track";
-        
+        if (budgeted == 0)
+            return "on-track";
+
         var daysInMonth = DateTime.DaysInMonth(year, month);
         var today = DateTime.UtcNow.Date;
         var monthStart = new DateTime(year, month, 1);
         var monthEnd = new DateTime(year, month, daysInMonth);
-        
+
         // If we're not in this month, compare to full month
         int daysElapsed;
         if (today < monthStart)
@@ -143,8 +180,10 @@ public class BudgetService : IBudgetService
         var expectedToDate = budgeted * (daysElapsed / (decimal)daysInMonth);
         var tolerance = budgeted * 0.1m; // 10% tolerance
 
-        if (actual > expectedToDate + tolerance) return "ahead";
-        if (actual < expectedToDate - tolerance) return "behind";
+        if (actual > expectedToDate + tolerance)
+            return "ahead";
+        if (actual < expectedToDate - tolerance)
+            return "behind";
         return "on-track";
     }
 
@@ -154,7 +193,7 @@ public class BudgetService : IBudgetService
         var today = DateTime.UtcNow.Date;
         var monthStart = new DateTime(year, month, 1);
         var monthEnd = new DateTime(year, month, daysInMonth);
-        
+
         int daysElapsed;
         if (today < monthStart)
         {
@@ -172,10 +211,18 @@ public class BudgetService : IBudgetService
         return budgeted * (daysElapsed / (decimal)daysInMonth);
     }
 
-    private async Task<IEnumerable<Budget>> GetOrCreateBudgetsForMonthAsync(int accountId, int year, int month)
+    private async Task<IEnumerable<Budget>> GetOrCreateBudgetsForMonthAsync(
+        int accountId,
+        int year,
+        int month
+    )
     {
-        var existingBudgets = await _budgetRepository.GetBudgetsForMonthAsync(accountId, year, month);
-        
+        var existingBudgets = await _budgetRepository.GetBudgetsForMonthAsync(
+            accountId,
+            year,
+            month
+        );
+
         // If budgets already exist for this month, return them
         if (existingBudgets.Any())
         {
@@ -184,7 +231,7 @@ public class BudgetService : IBudgetService
 
         // No budgets exist for this month - try to copy from previous month
         var previousMonthBudgets = await FindPreviousMonthBudgets(accountId, year, month);
-        
+
         if (!previousMonthBudgets.Any())
         {
             // No previous budgets found - return empty collection
@@ -192,19 +239,35 @@ public class BudgetService : IBudgetService
         }
 
         // Copy budgets from previous month
-        var copyForwardRequests = previousMonthBudgets.Select(b => new SetBudgetRequest(b.CategoryId, b.Amount));
-        return await _budgetRepository.SetBudgetsForMonthAsync(accountId, year, month, copyForwardRequests);
+        var copyForwardRequests = previousMonthBudgets.Select(b => new SetBudgetRequest(
+            b.CategoryId,
+            b.Amount
+        ));
+        return await _budgetRepository.SetBudgetsForMonthAsync(
+            accountId,
+            year,
+            month,
+            copyForwardRequests
+        );
     }
 
-    private async Task<IEnumerable<Budget>> FindPreviousMonthBudgets(int accountId, int year, int month)
+    private async Task<IEnumerable<Budget>> FindPreviousMonthBudgets(
+        int accountId,
+        int year,
+        int month
+    )
     {
         // Try previous month first
         var targetDate = new DateTime(year, month, 1).AddMonths(-1);
-        
+
         // Look back up to 12 months for the most recent budgets
         for (int i = 0; i < 12; i++)
         {
-            var budgets = await _budgetRepository.GetBudgetsForMonthAsync(accountId, targetDate.Year, targetDate.Month);
+            var budgets = await _budgetRepository.GetBudgetsForMonthAsync(
+                accountId,
+                targetDate.Year,
+                targetDate.Month
+            );
             if (budgets.Any())
             {
                 return budgets;
