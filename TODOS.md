@@ -13,3 +13,4 @@
 - Use category colour for the budget row
 - Split badge on transactions page for created by and updated by
 - Link from personal website
+- Rip out state from transactions page that is causing duplicate fetching, just like the budget page

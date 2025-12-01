@@ -20,7 +20,7 @@ async function fetchBudgetData(year: number, month: number) {
       getBudgetVariance(year, month),
       getTransactions(
         {
-          pageSize: 100,
+          pageSize: 1000,
           sortBy: "TransactionDate",
           sortDescending: true,
         },

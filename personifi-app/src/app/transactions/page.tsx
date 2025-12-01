@@ -25,7 +25,7 @@ async function fetchTransactionsData(year: number, month: number) {
     const [transactionsResponse, categories] = await Promise.all([
       getTransactions(
         {
-          pageSize: 100,
+          pageSize: 1000,
           sortBy: "TransactionDate",
           sortDescending: true,
         },

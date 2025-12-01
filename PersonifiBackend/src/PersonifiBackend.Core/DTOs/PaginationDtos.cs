@@ -2,7 +2,7 @@
 
 public class PaginationRequest
 {
-    private const int MaxPageSize = 100;
+    private const int MaxPageSize = 1000;
     private int _pageSize = 20;
 
     public int Page { get; set; } = 1;
@@ -17,12 +17,7 @@ public class PaginationRequest
     public bool SortDescending { get; set; } = true;
 }
 
-public record PagedResponse<T>(
-    IEnumerable<T> Items,
-    int TotalCount,
-    int CurrentPage,
-    int PageSize
-)
+public record PagedResponse<T>(IEnumerable<T> Items, int TotalCount, int CurrentPage, int PageSize)
 {
     public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
     public bool HasPrevious => CurrentPage > 1;
