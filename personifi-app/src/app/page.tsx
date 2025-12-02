@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     locale: "en_GB",
     images: [
       {
-        url: "https://personifi.xyz/personifi-opengraph-image.jpg", // **CRITICAL: REPLACE WITH ABSOLUTE URL TO YOUR 1200x630 IMAGE**
+        url: "https://personifi.xyz/personifi-opengraph-image.png", // **CRITICAL: REPLACE WITH ABSOLUTE URL TO YOUR 1200x630 IMAGE**
         width: 1200,
         height: 630,
         alt: "Personifi App Mockup: Financial Peace for Couples",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@craigbanach", // **RECOMMENDED: Add your Twitter/X handle**
     creator: "@craigbanach",
-    images: "https://personifi.xyz/personifi-opengraph-image.jpg", // **Must match the URL above**
+    images: "https://personifi.xyz/personifi-opengraph-image.png", // **Must match the URL above**
   },
 };
 
