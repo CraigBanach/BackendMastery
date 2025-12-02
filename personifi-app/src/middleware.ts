@@ -18,7 +18,11 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
   } else {
-    if (request.nextUrl.pathname !== "/" && request.nextUrl.pathname !== "/free-budget-template") {
+    if (
+      request.nextUrl.pathname !== "/" &&
+      request.nextUrl.pathname !== "/free-budget-template" &&
+      request.nextUrl.pathname !== "/personifi-opengraph-image.png"
+    ) {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       return NextResponse.redirect(url);
