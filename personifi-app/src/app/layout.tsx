@@ -26,6 +26,13 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <script
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token": "b6b8e2a171ca40eb9a80a2c613f122ef"}'
+        ></script>
+      </head>
       <body className={`${inter.className} antialiased`}>
         <Header></Header>
         <main
