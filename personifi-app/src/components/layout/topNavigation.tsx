@@ -10,34 +10,42 @@ const TopNavigation = async () => {
   const session = await auth0.getSession();
   const headerList = await headers();
   const pathName = headerList.get("x-current-path");
-  const isLandingPage = pathName === "/" || pathName === "/free-budget-template" || pathName === null;
+  const isLandingPage = pathName === "/" || pathName === "/free-budget-template" || pathName?.startsWith("/stories");
 
   if (!session) {
     return (
       <div className="flex items-center justify-between w-full">
-        <Link href="/" className="text-xl font-bold text-finance-green">personifi</Link>
+        <Link href="/" className="text-xl font-bold text-finance-green">
+          personifi
+        </Link>
         {isLandingPage && (
           <div className="hidden md:flex items-center space-x-8">
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a 
-              href="/#how-it-works" 
+            <a
+              href="/#how-it-works"
               className="text-finance-green-dark font-medium hover:text-finance-green transition-colors duration-200"
             >
               How it works
             </a>
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a 
-              href="/#pricing" 
+            <a
+              href="/#pricing"
               className="text-finance-green-dark font-medium hover:text-finance-green transition-colors duration-200"
             >
               Pricing
             </a>
-            <a 
-              href="/free-budget-template" 
+            <a
+              href="/free-budget-template"
               className="text-finance-green-dark font-medium hover:text-finance-green transition-colors duration-200"
             >
               Free Template
             </a>
+            <Link
+              href="/stories"
+              className="text-finance-green-dark font-medium hover:text-finance-green transition-colors duration-200"
+            >
+              Stories
+            </Link>
           </div>
         )}
         <div></div>
@@ -46,7 +54,7 @@ const TopNavigation = async () => {
   }
 
   const userHasAccount = await hasAccount();
-  
+
   // Don't show navigation if user doesn't have an account
   if (!userHasAccount) return <div></div>;
   const isBudgetPage = pathName?.includes("/budget") ?? false;
@@ -94,7 +102,7 @@ const TopNavigation = async () => {
 
       {/* Mobile Navigation */}
       <div className="flex md:hidden">
-        <MobileNavMenu 
+        <MobileNavMenu
           isBudgetPage={isBudgetPage}
           isTransactionsPage={isTransactionsPage}
           isCategoriesPage={isCategoriesPage}
