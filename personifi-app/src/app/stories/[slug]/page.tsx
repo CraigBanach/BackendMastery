@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
-import { TrackedLinkButton } from "@/components/ui/tracked-link-button";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Metadata } from "next";
 
@@ -164,14 +164,13 @@ export default async function BlogPostPage(props: { params: Params }) {
               Join thousands of couples using Personifi to simplify their
               finances and focus on their relationship.
             </p>
-            <TrackedLinkButton
-              href="/"
-              eventName="click_signup"
+            <Button
+              asChild
               size="lg"
               className="bg-finance-green hover:bg-finance-green-dark text-white"
             >
-              Try Personifi Free
-            </TrackedLinkButton>
+              <Link href="/">Try Personifi Free</Link>
+            </Button>
           </div>
         </article>
       </div>

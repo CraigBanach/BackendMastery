@@ -1,4 +1,3 @@
-import { TrackedLinkButton } from "@/components/ui/tracked-link-button";
 import { Button } from "@/components/ui/button";
 import { auth0 } from "@/lib/auth0";
 import { Settings } from "lucide-react";
@@ -11,14 +10,13 @@ const SessionHeader = async () => {
   
   if (!session) {
     return (
-      <TrackedLinkButton
-        href="/auth/login"
-        eventName="click_login"
+      <Button
+        asChild
         size="lg"
         className="bg-finance-green hover:bg-finance-green-dark text-white font-semibold px-6 py-2 rounded-lg transition-all duration-200 relative z-10"
       >
-        Login
-      </TrackedLinkButton>
+        <a href="/auth/login">Login</a>
+      </Button>
     );
   }
 

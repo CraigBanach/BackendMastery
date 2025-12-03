@@ -1,4 +1,4 @@
-import { TrackedLinkButton } from "@/components/ui/tracked-link-button";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -70,25 +70,27 @@ export default function Home() {
               transparency.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
-              <TrackedLinkButton
-                href="/auth/login?screen_hint=signup"
-                eventName="click_signup"
+              <Button
+                asChild
                 size="lg"
                 className="bg-finance-green hover:bg-finance-green-dark text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 w-full sm:w-auto"
               >
-                Get Started Free
-                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-              </TrackedLinkButton>
-              <TrackedLinkButton
-                href="#how-it-works"
-                eventName="click_how_it_works"
+                <a href="/auth/login?screen_hint=signup">
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                </a>
+              </Button>
+              <Button
+                asChild
                 variant="outline"
                 size="lg"
                 className="border-finance-green text-finance-green hover:bg-finance-green-light hover:text-finance-green-dark text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 w-full sm:w-auto"
               >
-                <Heart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                See How It Works
-              </TrackedLinkButton>
+                <a href="#how-it-works">
+                  <Heart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  See How It Works
+                </a>
+              </Button>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
               No credit card required • Setup in 2 minutes • Both partners
@@ -491,15 +493,16 @@ export default function Home() {
                   <span>Instructions & tips included</span>
                 </li>
               </ul>
-              <TrackedLinkButton
-                href="/free-budget-template"
-                eventName="click_download_template"
+              <Button
+                asChild
                 size="lg"
                 className="bg-finance-green hover:bg-finance-green-dark text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6"
               >
-                Download Spreadsheet Template
-                <Download className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-              </TrackedLinkButton>
+                <a href="/free-budget-template">
+                  Download Spreadsheet Template
+                  <Download className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                </a>
+              </Button>
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-lg border">
@@ -584,15 +587,16 @@ export default function Home() {
                 </li>
               </ul>
 
-              <TrackedLinkButton
-                href="/auth/login?screen_hint=signup"
-                eventName="click_signup"
+              <Button
+                asChild
                 size="lg"
                 className="w-full bg-finance-green hover:bg-finance-green-dark text-base sm:text-lg py-4 sm:py-6"
               >
-                Get Started Free
-                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-              </TrackedLinkButton>
+                <a href="/auth/login?screen_hint=signup">
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                </a>
+              </Button>
 
               <p className="text-sm text-muted-foreground mt-4">
                 No credit card required • 30-day free trial
@@ -612,15 +616,16 @@ export default function Home() {
             Join the couples who&apos;ve stopped arguing about money and started
             achieving their goals.
           </p>
-          <TrackedLinkButton
-            href="/auth/login?screen_hint=signup"
-            eventName="click_signup"
+          <Button
+            asChild
             size="lg"
             className="bg-finance-green hover:bg-finance-green-dark text-base sm:text-lg px-8 sm:px-12 py-4 sm:py-6"
           >
-            Get Started Free
-            <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-          </TrackedLinkButton>
+            <a href="/auth/login?screen_hint=signup">
+              Get Started Free
+              <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+            </a>
+          </Button>
         </div>
       </section>
 
