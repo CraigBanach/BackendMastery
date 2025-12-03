@@ -21,7 +21,8 @@ export async function middleware(request: NextRequest) {
     if (
       request.nextUrl.pathname !== "/" &&
       request.nextUrl.pathname !== "/free-budget-template" &&
-      request.nextUrl.pathname !== "/personifi-opengraph-image.png"
+      request.nextUrl.pathname !== "/personifi-opengraph-image.png" &&
+      !request.nextUrl.pathname.startsWith("/stories")
     ) {
       const url = request.nextUrl.clone();
       url.pathname = "/";

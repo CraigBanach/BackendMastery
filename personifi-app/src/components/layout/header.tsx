@@ -5,10 +5,22 @@ import { headers } from "next/headers";
 const Header = async () => {
   const headerList = await headers();
   const pathName = headerList.get("x-current-path");
-  const isLandingPage = pathName === "/" || pathName === "/free-budget-template" || pathName === null;
-  
+  const isLandingPage =
+    pathName === "/" ||
+    pathName === "/free-budget-template" ||
+    pathName?.startsWith("/stories") ||
+    pathName === null;
+
+  console.log("CBTest: ", pathName, isLandingPage);
+
   return (
-    <header className={`${isLandingPage ? 'bg-transparent relative z-50' : 'sticky top-0 bg-white border-b z-50'} flex h-16 items-center gap-4 px-4 md:px-6`}>
+    <header
+      className={`${
+        isLandingPage
+          ? "bg-transparent relative z-50"
+          : "sticky top-0 bg-white border-b z-50"
+      } flex h-16 items-center gap-4 px-4 md:px-6`}
+    >
       <nav className="flex flex-1 items-center justify-between gap-4">
         <TopNavigation />
         <SessionHeader />

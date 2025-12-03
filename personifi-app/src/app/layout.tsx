@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer"; // Import the Footer component
 import { headers } from "next/headers";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -21,7 +22,7 @@ export default async function RootLayout({
   const isLandingPage =
     pathName === "/" ||
     pathName === "/free-budget-template" ||
-    pathName === null;
+    (pathName && pathName.startsWith("/stories"));
 
   return (
     <html lang="en">
@@ -34,6 +35,7 @@ export default async function RootLayout({
         >
           {children}
         </main>
+        {isLandingPage && <Footer />}
       </body>
     </html>
   );

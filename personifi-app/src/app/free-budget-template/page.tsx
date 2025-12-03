@@ -7,7 +7,6 @@ import {
   Calculator,
 } from "lucide-react";
 import { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title:
@@ -133,74 +132,7 @@ export default function FreeBudgetTemplate() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-50 border-t py-12">
-        <div className="container mx-auto max-w-6xl px-4">
-          <div className="grid md:grid-cols-3 gap-8 text-center md:text-left">
-            {/* Company Section */}
-            <div>
-              <h3 className="text-xl font-bold text-finance-green mb-2">
-                personifi
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Personal finance for your family
-              </p>
-              <p className="text-sm text-muted-foreground">
-                ✅ 30-day money-back guarantee
-              </p>
-            </div>
-
-            {/* Quick Links */}
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <div className="space-y-2 flex flex-col items-center md:items-start">
-                <Link
-                  href="/"
-                  className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
-                >
-                  Home
-                </Link>
-                {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-                <a
-                  href="/#how-it-works"
-                  className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
-                >
-                  How it works
-                </a>
-                {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-                <a
-                  href="/#pricing"
-                  className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
-                >
-                  Pricing
-                </a>
-              </div>
-            </div>
-
-            {/* Contact & Social */}
-            <div>
-              <h4 className="font-semibold mb-4">Connect</h4>
-              <div className="space-y-2">
-                <p className="text-muted-foreground text-sm">
-                  Follow us for updates:
-                </p>
-                <div className="flex justify-center md:justify-start space-x-4">
-                  <div className="text-muted-foreground text-sm">
-                    Social media links coming soon
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Copyright */}
-          <div className="border-t mt-8 pt-6 text-center text-sm text-muted-foreground">
-            <p>
-              &copy; {new Date().getFullYear()} personifi. Made with ❤️ for
-              couples who want financial clarity.
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Footer removed as it is now in the global layout */}
     </div>
   );
 }
