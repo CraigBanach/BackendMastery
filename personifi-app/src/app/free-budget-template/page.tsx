@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { TrackedLinkButton } from "@/components/ui/tracked-link-button";
 import { Badge } from "@/components/ui/badge";
 import {
   Download,
@@ -51,31 +51,27 @@ export default function FreeBudgetTemplate() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-4">
-                <Button
-                  asChild
+                <TrackedLinkButton
+                  href="https://docs.google.com/spreadsheets/d/1txy_9_NyHuKZpSONJ5QyhHvm8if9Af5G8Zq7bn9eX30/edit#gid=0"
+                  eventName="click_download_template"
                   size="lg"
                   className="bg-finance-green hover:bg-finance-green-dark text-base px-6 py-3"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  <a
-                    href="https://docs.google.com/spreadsheets/d/1txy_9_NyHuKZpSONJ5QyhHvm8if9Af5G8Zq7bn9eX30/edit#gid=0"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    View Spreadsheet Template
-                    <Download className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
-                <Button
-                  asChild
+                  View Spreadsheet Template
+                  <Download className="ml-2 h-4 w-4" />
+                </TrackedLinkButton>
+                <TrackedLinkButton
+                  href="/auth/login?screen_hint=signup"
+                  eventName="click_signup"
                   variant="outline"
                   size="lg"
                   className="border-finance-green text-finance-green hover:bg-finance-green-light hover:text-finance-green-dark text-base px-6 py-3"
                 >
-                  <a href="/auth/login?screen_hint=signup">
-                    Try Personifi App Free
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
+                  Try Personifi App Free
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </TrackedLinkButton>
               </div>
               <p className="text-sm text-muted-foreground">
                 Downloads to your Google Drive • No email required • Works
