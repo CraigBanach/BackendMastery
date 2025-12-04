@@ -14,30 +14,30 @@ If you are currently planning a wedding in the UK and feeling sick looking at th
 
 We tracked every single penny. Here is the final "Committed Spend" column from the spreadsheet that ruled our lives for 12 months:
 
-| Item                      | Cost (£)     | Notes                                                            |
-| :------------------------ | :----------- | :--------------------------------------------------------------- |
-| **Venue & Food**          | £5,250.00    | Included meal & evening buffet for 80 day plus 40 evening guests |
-| **Rings**                 | £774.00      |                                                                  |
-| **Hair & Makeup**         | £525.00      |                                                                  |
-| **Photographer**          | £509.50      | (We got very lucky here!)                                        |
-| **Humanist**              | £400.00      |                                                                  |
-| **Flowers**               | £382.50      |                                                                  |
-| **Bridesmaids' Dresses**  | £278.00      |                                                                  |
-| **Flower Girls' Dresses** | £270.00      |                                                                  |
-| **Kilts (Hire)**          | £250.00      |                                                                  |
-| **Photo Booth**           | £250.00      |                                                                  |
-| **Post Box**              | £185.00      |                                                                  |
-| **Groomsmen Gifts**       | £175.00      |                                                                  |
-| **Favours**               | £174.00      |                                                                  |
-| **Invitations**           | £153.00      |                                                                  |
-| **Bridesmaids Gifts**     | £146.23      |                                                                  |
-| **Mothers' Gifts**        | £80.00       |                                                                  |
-| **Hotel**                 | £75.00       |                                                                  |
-| **Stamps**                | £50.00       |                                                                  |
-| **Perfume**               | £50.00       |                                                                  |
-| **Page Boys**             | £22.00       |                                                                  |
-| **Shoes**                 | £17.99       |                                                                  |
-| **TOTAL**                 | **~£10,017** |                                                                  |
+| Item                      | Cost (£)     | Notes                                                                                                                    |
+| :------------------------ | :----------- | :----------------------------------------------------------------------------------------------------------------------- |
+| **Venue & Food**          | £5,250.00    | Included meal & evening buffet for 80 day plus 40 evening guests - [https://thevu.co.uk/](https://thevu.co.uk/)          |
+| **Rings**                 | £774.00      |                                                                                                                          |
+| **Hair & Makeup**         | £525.00      |                                                                                                                          |
+| **Photographer**          | £509.50      | (We got very lucky here!) - [https://www.bearandbutterflyphotography.com/](https://www.bearandbutterflyphotography.com/) |
+| **Humanist**              | £400.00      |                                                                                                                          |
+| **Flowers**               | £382.50      |                                                                                                                          |
+| **Bridesmaids' Dresses**  | £278.00      |                                                                                                                          |
+| **Flower Girls' Dresses** | £270.00      |                                                                                                                          |
+| **Kilts (Hire)**          | £250.00      |                                                                                                                          |
+| **Photo Booth**           | £250.00      |                                                                                                                          |
+| **Post Box**              | £185.00      |                                                                                                                          |
+| **Groomsmen Gifts**       | £175.00      |                                                                                                                          |
+| **Favours**               | £174.00      |                                                                                                                          |
+| **Invitations**           | £153.00      |                                                                                                                          |
+| **Bridesmaids Gifts**     | £146.23      |                                                                                                                          |
+| **Mothers' Gifts**        | £80.00       |                                                                                                                          |
+| **Hotel**                 | £75.00       |                                                                                                                          |
+| **Stamps**                | £50.00       |                                                                                                                          |
+| **Perfume**               | £50.00       |                                                                                                                          |
+| **Page Boys**             | £22.00       |                                                                                                                          |
+| **Shoes**                 | £17.99       |                                                                                                                          |
+| **TOTAL**                 | **~£10,017** |                                                                                                                          |
 
 ### The Conflict: Why We Hated the Spreadsheet
 
