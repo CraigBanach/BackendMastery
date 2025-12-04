@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth0 } from "./lib/auth0";
 
 export async function middleware(request: NextRequest) {
+  console.log("MiddleWareCB: ", process.env.POSTHOG_KEY);
+
   const authResponse = await auth0.middleware(request);
   authResponse.headers.set("x-current-path", request.nextUrl.pathname);
 

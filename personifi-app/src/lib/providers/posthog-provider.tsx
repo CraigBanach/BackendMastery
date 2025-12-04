@@ -14,6 +14,8 @@ export function PostHogProvider({
   options?: Parameters<typeof posthog.init>[1];
 }) {
   useEffect(() => {
+    console.log("CBTest: ", apiKey, posthog);
+
     if (apiKey && !posthog.__loaded) {
       posthog.init(apiKey, options);
     }
