@@ -16,7 +16,7 @@ We tracked every single penny. Here is the final "Committed Spend" column from t
 
 | Item                      | Cost (£)     | Notes                                                                                                                    |
 | :------------------------ | :----------- | :----------------------------------------------------------------------------------------------------------------------- |
-| **Venue & Food**          | £5,250.00    | Included meal & evening buffet for 80 day plus 40 evening guests - [https://thevu.co.uk/](https://thevu.co.uk/)          |
+| **Venue & Food**          | £5,250.00    | Included meal, evening buffet & DJ for 80 day plus 40 evening guests - [https://thevu.co.uk/](https://thevu.co.uk/)      |
 | **Rings**                 | £774.00      |                                                                                                                          |
 | **Hair & Makeup**         | £525.00      |                                                                                                                          |
 | **Photographer**          | £509.50      | (We got very lucky here!) - [https://www.bearandbutterflyphotography.com/](https://www.bearandbutterflyphotography.com/) |
@@ -38,6 +38,8 @@ We tracked every single penny. Here is the final "Committed Spend" column from t
 | **Page Boys**             | £22.00       |                                                                                                                          |
 | **Shoes**                 | £17.99       |                                                                                                                          |
 | **TOTAL**                 | **~£10,017** |                                                                                                                          |
+
+You may notice that there is no item for the bride's dress here, we're very fortunate in that her mum was willing to purchase her wedding dress.
 
 ### The Conflict: Why We Hated the Spreadsheet
 

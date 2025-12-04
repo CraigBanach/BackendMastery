@@ -11,8 +11,6 @@ const Header = async () => {
     pathName?.startsWith("/stories") ||
     pathName === null;
 
-  console.log("CBTest: ", pathName, isLandingPage);
-
   return (
     <header
       className={`${
