@@ -18,8 +18,26 @@ import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { IconPicker } from "@/components/ui/iconPicker";
 import { CategoryDto, CategoryType } from "@/types/budget";
-import { PoundSterlingIcon } from "lucide-react";
+import { PoundSterlingIcon, Check } from "lucide-react";
 import { getBudget } from "@/lib/api/budgetApi";
+import { cn, getContrastingTextColor } from "@/lib/utils";
+
+const CATEGORY_COLOURS = [
+  "#ef4444", // red-500
+  "#f97316", // orange-500
+  "#f59e0b", // amber-500
+  "#84cc16", // lime-500
+  "#22c55e", // green-500
+  "#10b981", // emerald-500
+  "#06b6d4", // cyan-500
+  "#3b82f6", // blue-500
+  "#6366f1", // indigo-500
+  "#8b5cf6", // violet-500
+  "#d946ef", // fuchsia-500
+  "#ec4899", // pink-500
+  "#64748b", // slate-500
+  "#71717a", // zinc-500
+];
 
 const formSchema = z.object({
   name: z
@@ -28,6 +46,7 @@ const formSchema = z.object({
     .max(50, { message: "Category name must be 50 characters or less" }),
   type: z.nativeEnum(CategoryType),
   icon: z.string().min(1, { message: "Icon is required" }),
+  color: z.string().min(1, { message: "Colour is required" }), // User-facing message, so "Colour"
   budgetAmount: z.coerce.number().nonnegative().optional(),
 });
 
@@ -40,6 +59,7 @@ interface CategoryModalProps {
     name: string;
     type: CategoryType;
     icon?: string;
+    color?: string;
     budgetAmount?: number;
   }) => Promise<void>;
   category?: CategoryDto | null;
@@ -62,6 +82,7 @@ export function CategoryModal({
       name: category?.name || "",
       type: category?.type || CategoryType.Expense,
       icon: category?.icon || "",
+      color: category?.color || CATEGORY_COLOURS[0], // Code variable: color
       budgetAmount: 0,
     },
   });
@@ -74,6 +95,7 @@ export function CategoryModal({
         name: category?.name || "",
         type: category?.type || CategoryType.Expense,
         icon: category?.icon || "",
+        color: category?.color || CATEGORY_COLOURS[0], // Code variable: color
         budgetAmount: 0,
       });
 
@@ -111,6 +133,7 @@ export function CategoryModal({
         name: values.name,
         type: values.type,
         icon: values.icon,
+        color: values.color,
         budgetAmount: values.budgetAmount,
       });
       form.reset();
@@ -129,7 +152,8 @@ export function CategoryModal({
       name: "",
       type: CategoryType.Expense,
       icon: "",
-      budgetAmount: undefined,
+      color: CATEGORY_COLOURS[0], // Code variable: color
+      budgetAmount: 0,
     });
     setSubmitError("");
     onClose();
@@ -225,21 +249,81 @@ export function CategoryModal({
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="icon"
-            render={({ field }) => (
-              <FormItem>
-                <IconPicker
-                  value={field.value}
-                  onChange={field.onChange}
-                  categoryType={selectedType}
-                  placeholder="Select an icon for this category"
-                />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="icon"
+              render={({ field }) => (
+                <FormItem>
+                  <IconPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    categoryType={selectedType}
+                    placeholder="Select an icon for this category"
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="color"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Colour</FormLabel> {/* User-facing label */}
+                  <FormControl>
+                    <div>
+                      <div className="flex flex-wrap gap-2 items-center mb-4">
+                        {CATEGORY_COLOURS.map((colour) => ( // Using CATEGORY_COLOURS
+                          <div
+                            key={colour}
+                            className={cn(
+                              "h-6 w-6 rounded-full cursor-pointer flex items-center justify-center transition-all hover:scale-110",
+                              field.value === colour ? "ring-2 ring-offset-2 ring-black" : ""
+                            )}
+                            style={{ backgroundColor: colour }}
+                            onClick={() => field.onChange(colour)}
+                          >
+                            {field.value === colour && (
+                              <Check className="h-4 w-4 text-white" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="relative h-10 w-10 rounded-full cursor-pointer overflow-hidden ring-1 ring-gray-200"
+                          style={{ backgroundColor: field.value }}
+                        >
+                          <input
+                            type="color"
+                            id="custom-color-picker"
+                            value={field.value}
+                            onChange={(e) => field.onChange(e.target.value)}
+                            className="absolute inset-0 w-full h-full border-none p-0 opacity-0 cursor-pointer"
+                          />
+                        </div>
+                        <label htmlFor="custom-color-picker" className="text-sm font-medium cursor-pointer">
+                          {
+                            !CATEGORY_COLOURS.includes(field.value) // Check against CATEGORY_COLOURS
+                              ? "Selected Custom Colour" // User-facing text
+                              : "Choose Custom Colour" // User-facing text
+                          }
+                        </label>
+                        {/* Show checkmark if custom color is selected and not one of the presets */}
+                        {!CATEGORY_COLOURS.includes(field.value) && ( // Check against CATEGORY_COLOURS
+                           <Check className="h-4 w-4 text-white drop-shadow-md -ml-8 pointer-events-none" style={{ color: getContrastingTextColor(field.value) }} /> // Use getContrastingTextColor
+                        )}
+                      </div>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <FormField
             control={form.control}

@@ -4,6 +4,7 @@ import { CategoryDto } from "@/types/budget";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Edit, Trash2 } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/categoryIcon";
 
 interface CategoriesTableProps {
   categories: CategoryDto[];
@@ -28,7 +29,11 @@ export function CategoriesTable({ categories, onEdit, onDelete }: CategoriesTabl
           <Card key={category.id} className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <span className="text-2xl">{category.icon || "📁"}</span>
+                <CategoryIcon
+                  icon={category.icon || "📁"}
+                  color={category.color}
+                  size="lg"
+                />
                 <div>
                   <div className="font-semibold text-base">{category.name}</div>
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -89,7 +94,11 @@ export function CategoriesTable({ categories, onEdit, onDelete }: CategoriesTabl
               {categories.map((category) => (
                 <tr key={category.id} className="border-b hover:bg-muted/50 transition-colors">
                   <td className="p-4 align-middle">
-                    <span className="text-2xl">{category.icon || "📁"}</span>
+                    <CategoryIcon
+                      icon={category.icon || "📁"}
+                      color={category.color}
+                      size="lg"
+                    />
                   </td>
                   <td className="p-4 align-middle font-medium">
                     {category.name}
