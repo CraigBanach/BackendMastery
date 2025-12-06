@@ -40,6 +40,29 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
+interface CategoryIconProps {
+  icon: string;
+  color?: string | null;
+  size?: "sm" | "lg";
+}
+
+function CategoryIcon({ icon, color, size = "sm" }: CategoryIconProps) {
+  const iconSizeClass = size === "lg" ? "text-2xl" : "text-lg";
+  const badgeSizeClass = size === "lg" ? "h-3 w-3" : "h-2.5 w-2.5";
+
+  return (
+    <div className="relative">
+      <span className={iconSizeClass}>{icon}</span>
+      {color && (
+        <span
+          className={`absolute -bottom-1 -right-1 ${badgeSizeClass} rounded-full border-2 border-white`}
+          style={{ backgroundColor: color }}
+        />
+      )}
+    </div>
+  );
+}
+
 export function BudgetVarianceDashboard({
   data: budgetData = [],
   year = new Date().getFullYear(),
@@ -290,15 +313,11 @@ export function BudgetVarianceDashboard({
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="relative">
-                          <span className="text-2xl">{item.category.icon}</span>
-                          {item.category.color && (
-                            <span 
-                              className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-white" 
-                              style={{ backgroundColor: item.category.color }}
-                            />
-                          )}
-                        </div>
+                        <CategoryIcon
+                          icon={item.category.icon}
+                          color={item.category.color}
+                          size="lg"
+                        />
                         <div>
                           <div className="font-semibold text-base">
                             {item.category.name}
@@ -375,15 +394,11 @@ export function BudgetVarianceDashboard({
                     >
                       <td className="py-2 sm:py-3 px-2 sm:px-4 font-medium bg-blue-50 border-r border-blue-100 text-xs sm:text-sm">
                         <div className="flex items-center space-x-2">
-                          <div className="relative">
-                            <span className="text-lg">{item.category.icon}</span>
-                            {item.category.color && (
-                              <span 
-                                className="absolute -bottom-1 -right-1 h-2.5 w-2.5 rounded-full border-2 border-white" 
-                                style={{ backgroundColor: item.category.color }}
-                              />
-                            )}
-                          </div>
+                          <CategoryIcon
+                            icon={item.category.icon}
+                            color={item.category.color}
+                            size="sm"
+                          />
                           <span>{item.category.name}</span>
                         </div>
                       </td>
@@ -448,15 +463,11 @@ export function BudgetVarianceDashboard({
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="relative">
-                          <span className="text-2xl">{item.category.icon}</span>
-                          {item.category.color && (
-                            <span 
-                              className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-white" 
-                              style={{ backgroundColor: item.category.color }}
-                            />
-                          )}
-                        </div>
+                        <CategoryIcon
+                          icon={item.category.icon}
+                          color={item.category.color}
+                          size="lg"
+                        />
                         <div>
                           <div className="font-semibold text-base">
                             {item.category.name}
@@ -533,15 +544,11 @@ export function BudgetVarianceDashboard({
                     >
                       <td className="py-2 sm:py-3 px-2 sm:px-4 font-medium bg-red-50 border-r border-red-100 text-xs sm:text-sm">
                         <div className="flex items-center space-x-2">
-                          <div className="relative">
-                            <span className="text-lg">{item.category.icon}</span>
-                            {item.category.color && (
-                              <span 
-                                className="absolute -bottom-1 -right-1 h-2.5 w-2.5 rounded-full border-2 border-white" 
-                                style={{ backgroundColor: item.category.color }}
-                              />
-                            )}
-                          </div>
+                          <CategoryIcon
+                            icon={item.category.icon}
+                            color={item.category.color}
+                            size="sm"
+                          />
                           <span>{item.category.name}</span>
                         </div>
                       </td>
