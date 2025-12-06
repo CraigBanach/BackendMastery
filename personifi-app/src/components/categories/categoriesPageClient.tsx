@@ -41,6 +41,7 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
     name: string;
     type: CategoryType;
     icon?: string;
+    color?: string;
     budgetAmount?: number;
   }) => {
     try {
@@ -48,6 +49,7 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
         name: categoryData.name,
         type: categoryData.type,
         icon: categoryData.icon,
+        color: categoryData.color,
       });
       
       // If budgetAmount provided, create budget for current month
@@ -76,6 +78,7 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
     name: string;
     type: CategoryType;
     icon?: string;
+    color?: string;
     budgetAmount?: number;
   }) => {
     if (!editingCategory) return;
@@ -85,6 +88,7 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
         name: categoryData.name,
         type: categoryData.type,
         icon: categoryData.icon,
+        color: categoryData.color,
       });
 
       // If budgetAmount provided, update budget for current month

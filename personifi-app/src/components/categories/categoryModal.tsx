@@ -18,8 +18,26 @@ import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { IconPicker } from "@/components/ui/iconPicker";
 import { CategoryDto, CategoryType } from "@/types/budget";
-import { PoundSterlingIcon } from "lucide-react";
+import { PoundSterlingIcon, Check } from "lucide-react";
 import { getBudget } from "@/lib/api/budgetApi";
+import { cn } from "@/lib/utils";
+
+const CATEGORY_COLORS = [
+  "#ef4444", // red-500
+  "#f97316", // orange-500
+  "#f59e0b", // amber-500
+  "#84cc16", // lime-500
+  "#22c55e", // green-500
+  "#10b981", // emerald-500
+  "#06b6d4", // cyan-500
+  "#3b82f6", // blue-500
+  "#6366f1", // indigo-500
+  "#8b5cf6", // violet-500
+  "#d946ef", // fuchsia-500
+  "#ec4899", // pink-500
+  "#64748b", // slate-500
+  "#71717a", // zinc-500
+];
 
 const formSchema = z.object({
   name: z
@@ -28,6 +46,7 @@ const formSchema = z.object({
     .max(50, { message: "Category name must be 50 characters or less" }),
   type: z.nativeEnum(CategoryType),
   icon: z.string().min(1, { message: "Icon is required" }),
+  color: z.string().min(1, { message: "Color is required" }),
   budgetAmount: z.coerce.number().nonnegative().optional(),
 });
 
@@ -40,6 +59,7 @@ interface CategoryModalProps {
     name: string;
     type: CategoryType;
     icon?: string;
+    color?: string;
     budgetAmount?: number;
   }) => Promise<void>;
   category?: CategoryDto | null;
@@ -62,6 +82,7 @@ export function CategoryModal({
       name: category?.name || "",
       type: category?.type || CategoryType.Expense,
       icon: category?.icon || "",
+      color: category?.color || CATEGORY_COLORS[0],
       budgetAmount: 0,
     },
   });
@@ -74,6 +95,7 @@ export function CategoryModal({
         name: category?.name || "",
         type: category?.type || CategoryType.Expense,
         icon: category?.icon || "",
+        color: category?.color || CATEGORY_COLORS[0],
         budgetAmount: 0,
       });
 
@@ -111,6 +133,7 @@ export function CategoryModal({
         name: values.name,
         type: values.type,
         icon: values.icon,
+        color: values.color,
         budgetAmount: values.budgetAmount,
       });
       form.reset();
@@ -129,6 +152,7 @@ export function CategoryModal({
       name: "",
       type: CategoryType.Expense,
       icon: "",
+      color: CATEGORY_COLORS[0],
       budgetAmount: undefined,
     });
     setSubmitError("");
@@ -224,6 +248,36 @@ export function CategoryModal({
               )}
             />
           </div>
+
+          <FormField
+            control={form.control}
+            name="color"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Color</FormLabel>
+                <FormControl>
+                  <div className="flex flex-wrap gap-2">
+                    {CATEGORY_COLORS.map((color) => (
+                      <div
+                        key={color}
+                        className={cn(
+                          "h-8 w-8 rounded-full cursor-pointer flex items-center justify-center transition-all hover:scale-110",
+                          field.value === color ? "ring-2 ring-offset-2 ring-black" : ""
+                        )}
+                        style={{ backgroundColor: color }}
+                        onClick={() => field.onChange(color)}
+                      >
+                        {field.value === color && (
+                          <Check className="h-4 w-4 text-white" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}

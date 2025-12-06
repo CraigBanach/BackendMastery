@@ -279,7 +279,16 @@ export function TransactionModal({
                           key={category.id}
                           value={category.id.toString()}
                         >
-                          {category.icon} {category.name}
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{category.icon}</span>
+                            {category.color && (
+                              <div 
+                                className="h-2 w-2 rounded-full" 
+                                style={{ backgroundColor: category.color }}
+                              />
+                            )}
+                            <span>{category.name}</span>
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>

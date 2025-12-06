@@ -28,7 +28,15 @@ export function CategoriesTable({ categories, onEdit, onDelete }: CategoriesTabl
           <Card key={category.id} className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <span className="text-2xl">{category.icon || "📁"}</span>
+                <div className="relative">
+                  <span className="text-2xl">{category.icon || "📁"}</span>
+                  {category.color && (
+                    <span 
+                      className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-white" 
+                      style={{ backgroundColor: category.color }}
+                    />
+                  )}
+                </div>
                 <div>
                   <div className="font-semibold text-base">{category.name}</div>
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -89,7 +97,15 @@ export function CategoriesTable({ categories, onEdit, onDelete }: CategoriesTabl
               {categories.map((category) => (
                 <tr key={category.id} className="border-b hover:bg-muted/50 transition-colors">
                   <td className="p-4 align-middle">
-                    <span className="text-2xl">{category.icon || "📁"}</span>
+                    <div className="relative inline-block">
+                      <span className="text-2xl">{category.icon || "📁"}</span>
+                      {category.color && (
+                        <span 
+                          className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-white" 
+                          style={{ backgroundColor: category.color }}
+                        />
+                      )}
+                    </div>
                   </td>
                   <td className="p-4 align-middle font-medium">
                     {category.name}
