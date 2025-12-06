@@ -32,6 +32,7 @@ enum TransactionType {
   Income = "Income",
 }
 
+import { CategoryIcon } from "@/components/ui/categoryIcon";
 import { CategoryDto, CategoryType } from "@/types/budget";
 
 const now = new Date();
@@ -280,13 +281,11 @@ export function TransactionModal({
                           value={category.id.toString()}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="text-lg">{category.icon}</span>
-                            {category.color && (
-                              <div 
-                                className="h-2 w-2 rounded-full" 
-                                style={{ backgroundColor: category.color }}
-                              />
-                            )}
+                            <CategoryIcon
+                              icon={category.icon}
+                              color={category.color}
+                              size="sm"
+                            />
                             <span>{category.name}</span>
                           </div>
                         </SelectItem>

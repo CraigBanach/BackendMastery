@@ -1,11 +1,8 @@
-"use client";
-
 import React, { useState } from "react";
 import { BudgetSetupModal } from "./budgetSetupModal";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -14,14 +11,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Settings,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import { BudgetVarianceWithTransactions } from "@/lib/hooks/useBudgetData";
 import { CategoryDto, CategoryType } from "@/types/budget";
-import { TransactionTable } from "./transactionTable";
-import { BudgetProgressBar } from "./budgetProgressBar";
 import { RadialProgress } from "./radialProgress";
+import { BudgetSection } from "./budgetSection";
 
 interface BudgetVarianceDashboardProps {
   data?: BudgetVarianceWithTransactions[];
@@ -39,29 +33,6 @@ const formatCurrency = (amount: number) => {
     currency: "GBP",
   }).format(amount);
 };
-
-interface CategoryIconProps {
-  icon: string;
-  color?: string | null;
-  size?: "sm" | "lg";
-}
-
-function CategoryIcon({ icon, color, size = "sm" }: CategoryIconProps) {
-  const iconSizeClass = size === "lg" ? "text-2xl" : "text-lg";
-  const badgeSizeClass = size === "lg" ? "h-3 w-3" : "h-2.5 w-2.5";
-
-  return (
-    <div className="relative">
-      <span className={iconSizeClass}>{icon}</span>
-      {color && (
-        <span
-          className={`absolute -bottom-1 -right-1 ${badgeSizeClass} rounded-full border-2 border-white`}
-          style={{ backgroundColor: color }}
-        />
-      )}
-    </div>
-  );
-}
 
 export function BudgetVarianceDashboard({
   data: budgetData = [],
@@ -296,302 +267,24 @@ export function BudgetVarianceDashboard({
       </div>
 
       {/* Income Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Income</CardTitle>
-          <CardDescription>Your income sources for {monthName}</CardDescription>
-        </CardHeader>
-        <CardContent className="px-3 sm:px-6">
-          {/* Mobile Card Layout */}
-          <div className="block md:hidden space-y-3">
-            {incomeData.map((item) => (
-              <div key={item.category.id} className="border rounded-lg">
-                <div
-                  className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-                  onClick={() => toggleCategoryExpansion(item.category.id)}
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <CategoryIcon
-                          icon={item.category.icon}
-                          color={item.category.color}
-                          size="lg"
-                        />
-                        <div>
-                          <div className="font-semibold text-base">
-                            {item.category.name}
-                          </div>
-                          <div className="text-sm space-y-1">
-                            <div className="text-muted-foreground">
-                              Actual:{" "}
-                              <span className="font-medium text-green-600">
-                                {formatCurrency(item.actual)}
-                              </span>
-                            </div>
-                            <div className="text-muted-foreground">
-                              Budget:{" "}
-                              <span className="font-medium">
-                                {formatCurrency(item.budgeted)}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      {expandedCategories.has(item.category.id) ? (
-                        <ChevronUp className="h-5 w-5 text-gray-400" />
-                      ) : (
-                        <ChevronDown className="h-5 w-5 text-gray-400" />
-                      )}
-                    </div>
-                    <BudgetProgressBar
-                      actual={item.actual}
-                      budgeted={item.budgeted}
-                      monthlyPaceStatus={item.monthlyPaceStatus}
-                      className="w-full"
-                      showPercentage={true}
-                    />
-                  </div>
-                </div>
-                {expandedCategories.has(item.category.id) && (
-                  <div className="border-t bg-gray-50/50">
-                    <TransactionTable
-                      transactions={item.recentTransactions}
-                      variant="income"
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop Table Layout */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full table-fixed min-w-[600px]">
-              <thead>
-                <tr className="border-b bg-gray-50">
-                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium rounded-tl-lg text-xs sm:text-sm w-1/4">
-                    Category
-                  </th>
-                  <th className="text-right py-2 sm:py-3 px-1 sm:px-4 font-medium text-xs sm:text-sm w-1/4">
-                    Actual
-                  </th>
-                  <th className="text-center py-2 sm:py-3 px-1 sm:px-4 font-medium text-xs sm:text-sm w-1/4">
-                    Progress
-                  </th>
-                  <th className="text-right py-2 sm:py-3 px-1 sm:px-4 font-medium text-xs sm:text-sm w-1/4">
-                    Budget
-                  </th>
-                  <th className="text-right py-2 sm:py-3 px-1 sm:px-4 font-medium rounded-tr-lg text-xs sm:text-sm w-1/12"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {incomeData.map((item) => (
-                  <React.Fragment key={item.category.id}>
-                    <tr
-                      className="border-b hover:bg-gray-50 cursor-pointer"
-                      onClick={() => toggleCategoryExpansion(item.category.id)}
-                    >
-                      <td className="py-2 sm:py-3 px-2 sm:px-4 font-medium bg-blue-50 border-r border-blue-100 text-xs sm:text-sm">
-                        <div className="flex items-center space-x-2">
-                          <CategoryIcon
-                            icon={item.category.icon}
-                            color={item.category.color}
-                            size="sm"
-                          />
-                          <span>{item.category.name}</span>
-                        </div>
-                      </td>
-                      <td className="text-right py-2 sm:py-3 px-1 sm:px-4 font-semibold text-xs sm:text-sm">
-                        {formatCurrency(item.actual)}
-                      </td>
-                      <td className="py-2 sm:py-3 px-1 sm:px-4">
-                        <BudgetProgressBar
-                          actual={item.actual}
-                          budgeted={item.budgeted}
-                          monthlyPaceStatus={item.monthlyPaceStatus}
-                          className="w-full"
-                          showPercentage={false}
-                        />
-                      </td>
-                      <td className="text-right py-2 sm:py-3 px-1 sm:px-4 text-xs sm:text-sm">
-                        {formatCurrency(item.budgeted)}
-                      </td>
-                      <td className="text-right py-2 sm:py-3 px-1 sm:px-4">
-                        {expandedCategories.has(item.category.id) ? (
-                          <ChevronUp className="h-4 w-4 text-gray-400" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 text-gray-400" />
-                        )}
-                      </td>
-                    </tr>
-                    {expandedCategories.has(item.category.id) && (
-                      <tr>
-                        <td colSpan={5} className="p-0">
-                          <TransactionTable
-                            transactions={item.recentTransactions}
-                            variant="income"
-                          />
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      <BudgetSection
+        title="Income"
+        description={`Your income sources for ${monthName}`}
+        data={incomeData}
+        type="income"
+        expandedCategories={expandedCategories}
+        onToggleExpand={toggleCategoryExpansion}
+      />
 
       {/* Expenses Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Expenses</CardTitle>
-          <CardDescription>
-            Your spending by category for {monthName}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="px-3 sm:px-6">
-          {/* Mobile Card Layout */}
-          <div className="block md:hidden space-y-3">
-            {expenseData.map((item) => (
-              <div key={item.category.id} className="border rounded-lg">
-                <div
-                  className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-                  onClick={() => toggleCategoryExpansion(item.category.id)}
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <CategoryIcon
-                          icon={item.category.icon}
-                          color={item.category.color}
-                          size="lg"
-                        />
-                        <div>
-                          <div className="font-semibold text-base">
-                            {item.category.name}
-                          </div>
-                          <div className="text-sm space-y-1">
-                            <div className="text-muted-foreground">
-                              Actual:{" "}
-                              <span className="font-medium text-red-600">
-                                {formatCurrency(item.actual)}
-                              </span>
-                            </div>
-                            <div className="text-muted-foreground">
-                              Budget:{" "}
-                              <span className="font-medium">
-                                {formatCurrency(item.budgeted)}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      {expandedCategories.has(item.category.id) ? (
-                        <ChevronUp className="h-5 w-5 text-gray-400" />
-                      ) : (
-                        <ChevronDown className="h-5 w-5 text-gray-400" />
-                      )}
-                    </div>
-                    <BudgetProgressBar
-                      actual={item.actual}
-                      budgeted={item.budgeted}
-                      monthlyPaceStatus={item.monthlyPaceStatus}
-                      className="w-full"
-                      showPercentage={true}
-                    />
-                  </div>
-                </div>
-                {expandedCategories.has(item.category.id) && (
-                  <div className="border-t bg-gray-50/50">
-                    <TransactionTable
-                      transactions={item.recentTransactions}
-                      variant="expense"
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop Table Layout */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full table-fixed min-w-[600px]">
-              <thead>
-                <tr className="border-b bg-gray-50">
-                  <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium rounded-tl-lg text-xs sm:text-sm w-1/4">
-                    Category
-                  </th>
-                  <th className="text-right py-2 sm:py-3 px-1 sm:px-4 font-medium text-xs sm:text-sm w-1/4">
-                    Actual
-                  </th>
-                  <th className="text-center py-2 sm:py-3 px-1 sm:px-4 font-medium text-xs sm:text-sm w-1/4">
-                    Progress
-                  </th>
-                  <th className="text-right py-2 sm:py-3 px-1 sm:px-4 font-medium text-xs sm:text-sm w-1/4">
-                    Budget
-                  </th>
-                  <th className="text-right py-2 sm:py-3 px-1 sm:px-4 font-medium rounded-tr-lg text-xs sm:text-sm w-1/12"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {expenseData.map((item) => (
-                  <React.Fragment key={item.category.id}>
-                    <tr
-                      className="border-b hover:bg-gray-50 cursor-pointer"
-                      onClick={() => toggleCategoryExpansion(item.category.id)}
-                    >
-                      <td className="py-2 sm:py-3 px-2 sm:px-4 font-medium bg-red-50 border-r border-red-100 text-xs sm:text-sm">
-                        <div className="flex items-center space-x-2">
-                          <CategoryIcon
-                            icon={item.category.icon}
-                            color={item.category.color}
-                            size="sm"
-                          />
-                          <span>{item.category.name}</span>
-                        </div>
-                      </td>
-                      <td className="text-right py-2 sm:py-3 px-1 sm:px-4 font-semibold text-xs sm:text-sm">
-                        {formatCurrency(item.actual)}
-                      </td>
-                      <td className="py-2 sm:py-3 px-1 sm:px-4">
-                        <BudgetProgressBar
-                          actual={item.actual}
-                          budgeted={item.budgeted}
-                          monthlyPaceStatus={item.monthlyPaceStatus}
-                          className="w-full"
-                          showPercentage={false}
-                        />
-                      </td>
-                      <td className="text-right py-2 sm:py-3 px-1 sm:px-4 text-xs sm:text-sm">
-                        {formatCurrency(item.budgeted)}
-                      </td>
-                      <td className="text-right py-2 sm:py-3 px-1 sm:px-4">
-                        {expandedCategories.has(item.category.id) ? (
-                          <ChevronUp className="h-4 w-4 text-gray-400" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 text-gray-400" />
-                        )}
-                      </td>
-                    </tr>
-                    {expandedCategories.has(item.category.id) && (
-                      <tr>
-                        <td colSpan={5} className="p-0">
-                          <TransactionTable
-                            transactions={item.recentTransactions}
-                            variant="expense"
-                          />
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      <BudgetSection
+        title="Expenses"
+        description={`Your spending by category for ${monthName}`}
+        data={expenseData}
+        type="expense"
+        expandedCategories={expandedCategories}
+        onToggleExpand={toggleCategoryExpansion}
+      />
 
       <BudgetSetupModal
         isOpen={isSetupModalOpen}
