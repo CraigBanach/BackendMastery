@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.5.0",
@@ -39,7 +39,6 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24.10.1",
     "@types/react": "19.2.7",
