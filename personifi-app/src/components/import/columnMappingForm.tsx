@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -25,52 +25,88 @@ interface ColumnMappingFormProps {
 // Auto-detect column mappings based on header names
 const detectColumnMapping = (headers: string[]): CsvColumnMapping => {
   const findColumn = (patterns: string[]) => {
-    return headers.find(header => 
-      patterns.some(pattern => 
-        header.toLowerCase().includes(pattern.toLowerCase())
-      )
-    ) || '';
+    return (
+      headers.find((header) =>
+        patterns.some((pattern) =>
+          header.toLowerCase().includes(pattern.toLowerCase())
+        )
+      ) || ""
+    );
   };
 
   return {
-    dateColumn: findColumn(['date', 'transaction date', 'transaction_date', 'tran date']),
-    descriptionColumn: findColumn(['description', 'merchant', 'counter party', 'counterparty', 'payee', 'reference', 'details']),
-    amountColumn: findColumn(['amount', 'value', 'debit', 'credit', 'gbp', 'usd', 'eur']),
+    dateColumn: findColumn([
+      "date",
+      "transaction date",
+      "transaction_date",
+      "tran date",
+    ]),
+    descriptionColumn: findColumn([
+      "description",
+      "merchant",
+      "counter party",
+      "counterparty",
+      "payee",
+      "reference",
+      "details",
+    ]),
+    amountColumn: findColumn([
+      "amount",
+      "value",
+      "debit",
+      "credit",
+      "gbp",
+      "usd",
+      "eur",
+    ]),
     expensesArePositive: true, // Default to Starling Bank convention
   };
 };
 
-export function ColumnMappingForm({ headers, previewRows, onImport, isImporting = false }: ColumnMappingFormProps) {
-
+export function ColumnMappingForm({
+  headers,
+  previewRows,
+  onImport,
+  isImporting = false,
+}: ColumnMappingFormProps) {
+  const [lastHeaders, setLastHeaders] = useState<string[]>(headers);
   const [mapping, setMapping] = useState<CsvColumnMapping>(() => {
     // Only auto-detect if we have at least 3 columns
-    return headers.length >= 3 ? detectColumnMapping(headers) : {
-      dateColumn: '',
-      descriptionColumn: '',
-      amountColumn: '',
-      expensesArePositive: true,
-    };
+    return headers.length >= 3
+      ? detectColumnMapping(headers)
+      : {
+          dateColumn: "",
+          descriptionColumn: "",
+          amountColumn: "",
+          expensesArePositive: true,
+        };
   });
 
-  // Update mapping when headers change
-  useEffect(() => {
+  // Sync state with props if headers change (Recommended pattern for derived state with user edits)
+  if (headers !== lastHeaders) {
+    setLastHeaders(headers);
     if (headers.length >= 3) {
       setMapping(detectColumnMapping(headers));
     }
-  }, [headers]);
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!mapping.dateColumn || !mapping.descriptionColumn || !mapping.amountColumn) {
-      alert('Please select all required columns');
+
+    if (
+      !mapping.dateColumn ||
+      !mapping.descriptionColumn ||
+      !mapping.amountColumn
+    ) {
+      alert("Please select all required columns");
       return;
     }
-    
+
     onImport(mapping);
   };
 
-  const isFormValid = mapping.dateColumn && mapping.descriptionColumn && mapping.amountColumn;
+  const isFormValid =
+    mapping.dateColumn && mapping.descriptionColumn && mapping.amountColumn;
 
   return (
     <Card className="mb-6">
@@ -88,9 +124,11 @@ export function ColumnMappingForm({ headers, previewRows, onImport, isImporting 
               <Label htmlFor="date-column" className="text-sm font-medium">
                 Date Column *
               </Label>
-              <Select 
-                value={mapping.dateColumn} 
-                onValueChange={(value) => setMapping(prev => ({ ...prev, dateColumn: value }))}
+              <Select
+                value={mapping.dateColumn}
+                onValueChange={(value) =>
+                  setMapping((prev) => ({ ...prev, dateColumn: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select date column" />
@@ -107,12 +145,17 @@ export function ColumnMappingForm({ headers, previewRows, onImport, isImporting 
 
             {/* Description Column */}
             <div className="space-y-2">
-              <Label htmlFor="description-column" className="text-sm font-medium">
+              <Label
+                htmlFor="description-column"
+                className="text-sm font-medium"
+              >
                 Description Column *
               </Label>
-              <Select 
-                value={mapping.descriptionColumn} 
-                onValueChange={(value) => setMapping(prev => ({ ...prev, descriptionColumn: value }))}
+              <Select
+                value={mapping.descriptionColumn}
+                onValueChange={(value) =>
+                  setMapping((prev) => ({ ...prev, descriptionColumn: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select description column" />
@@ -132,9 +175,11 @@ export function ColumnMappingForm({ headers, previewRows, onImport, isImporting 
               <Label htmlFor="amount-column" className="text-sm font-medium">
                 Amount Column *
               </Label>
-              <Select 
-                value={mapping.amountColumn} 
-                onValueChange={(value) => setMapping(prev => ({ ...prev, amountColumn: value }))}
+              <Select
+                value={mapping.amountColumn}
+                onValueChange={(value) =>
+                  setMapping((prev) => ({ ...prev, amountColumn: value }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select amount column" />
@@ -151,13 +196,14 @@ export function ColumnMappingForm({ headers, previewRows, onImport, isImporting 
 
             {/* Amount Convention */}
             <div className="space-y-3">
-              <Label className="text-sm font-medium">
-                Amount Convention *
-              </Label>
+              <Label className="text-sm font-medium">Amount Convention *</Label>
               <RadioGroup
                 value={mapping.expensesArePositive ? "positive" : "negative"}
-                onValueChange={(value) => 
-                  setMapping(prev => ({ ...prev, expensesArePositive: value === "positive" }))
+                onValueChange={(value) =>
+                  setMapping((prev) => ({
+                    ...prev,
+                    expensesArePositive: value === "positive",
+                  }))
                 }
               >
                 <div className="flex items-center space-x-2">
@@ -174,13 +220,14 @@ export function ColumnMappingForm({ headers, previewRows, onImport, isImporting 
                 </div>
               </RadioGroup>
               <p className="text-xs text-gray-500">
-                Choose how expenses appear in your CSV. Most banks use &quot;Expenses Negative&quot;.
+                Choose how expenses appear in your CSV. Most banks use
+                &quot;Expenses Negative&quot;.
               </p>
             </div>
           </div>
 
           {/* Import Preview */}
-          <ImportPreview 
+          <ImportPreview
             headers={headers}
             previewRows={previewRows}
             mapping={mapping}
