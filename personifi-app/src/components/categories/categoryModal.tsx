@@ -47,7 +47,10 @@ const formSchema = z.object({
   type: z.nativeEnum(CategoryType),
   icon: z.string().min(1, { message: "Icon is required" }),
   color: z.string().min(1, { message: "Colour is required" }), // User-facing message, so "Colour"
-  budgetAmount: z.coerce.number().nonnegative().optional(),
+  budgetAmount: z.coerce
+    .number()
+    .nonnegative()
+    .optional() as z.ZodOptional<z.ZodNumber>,
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -106,13 +109,13 @@ export function CategoryModal({
             const currentDate = new Date();
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth() + 1; // JavaScript months are 0-based
-            
+
             const budget = await getBudget(category.id, year, month);
             if (budget) {
-              form.setValue('budgetAmount', budget.amount);
+              form.setValue("budgetAmount", budget.amount);
             }
           } catch (error) {
-            console.error('Failed to load budget:', error);
+            console.error("Failed to load budget:", error);
             // Don't show error to user, just leave field empty
           }
         }
@@ -139,9 +142,7 @@ export function CategoryModal({
       form.reset();
     } catch (error) {
       console.error(error);
-      setSubmitError(
-        (error as Error)?.message || "Failed to save category"
-      );
+      setSubmitError((error as Error)?.message || "Failed to save category");
     } finally {
       setIsSubmitting(false);
     }
@@ -169,7 +170,11 @@ export function CategoryModal({
         disabled={isSubmitting}
         className="bg-finance-green hover:bg-finance-green-dark"
       >
-        {isSubmitting ? "Saving..." : category ? "Update Category" : "Create Category"}
+        {isSubmitting
+          ? "Saving..."
+          : category
+          ? "Update Category"
+          : "Create Category"}
       </Button>
     </div>
   );
@@ -197,10 +202,7 @@ export function CategoryModal({
                 <FormItem>
                   <FormLabel>Category Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g., Groceries, Salary"
-                      {...field}
-                    />
+                    <Input placeholder="e.g., Groceries, Salary" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -222,17 +224,31 @@ export function CategoryModal({
                     >
                       <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>
-                          <RadioGroupItem value={CategoryType.Expense} disabled={!!category} />
+                          <RadioGroupItem
+                            value={CategoryType.Expense}
+                            disabled={!!category}
+                          />
                         </FormControl>
-                        <FormLabel className={`font-normal ${category ? 'text-muted-foreground' : ''}`}>
+                        <FormLabel
+                          className={`font-normal ${
+                            category ? "text-muted-foreground" : ""
+                          }`}
+                        >
                           Expense
                         </FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>
-                          <RadioGroupItem value={CategoryType.Income} disabled={!!category} />
+                          <RadioGroupItem
+                            value={CategoryType.Income}
+                            disabled={!!category}
+                          />
                         </FormControl>
-                        <FormLabel className={`font-normal ${category ? 'text-muted-foreground' : ''}`}>
+                        <FormLabel
+                          className={`font-normal ${
+                            category ? "text-muted-foreground" : ""
+                          }`}
+                        >
                           Income
                         </FormLabel>
                       </FormItem>
@@ -240,7 +256,8 @@ export function CategoryModal({
                   </FormControl>
                   {category && (
                     <p className="text-xs text-muted-foreground">
-                      Category type cannot be changed after creation to maintain data consistency.
+                      Category type cannot be changed after creation to maintain
+                      data consistency.
                     </p>
                   )}
                   <FormMessage />
@@ -275,25 +292,31 @@ export function CategoryModal({
                   <FormControl>
                     <div>
                       <div className="flex flex-wrap gap-2 items-center mb-4">
-                        {CATEGORY_COLOURS.map((colour) => ( // Using CATEGORY_COLOURS
-                          <div
-                            key={colour}
-                            className={cn(
-                              "h-6 w-6 rounded-full cursor-pointer flex items-center justify-center transition-all hover:scale-110",
-                              field.value === colour ? "ring-2 ring-offset-2 ring-black" : ""
-                            )}
-                            style={{ backgroundColor: colour }}
-                            onClick={() => field.onChange(colour)}
-                          >
-                            {field.value === colour && (
-                              <Check className="h-4 w-4 text-white" />
-                            )}
-                          </div>
-                        ))}
+                        {CATEGORY_COLOURS.map(
+                          (
+                            colour // Using CATEGORY_COLOURS
+                          ) => (
+                            <div
+                              key={colour}
+                              className={cn(
+                                "h-6 w-6 rounded-full cursor-pointer flex items-center justify-center transition-all hover:scale-110",
+                                field.value === colour
+                                  ? "ring-2 ring-offset-2 ring-black"
+                                  : ""
+                              )}
+                              style={{ backgroundColor: colour }}
+                              onClick={() => field.onChange(colour)}
+                            >
+                              {field.value === colour && (
+                                <Check className="h-4 w-4 text-white" />
+                              )}
+                            </div>
+                          )
+                        )}
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <div 
+                        <div
                           className="relative h-10 w-10 rounded-full cursor-pointer overflow-hidden ring-1 ring-gray-200"
                           style={{ backgroundColor: field.value }}
                         >
@@ -305,7 +328,10 @@ export function CategoryModal({
                             className="absolute inset-0 w-full h-full border-none p-0 opacity-0 cursor-pointer"
                           />
                         </div>
-                        <label htmlFor="custom-color-picker" className="text-sm font-medium cursor-pointer">
+                        <label
+                          htmlFor="custom-color-picker"
+                          className="text-sm font-medium cursor-pointer"
+                        >
                           {
                             !CATEGORY_COLOURS.includes(field.value) // Check against CATEGORY_COLOURS
                               ? "Selected Custom Colour" // User-facing text
@@ -314,7 +340,12 @@ export function CategoryModal({
                         </label>
                         {/* Show checkmark if custom color is selected and not one of the presets */}
                         {!CATEGORY_COLOURS.includes(field.value) && ( // Check against CATEGORY_COLOURS
-                           <Check className="h-4 w-4 text-white drop-shadow-md -ml-8 pointer-events-none" style={{ color: getContrastingTextColor(field.value) }} /> // Use getContrastingTextColor
+                          <Check
+                            className="h-4 w-4 text-white drop-shadow-md -ml-8 pointer-events-none"
+                            style={{
+                              color: getContrastingTextColor(field.value),
+                            }}
+                          /> // Use getContrastingTextColor
                         )}
                       </div>
                     </div>
@@ -331,10 +362,9 @@ export function CategoryModal({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  {selectedType === CategoryType.Income 
-                    ? "Monthly Expected Income (Optional)" 
-                    : "Monthly Budget (Optional)"
-                  }
+                  {selectedType === CategoryType.Income
+                    ? "Monthly Expected Income (Optional)"
+                    : "Monthly Budget (Optional)"}
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
@@ -351,8 +381,7 @@ export function CategoryModal({
                 <p className="text-sm text-muted-foreground">
                   {selectedType === CategoryType.Income
                     ? "Set an expected income amount for this category for the current month"
-                    : "Set a budget amount for this category for the current month"
-                  }
+                    : "Set a budget amount for this category for the current month"}
                 </p>
                 <FormMessage />
               </FormItem>
