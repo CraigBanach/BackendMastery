@@ -23,12 +23,12 @@
     "date-fns": "^3.6.0",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.556.0",
-    "next": "^15.5.7",
+    "next": "16.0.8",
     "posthog-js": "^1.301.1",
     "posthog-node": "^5.17.0",
-    "react": "^19.0.0",
+    "react": "19.2.1",
     "react-day-picker": "^9.8.1",
-    "react-dom": "^19.0.0",
+    "react-dom": "19.2.1",
     "react-hook-form": "^7.56.1",
     "react-markdown": "^10.1.0",
     "recharts": "^2.15.3",
@@ -42,11 +42,15 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24.10.1",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
     "eslint": "^9",
-    "eslint-config-next": "^15.5.7",
+    "eslint-config-next": "16.0.8",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3"
   }
 }
