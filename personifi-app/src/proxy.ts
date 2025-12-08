@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth0 } from "./lib/auth0";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const authResponse = await auth0.middleware(request);
   authResponse.headers.set("x-current-path", request.nextUrl.pathname);
 

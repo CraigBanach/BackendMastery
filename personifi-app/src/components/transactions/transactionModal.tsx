@@ -38,8 +38,8 @@ import { CategoryDto, CategoryType } from "@/types/budget";
 const now = new Date();
 
 const formSchema = z.object({
-  type: z.nativeEnum(TransactionType),
-  amount: z.coerce.number().safe(),
+  type: z.enum(TransactionType),
+  amount: z.coerce.number().int() as z.ZodNumber,
   description: z
     .string()
     .min(1, { message: "Description must be provided" })
