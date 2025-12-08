@@ -10,21 +10,21 @@ export function MarketingHeader() {
           <Link href="/" className="text-xl font-bold text-finance-green">
             personifi
           </Link>
-          
+
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
-            <a
+            <Link
               href="/#how-it-works"
               className="text-finance-green-dark font-medium hover:text-finance-green transition-colors duration-200"
             >
               How it works
-            </a>
-            <a
+            </Link>
+            <Link
               href="/#pricing"
               className="text-finance-green-dark font-medium hover:text-finance-green transition-colors duration-200"
             >
               Pricing
-            </a>
+            </Link>
             <Link
               href="/free-budget-template"
               className="text-finance-green-dark font-medium hover:text-finance-green transition-colors duration-200"
@@ -41,13 +41,13 @@ export function MarketingHeader() {
 
           {/* Login Button */}
           <div>
-             <Button
-                asChild
-                size="lg"
-                className="bg-finance-green hover:bg-finance-green-dark text-white font-semibold px-6 py-2 rounded-lg transition-all duration-200 relative z-10"
-              >
-                <a href="/auth/login">Login</a>
-              </Button>
+            <Button
+              asChild
+              size="lg"
+              className="bg-finance-green hover:bg-finance-green-dark text-white font-semibold px-6 py-2 rounded-lg transition-all duration-200 relative z-10"
+            >
+              <a href="/auth/login">Login</a>
+            </Button>
           </div>
         </div>
       </nav>

@@ -15,3 +15,4 @@
 - Link from personal website
 - Rip out state from transactions page that is causing duplicate fetching, just like the budget page
 - Allow navbar on mobile for navigating to stories & landing page
+- Host the app on app. subdomain
