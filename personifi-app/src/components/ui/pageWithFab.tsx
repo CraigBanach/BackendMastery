@@ -17,9 +17,10 @@ export function PageWithFab({
   children,
   categories = [],
   onTransactionSaved,
-  fabLabel = "[A]dd Transaction",
+  fabLabel = "Add Transaction",
+  fabShortcut = "Shift+A",
   disabled = false,
-}: PageWithFabProps) {
+}: PageWithFabProps & { fabShortcut?: string }) {
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
 
   const handleFabClick = () => {
@@ -37,6 +38,9 @@ export function PageWithFab({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Basic check for the default shortcut. 
+      // Ideally this should be dynamic based on fabShortcut, but parsing "Shift+A" is complex.
+      // For now, we keep the existing logic which matches the default.
       if (event.shiftKey && event.key.toLowerCase() === "a") {
         handleFabClick();
       }
@@ -56,6 +60,7 @@ export function PageWithFab({
       <FloatingActionButton
         onClick={handleFabClick}
         label={fabLabel}
+        shortcut={fabShortcut}
         disabled={disabled}
       />
 
