@@ -7,7 +7,7 @@
         "http://localhost:3000/auth/callback"
       ],
       "PostLogoutRedirectUris": ["http://localhost:3000"],
-      "AllowedScopes": ["openid", "profile", "email", "offline_access"],
+      "AllowedScopes": ["openid", "profile", "email", "offline_access", "personifi-backend-api"],
       "AllowedGrantTypes": ["authorization_code", "refresh_token"],
       "AllowOfflineAccess": true
     }

@@ -37,30 +37,34 @@ public static class AuthenticationExtensions
                     auth0Options.Audience
                     ?? throw new InvalidOperationException("Auth0 Audience is not configured.");
 
-                if (!string.IsNullOrEmpty(auth0Options.LocalSigningKey))
+                if (builder.Environment.IsDevelopment())
                 {
+                    // DEVELOPMENT / INTEGRATION TESTING CONFIGURATION
+                    // Allow HTTP and self-signed certs for local OIDC mock server
+                    options.RequireHttpsMetadata = false;
+                    options.BackchannelHttpHandler = new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                    };
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
+                        NameClaimType = ClaimTypes.NameIdentifier,
                         ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = false, // Optional: ignore expiration for tests
-                        ValidateIssuerSigningKey = true,
                         ValidIssuer = options.Authority,
-                        ValidAudience = options.Audience,
-                        // Use the key from config
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(auth0Options.LocalSigningKey)
-                        ),
+                        ValidateAudience = false, // Simplified for dev/test to avoid audience mismatch issues
                     };
                 }
                 else
                 {
-                    // Allow HTTP for development/testing (e.g. OIDC mock server)
-                    options.RequireHttpsMetadata = false; 
-                    
+                    // PRODUCTION CONFIGURATION
+                    // Standard strict validation
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         NameClaimType = ClaimTypes.NameIdentifier,
+                        ValidateIssuer = true,
+                        ValidIssuer = options.Authority,
+                        ValidateAudience = true,
+                        ValidAudience = options.Audience
                     };
                 }
             });

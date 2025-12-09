@@ -27,13 +27,17 @@ services:
       - SERVER_OPTIONS__PUBLIC_URL=https://localhost:4001
       - CLIENTS_CONFIGURATION_PATH=/tmp/clients.json
       - USERS_CONFIGURATION_PATH=/tmp/users.json
-      - SERVER_OPTIONS__OIDC_API_SCOPES=openid profile email offline_access
+      - SERVER_OPTIONS__OIDC_API_SCOPES=openid profile email offline_access personifi-backend-api
     volumes:
       - ./integration-tests/clients.json:/tmp/clients.json
       - ./integration-tests/users.json:/tmp/users.json
       - ./integration-tests/certs/oidc.pfx:/tmp/oidc.pfx
     healthcheck:
-      test: ["CMD-SHELL", "curl -f -k https://127.0.0.1/.well-known/openid-configuration || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f -k https://127.0.0.1/.well-known/openid-configuration || exit 1",
+        ]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -59,7 +63,7 @@ services:
       test-db:
         condition: service_healthy
       oidc-server:
-        condition: service_started
+        condition: service_healthy
 
   frontend:
     container_name: integration-test-frontend
@@ -92,4 +96,4 @@ services:
       backend:
         condition: service_started
       oidc-server:
-        condition: service_started
+        condition: service_healthy
