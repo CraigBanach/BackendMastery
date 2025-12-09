@@ -16,19 +16,21 @@ public static class DatabaseExtensions
         {
             builder.Services.AddDbContext<PersonifiDbContext>(options =>
             {
-                var dbConnectionString = builder.Configuration
-                    .GetSection(DatabaseOptions.SectionName)
-                    .Get<DatabaseOptions>()
-                    ?.ConnectionString
-                    ?? throw new InvalidOperationException("Database connection string is not configured.");
+                var dbConnectionString =
+                    builder
+                        .Configuration.GetSection(DatabaseOptions.SectionName)
+                        .Get<DatabaseOptions>()
+                        ?.ConnectionString
+                    ?? throw new InvalidOperationException(
+                        "Database connection string is not configured."
+                    );
 
                 options.UseNpgsql(dbConnectionString);
             });
         }
 
         // Add Health Checks
-        builder.Services.AddHealthChecks()
-            .AddDbContextCheck<PersonifiDbContext>();
+        builder.Services.AddHealthChecks().AddDbContextCheck<PersonifiDbContext>();
 
         return builder;
     }
@@ -40,7 +42,7 @@ public static class DatabaseExtensions
     {
         using var scope = app.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<PersonifiDbContext>();
-        
+
         // Skip migration for in-memory database (used in testing)
         if (context.Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
         {

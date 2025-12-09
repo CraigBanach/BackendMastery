@@ -1,0 +1,14 @@
+[
+    {
+      "ClientId": "integration-client-id",
+      "ClientSecrets": ["integration-client-secret"],
+      "RedirectUris": [
+        "http://localhost:3000/api/auth/callback",
+        "http://localhost:3000/auth/callback"
+      ],
+      "PostLogoutRedirectUris": ["http://localhost:3000"],
+      "AllowedScopes": ["openid", "profile", "email", "offline_access"],
+      "AllowedGrantTypes": ["authorization_code", "refresh_token"],
+      "AllowOfflineAccess": true
+    }
+]

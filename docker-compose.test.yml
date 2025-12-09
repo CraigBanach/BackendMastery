@@ -1,0 +1,95 @@
+services:
+  test-db:
+    container_name: integration-test-db
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: personifi_db
+    ports:
+      - "5435:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  oidc-server:
+    container_name: integration-test-oidc
+    image: soluto/oidc-server-mock:latest
+    ports:
+      - "4000:80"
+      - "4001:443" # HTTPS port
+    environment:
+      - ASPNETCORE_URLS=http://+:80;https://+:443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/tmp/oidc.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
+      - SERVER_OPTIONS__PUBLIC_URL=https://localhost:4001
+      - CLIENTS_CONFIGURATION_PATH=/tmp/clients.json
+      - USERS_CONFIGURATION_PATH=/tmp/users.json
+      - SERVER_OPTIONS__OIDC_API_SCOPES=openid profile email offline_access
+    volumes:
+      - ./integration-tests/clients.json:/tmp/clients.json
+      - ./integration-tests/users.json:/tmp/users.json
+      - ./integration-tests/certs/oidc.pfx:/tmp/oidc.pfx
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -k https://127.0.0.1/.well-known/openid-configuration || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  backend:
+    container_name: integration-test-backend
+    build:
+      context: ./PersonifiBackend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:7106"
+    environment:
+      - Database__ConnectionString=Host=test-db;Port=5432;Database=personifi_db;Username=postgres;Password=password;
+      # Point to the OIDC server via localhost (mapped to host gateway)
+      - Auth0__Domain=https://localhost:4001
+      - Auth0__Audience=personifi-backend-api
+      - ASPNETCORE_HTTP_PORTS=7106
+      - ASPNETCORE_ENVIRONMENT=Development
+    extra_hosts:
+      - "localhost:host-gateway"
+    depends_on:
+      test-db:
+        condition: service_healthy
+      oidc-server:
+        condition: service_started
+
+  frontend:
+    container_name: integration-test-frontend
+    build:
+      context: ./personifi-app
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      # Browser-facing URL
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+      # Internal URL for Server Actions
+      - PERSONIFI_BACKEND_URL=http://backend:7106/api
+
+      # Auth0 Configuration
+      - AUTH0_SECRET=LONG_RANDOM_VALUE_MUST_BE_32_CHARS_OR_MORE_12345
+      - APP_BASE_URL=http://localhost:3000
+      - AUTH0_DOMAIN=https://localhost:4001
+      - AUTH0_ISSUER_BASE_URL=https://localhost:4001
+      - AUTH0_CLIENT_ID=integration-client-id
+      - AUTH0_CLIENT_SECRET=integration-client-secret
+      - AUTH0_AUDIENCE=personifi-backend-api
+      - AUTH0_SCOPE=openid profile email offline_access
+      - NODE_ENV=development
+      # IMPORTANT: Disable certificate verification because we are using self-signed certs
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    extra_hosts:
+      - "localhost:host-gateway"
+    depends_on:
+      backend:
+        condition: service_started
+      oidc-server:
+        condition: service_started
