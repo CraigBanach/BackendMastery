@@ -24,9 +24,9 @@ docker compose -f docker-compose.test.yml down
 
 ---
 
-## 2. End-to-End (E2E) Tests
+## 2. Full-Stack Integration Tests
 
-The E2E tests use **Playwright** to test the application flows from the frontend.
+These tests use **Playwright** to verify application flows from the frontend against an ephemeral backend and database environment.
 
 **Prerequisites:**
 *   The **Full Stack Environment** (Docker) must be running (see section 1).
