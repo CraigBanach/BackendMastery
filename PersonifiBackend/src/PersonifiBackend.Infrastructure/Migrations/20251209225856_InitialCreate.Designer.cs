@@ -12,7 +12,7 @@ using PersonifiBackend.Infrastructure.Data;
 namespace PersonifiBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(PersonifiDbContext))]
-    [Migration("20250817113355_InitialCreate")]
+    [Migration("20251209225856_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -40,6 +40,9 @@ namespace PersonifiBackend.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<int?>("SubscriptionId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
@@ -145,7 +148,6 @@ namespace PersonifiBackend.Infrastructure.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
@@ -183,6 +185,125 @@ namespace PersonifiBackend.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("InvitationTokens");
+                });
+
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.PendingTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal?>("Balance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("CounterParty")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("ExternalSpendingCategory")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ExternalTransactionId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("ImportedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("RawData")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Reference")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("TransactionImportId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("ImportedByUserId");
+
+                    b.HasIndex("TransactionImportId");
+
+                    b.HasIndex("AccountId", "ExternalTransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("AccountId", "TransactionDate");
+
+                    b.ToTable("PendingTransactions");
+                });
+
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.Subscription", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("OwnerUserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId")
+                        .IsUnique();
+
+                    b.HasIndex("OwnerUserId");
+
+                    b.ToTable("Subscriptions");
                 });
 
             modelBuilder.Entity("PersonifiBackend.Core.Entities.Transaction", b =>
@@ -241,6 +362,58 @@ namespace PersonifiBackend.Infrastructure.Migrations
                     b.ToTable("Transactions");
                 });
 
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.TransactionImport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ApprovedTransactions")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("DuplicateTransactions")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int>("ImportedByUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProcessedTransactions")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RejectedTransactions")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalTransactions")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("ImportedByUserId");
+
+                    b.ToTable("TransactionImports");
+                });
+
             modelBuilder.Entity("PersonifiBackend.Core.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -262,6 +435,19 @@ namespace PersonifiBackend.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<bool>("InvitePromptDismissed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("owner");
+
+                    b.Property<int?>("SubscriptionId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
 
@@ -272,25 +458,9 @@ namespace PersonifiBackend.Infrastructure.Migrations
 
                     b.HasIndex("Email");
 
+                    b.HasIndex("SubscriptionId");
+
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("PersonifiBackend.Core.Entities.UserAccount", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("AccountId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("JoinedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("UserId", "AccountId");
-
-                    b.HasIndex("AccountId");
-
-                    b.ToTable("UserAccounts");
                 });
 
             modelBuilder.Entity("PersonifiBackend.Core.Entities.Budget", b =>
@@ -349,6 +519,59 @@ namespace PersonifiBackend.Infrastructure.Migrations
                     b.Navigation("InviterUser");
                 });
 
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.PendingTransaction", b =>
+                {
+                    b.HasOne("PersonifiBackend.Core.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PersonifiBackend.Core.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("PersonifiBackend.Core.Entities.User", "ImportedByUser")
+                        .WithMany()
+                        .HasForeignKey("ImportedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PersonifiBackend.Core.Entities.TransactionImport", "TransactionImport")
+                        .WithMany("PendingTransactions")
+                        .HasForeignKey("TransactionImportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("ImportedByUser");
+
+                    b.Navigation("TransactionImport");
+                });
+
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.Subscription", b =>
+                {
+                    b.HasOne("PersonifiBackend.Core.Entities.Account", "Account")
+                        .WithOne("Subscription")
+                        .HasForeignKey("PersonifiBackend.Core.Entities.Subscription", "AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PersonifiBackend.Core.Entities.User", "OwnerUser")
+                        .WithMany()
+                        .HasForeignKey("OwnerUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("OwnerUser");
+                });
+
             modelBuilder.Entity("PersonifiBackend.Core.Entities.Transaction", b =>
                 {
                     b.HasOne("PersonifiBackend.Core.Entities.Account", "Account")
@@ -376,23 +599,33 @@ namespace PersonifiBackend.Infrastructure.Migrations
                     b.Navigation("CreatedByUser");
                 });
 
-            modelBuilder.Entity("PersonifiBackend.Core.Entities.UserAccount", b =>
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.TransactionImport", b =>
                 {
                     b.HasOne("PersonifiBackend.Core.Entities.Account", "Account")
-                        .WithMany("UserAccounts")
+                        .WithMany()
                         .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("PersonifiBackend.Core.Entities.User", "User")
-                        .WithMany("UserAccounts")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("PersonifiBackend.Core.Entities.User", "ImportedByUser")
+                        .WithMany()
+                        .HasForeignKey("ImportedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Account");
 
-                    b.Navigation("User");
+                    b.Navigation("ImportedByUser");
+                });
+
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.User", b =>
+                {
+                    b.HasOne("PersonifiBackend.Core.Entities.Subscription", "Subscription")
+                        .WithMany("Users")
+                        .HasForeignKey("SubscriptionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Subscription");
                 });
 
             modelBuilder.Entity("PersonifiBackend.Core.Entities.Account", b =>
@@ -403,9 +636,9 @@ namespace PersonifiBackend.Infrastructure.Migrations
 
                     b.Navigation("InvitationTokens");
 
-                    b.Navigation("Transactions");
+                    b.Navigation("Subscription");
 
-                    b.Navigation("UserAccounts");
+                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("PersonifiBackend.Core.Entities.Category", b =>
@@ -415,13 +648,21 @@ namespace PersonifiBackend.Infrastructure.Migrations
                     b.Navigation("Transactions");
                 });
 
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.Subscription", b =>
+                {
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.TransactionImport", b =>
+                {
+                    b.Navigation("PendingTransactions");
+                });
+
             modelBuilder.Entity("PersonifiBackend.Core.Entities.User", b =>
                 {
                     b.Navigation("CreatedTransactions");
 
                     b.Navigation("SentInvitations");
-
-                    b.Navigation("UserAccounts");
                 });
 #pragma warning restore 612, 618
         }

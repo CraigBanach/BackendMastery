@@ -1,0 +1,12 @@
+[
+  {
+    "SubjectId": "test-user-sub",
+    "Username": "testuser",
+    "Password": "Password123!",
+    "Claims": [
+      { "Type": "email", "Value": "test@example.com" },
+      { "Type": "email_verified", "Value": "true" },
+      { "Type": "name", "Value": "Test User" }
+    ]
+  }
+]
