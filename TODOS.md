@@ -16,3 +16,4 @@
 - Rip out state from transactions page that is causing duplicate fetching, just like the budget page
 - Allow navbar on mobile for navigating to stories & landing page
 - Host the app on app. subdomain
+- Parallelise integration tests by adding unique users for each browser
