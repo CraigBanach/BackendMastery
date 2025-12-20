@@ -6,4 +6,5 @@ public class Auth0Options
 
     public string Domain { get; set; } = string.Empty;
     public string Audience { get; set; } = string.Empty;
+    public string LocalSigningKey { get; set; } = string.Empty;
 }

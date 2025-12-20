@@ -45,16 +45,30 @@ jobs:
       push-image: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     secrets: inherit
 
+  # Run Integration Tests
+  integration-tests:
+    needs: [detect-changes, backend, frontend]
+    if: |
+      always() && 
+      (needs.detect-changes.outputs.backend-changed == 'true' || 
+       needs.detect-changes.outputs.frontend-changed == 'true' || 
+       needs.detect-changes.outputs.workflows-changed == 'true') &&
+      (needs.backend.result == 'success' || needs.backend.result == 'skipped') &&
+      (needs.frontend.result == 'success' || needs.frontend.result == 'skipped') &&
+      !(needs.backend.result == 'failure' || needs.frontend.result == 'failure')
+    uses: ./.github/workflows/_integration-tests.yml
+
   # Deploy to GitOps repository
   deploy:
     runs-on: ubuntu-latest
-    needs: [detect-changes, backend, frontend]
+    needs: [detect-changes, backend, frontend, integration-tests]
     if: |
       always() &&
       github.event_name == 'push' && 
       github.ref == 'refs/heads/main' && 
       (needs.detect-changes.outputs.backend-changed != 'true' || needs.backend.result == 'success') &&
-      (needs.detect-changes.outputs.frontend-changed != 'true' || needs.frontend.result == 'success')
+      (needs.detect-changes.outputs.frontend-changed != 'true' || needs.frontend.result == 'success') &&
+      (needs.integration-tests.result == 'success' || needs.integration-tests.result == 'skipped')
     
     steps:
       - name: Update GitOps deployment configuration
@@ -128,7 +142,7 @@ jobs:
   # Comment on PRs with build results
   comment-pr:
     runs-on: ubuntu-latest
-    needs: [detect-changes, backend, frontend]
+    needs: [detect-changes, backend, frontend, integration-tests]
     if: github.event_name == 'pull_request' && always()
     
     steps:
@@ -142,6 +156,7 @@ jobs:
             
             const backendResult = '${{ needs.backend.result }}';
             const frontendResult = '${{ needs.frontend.result }}';
+            const integrationResult = '${{ needs.integration-tests.result }}';
             
             let summary = '## 🔨 Build Results\n\n';
             
@@ -173,6 +188,19 @@ jobs:
               }
             } else {
               summary += '⏭️ **Frontend**: No changes detected\n';
+            }
+            
+            // Integration status
+            if (backendChanged || frontendChanged || workflowsChanged) {
+               if (integrationResult === 'success') {
+                summary += '✅ **Integration**: Full-Stack Integration Tests passed\n';
+              } else if (integrationResult === 'failure') {
+                summary += '❌ **Integration**: Full-Stack Integration Tests failed\n';
+              } else if (integrationResult === 'cancelled') {
+                summary += '🚫 **Integration**: Tests cancelled\n';
+              } else {
+                summary += '⚠️ **Integration**: Tests skipped\n';
+              }
             }
             
             // Add workflow changes note

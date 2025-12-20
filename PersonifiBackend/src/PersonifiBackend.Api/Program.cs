@@ -1,6 +1,4 @@
 using PersonifiBackend.Api.Configuration;
-using PersonifiBackend.Api.Extensions;
-using PersonifiBackend.Infrastructure.Services;
 using Serilog;
 
 // Configure Serilog
