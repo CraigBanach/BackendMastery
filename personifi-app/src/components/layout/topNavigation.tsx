@@ -29,6 +29,7 @@ const TopNavigation = async () => {
   const isBudgetPage = pathName?.includes("/budget") ?? false;
   const isTransactionsPage = pathName?.includes("/transactions") ?? false;
   const isCategoriesPage = pathName?.includes("/categories") ?? false;
+  const isBucketsPage = pathName?.includes("/buckets") ?? false;
   const isImportPage = pathName?.includes("/import") ?? false;
 
   return (
@@ -75,6 +76,7 @@ const TopNavigation = async () => {
           isBudgetPage={isBudgetPage}
           isTransactionsPage={isTransactionsPage}
           isCategoriesPage={isCategoriesPage}
+          isBucketsPage={isBucketsPage}
           isImportPage={isImportPage}
         />
       </div>

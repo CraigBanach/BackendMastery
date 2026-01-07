@@ -10,6 +10,7 @@ public class PersonifiDbContext : DbContext
 
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Bucket> Buckets => Set<Bucket>();
     public DbSet<Budget> Budgets => Set<Budget>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Account> Accounts => Set<Account>();
@@ -95,6 +96,22 @@ public class PersonifiDbContext : DbContext
             entity
                 .HasOne(e => e.Account)
                 .WithMany(a => a.Categories)
+                .HasForeignKey(e => e.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Bucket configuration
+        modelBuilder.Entity<Bucket>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.CurrentBalance).HasPrecision(18, 2);
+            entity.Property(e => e.TargetAmount).HasPrecision(18, 2);
+            entity.HasIndex(e => new { e.AccountId, e.Name }).IsUnique();
+
+            entity
+                .HasOne(e => e.Account)
+                .WithMany(a => a.Buckets)
                 .HasForeignKey(e => e.AccountId)
                 .OnDelete(DeleteBehavior.Restrict);
         });

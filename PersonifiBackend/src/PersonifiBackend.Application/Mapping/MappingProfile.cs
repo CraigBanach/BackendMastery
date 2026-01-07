@@ -17,5 +17,11 @@ public class MappingProfile : Profile
         CreateMap<Category, CategoryDto>();
         CreateMap<CreateCategoryDto, Category>();
         CreateMap<UpdateCategoryDto, Category>();
+
+        // Bucket mappings
+        CreateMap<Bucket, BucketDto>();
+        CreateMap<CreateBucketDto, Bucket>();
+        CreateMap<UpdateBucketDto, Bucket>()
+            .ForMember(dest => dest.CurrentBalance, opt => opt.Ignore());
     }
 }

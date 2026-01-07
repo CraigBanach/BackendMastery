@@ -84,6 +84,8 @@ New entities to support persistent balances and audit trails.
 
 - `GET /api/buckets`: List all buckets with balances.
 - `POST /api/buckets`: Create new.
+- `PUT /api/buckets/{id}`: Update bucket details and balance.
+- `DELETE /api/buckets/{id}`: Delete bucket.
 - `PUT /api/categories/{id}/link-bucket`: Link/Unlink a category.
 
 **Month-End Workflow**
@@ -128,3 +130,15 @@ New entities to support persistent balances and audit trails.
 - **Goal Dates:** "Save £1,000 by December."
 - **Auto-Close:** Automatically approve transfers if user doesn't review within X days (optional setting).
 - **Bucket-to-Bucket Transfers:** Move money from "Car" to "Holiday" manually.
+
+## 8. Implementation Status (Current Branch)
+
+**Implemented**
+- Bucket CRUD (create, edit, delete).
+- Bucket target amount and current balance fields.
+- Buckets page in the app UI.
+
+**Not yet implemented**
+- Category-to-bucket linking.
+- Month-end review flow and bucket transactions/audit log.
+- Budget rows showing bucket badges.

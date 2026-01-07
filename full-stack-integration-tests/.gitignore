@@ -4,6 +4,7 @@ node_modules/
 # Playwright test results
 test-results/
 playwright-report/
+.auth/
 
 # TypeScript cache
 .tsbuildinfo
