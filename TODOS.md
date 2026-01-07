@@ -17,3 +17,6 @@
 - Allow navbar on mobile for navigating to stories & landing page
 - Host the app on app. subdomain
 - Parallelise integration tests by adding unique users for each browser
+- Fix https://www.personifi.xyz being a 404
+- Income progress bar goes red once you exceed the 'budget'
+- A negative expense on the budget screen shows in red, not green

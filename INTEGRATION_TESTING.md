@@ -41,10 +41,22 @@ npm install # Install dependencies if first time
 npx playwright test
 ```
 
+### Buckets-only Run
+```powershell
+npx playwright test buckets.spec.ts --project=chromium
+```
+
 ### View Report
 To see the HTML report of the test run:
 ```powershell
 npx playwright show-report
+```
+
+### Failure Artifacts
+On failure, Playwright stores screenshots, videos, and traces under `full-stack-integration-tests/test-results/`.
+To inspect a trace:
+```powershell
+npx playwright show-trace test-results\\path-to-trace.zip
 ```
 
 ---
