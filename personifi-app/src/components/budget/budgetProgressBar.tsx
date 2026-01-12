@@ -18,8 +18,9 @@ export function BudgetProgressBar({
   showPercentage = true,
 }: BudgetProgressBarProps) {
   // Calculate percentage of budget used
-  const percentage =
-    budgeted > 0 ? Math.min((actual / budgeted) * 100, 120) : 0;
+  const percentage = budgeted > 0 ? (actual / budgeted) * 100 : 0;
+  const barPercentage = Math.min(Math.max(percentage, 0), 100);
+
 
   // Determine color based on status and amount
   const getBarColor = () => {
@@ -73,7 +74,8 @@ export function BudgetProgressBar({
             "h-full transition-all duration-300 ease-out rounded-full",
             getBarColor()
           )}
-          style={{ width: `${Math.min(percentage, 100)}%` }}
+          style={{ width: `${barPercentage}%` }}
+
         />
 
         {/* Overflow indicator for over-budget */}
