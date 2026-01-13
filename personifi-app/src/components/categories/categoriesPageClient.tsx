@@ -1,19 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useModalManager } from "@/lib/providers/modal-provider";
 import { CategoryDto, CategoryType } from "@/types/budget";
+import {
+  createCategory,
+  deleteCategory,
+  getCategories,
+  updateCategory,
+} from "@/lib/api/categoryApi";
+import { setBudgetsForMonth } from "@/lib/api/budgetApi";
 import { CategoriesTable } from "./categoriesTable";
 import { CategoryModal } from "./categoryModal";
 import { DeleteCategoryModal } from "./deleteCategoryModal";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { 
-  getCategories, 
-  createCategory, 
-  updateCategory, 
-  deleteCategory 
-} from "@/lib/api/categoryApi";
-import { setBudgetsForMonth } from "@/lib/api/budgetApi";
+
 
 interface CategoriesPageClientProps {
   initialCategories: CategoryDto[];
@@ -24,6 +26,8 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryDto | null>(null);
   const [deletingCategory, setDeletingCategory] = useState<CategoryDto | null>(null);
+  const { isModalOpen } = useModalManager();
+
 
   const expenseCategories = categories.filter(category => category.type === CategoryType.Expense);
   const incomeCategories = categories.filter(category => category.type === CategoryType.Income);
@@ -53,7 +57,10 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
       });
       
       // If budgetAmount provided, create budget for current month
-      if (categoryData.budgetAmount && categoryData.budgetAmount > 0) {
+      if (
+        typeof categoryData.budgetAmount === "number" &&
+        categoryData.budgetAmount >= 0
+      ) {
         const currentDate = new Date();
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth() + 1; // JavaScript months are 0-based
@@ -130,11 +137,12 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
     <div className="space-y-8">
       {/* Add Category Button */}
       <div className="flex justify-end">
-        <Button onClick={() => setIsCreateModalOpen(true)}>
+        <Button onClick={() => setIsCreateModalOpen(true)} disabled={isModalOpen}>
           <Plus className="h-4 w-4 mr-2" />
           Add Category
         </Button>
       </div>
+
 
       {/* Expense Categories Section */}
       <div className="space-y-4">

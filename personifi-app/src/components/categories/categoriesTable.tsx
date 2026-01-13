@@ -1,10 +1,12 @@
 "use client";
 
-import { CategoryDto } from "@/types/budget";
+import { Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Edit, Trash2 } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/categoryIcon";
+import { useModalManager } from "@/lib/providers/modal-provider";
+import { CategoryDto } from "@/types/budget";
+
 
 interface CategoriesTableProps {
   categories: CategoryDto[];
@@ -13,7 +15,10 @@ interface CategoriesTableProps {
 }
 
 export function CategoriesTable({ categories, onEdit, onDelete }: CategoriesTableProps) {
+  const { isModalOpen } = useModalManager();
+
   if (categories.length === 0) {
+
     return (
       <Card className="p-8 text-center">
         <p className="text-muted-foreground">No categories found. Create your first category to get started.</p>
@@ -50,8 +55,10 @@ export function CategoriesTable({ categories, onEdit, onDelete }: CategoriesTabl
                   variant="ghost"
                   size="sm"
                   onClick={() => onEdit(category)}
+                  disabled={isModalOpen}
                   className="h-8 w-8 p-0 hover:bg-blue-100"
                 >
+
                   <Edit className="h-4 w-4 text-blue-600" />
                   <span className="sr-only">Edit category</span>
                 </Button>
@@ -59,8 +66,10 @@ export function CategoriesTable({ categories, onEdit, onDelete }: CategoriesTabl
                   variant="ghost"
                   size="sm"
                   onClick={() => onDelete(category)}
+                  disabled={isModalOpen}
                   className="h-8 w-8 p-0 text-destructive hover:bg-red-100"
                 >
+
                   <Trash2 className="h-4 w-4 text-red-600" />
                   <span className="sr-only">Delete category</span>
                 </Button>
@@ -118,8 +127,10 @@ export function CategoriesTable({ categories, onEdit, onDelete }: CategoriesTabl
                         variant="ghost"
                         size="sm"
                         onClick={() => onEdit(category)}
+                        disabled={isModalOpen}
                         className="h-8 w-8 p-0"
                       >
+
                         <Edit className="h-4 w-4" />
                         <span className="sr-only">Edit category</span>
                       </Button>
@@ -127,8 +138,10 @@ export function CategoriesTable({ categories, onEdit, onDelete }: CategoriesTabl
                         variant="ghost"
                         size="sm"
                         onClick={() => onDelete(category)}
+                        disabled={isModalOpen}
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                       >
+
                         <Trash2 className="h-4 w-4" />
                         <span className="sr-only">Delete category</span>
                       </Button>

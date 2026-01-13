@@ -20,6 +20,5 @@
 - Fix https://www.personifi.xyz being a 404
 - Income progress bar goes red once you exceed the 'budget'
 - A negative expense on the budget screen shows in red, not green
-- Budget exceeding by 300% only shows a max of 120%
 - Carrying over balances
-- Income & expense summaries
+- Inform the user about the categories page

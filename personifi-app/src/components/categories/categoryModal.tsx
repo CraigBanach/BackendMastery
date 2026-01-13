@@ -81,13 +81,13 @@ export function CategoryModal({
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: category?.name || "",
-      type: category?.type || CategoryType.Expense,
-      icon: category?.icon || "",
-      color: category?.color || CATEGORY_COLOURS[0], // Code variable: color
-      budgetAmount: 0,
-    },
+      defaultValues: {
+        name: category?.name || "",
+        type: category?.type || CategoryType.Expense,
+        icon: category?.icon || "",
+        color: category?.color || CATEGORY_COLOURS[0], // Code variable: color
+        budgetAmount: undefined,
+      },
   });
 
   // Reset and populate form when modal opens or category changes
@@ -99,7 +99,7 @@ export function CategoryModal({
         type: category?.type || CategoryType.Expense,
         icon: category?.icon || "",
         color: category?.color || CATEGORY_COLOURS[0], // Code variable: color
-        budgetAmount: 0,
+        budgetAmount: undefined,
       });
 
       // Load budget if editing an existing category
@@ -154,7 +154,7 @@ export function CategoryModal({
       type: CategoryType.Expense,
       icon: "",
       color: CATEGORY_COLOURS[0], // Code variable: color
-      budgetAmount: 0,
+      budgetAmount: undefined,
     });
     setSubmitError("");
     onClose();
@@ -374,7 +374,11 @@ export function CategoryModal({
                       step="0.01"
                       placeholder="0.00"
                       className="pl-9"
-                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(event) => {
+                        const nextValue = event.target.value;
+                        field.onChange(nextValue === "" ? undefined : nextValue);
+                      }}
                     />
                   </div>
                 </FormControl>

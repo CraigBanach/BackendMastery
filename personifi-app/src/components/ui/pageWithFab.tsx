@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { FloatingActionButton } from "./floatingActionButton";
+import { useCallback, useEffect, useState } from "react";
 import { TransactionModal } from "@/components/transactions/transactionModal";
+import { useModalManager } from "@/lib/providers/modal-provider";
 import { CategoryDto } from "@/types/budget";
+import { FloatingActionButton } from "./floatingActionButton";
+
 
 interface PageWithFabProps {
   children: React.ReactNode;
@@ -22,10 +24,13 @@ export function PageWithFab({
   disabled = false,
 }: PageWithFabProps & { fabShortcut?: string }) {
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const { isModalOpen } = useModalManager();
 
-  const handleFabClick = () => {
+  const handleFabClick = useCallback(() => {
+    if (isModalOpen) return;
     setIsTransactionModalOpen(true);
-  };
+  }, [isModalOpen]);
+
 
   const handleTransactionSaved = () => {
     setIsTransactionModalOpen(false);
@@ -51,7 +56,8 @@ export function PageWithFab({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [handleFabClick]);
+
 
   return (
     <>
