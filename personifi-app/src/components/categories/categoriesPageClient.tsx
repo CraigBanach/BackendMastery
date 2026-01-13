@@ -57,7 +57,10 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
       });
       
       // If budgetAmount provided, create budget for current month
-      if (categoryData.budgetAmount && categoryData.budgetAmount > 0) {
+      if (
+        typeof categoryData.budgetAmount === "number" &&
+        categoryData.budgetAmount >= 0
+      ) {
         const currentDate = new Date();
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth() + 1; // JavaScript months are 0-based
