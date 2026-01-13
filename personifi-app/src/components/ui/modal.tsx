@@ -1,8 +1,10 @@
 "use client";
 
-import { ReactNode, useId } from "react";
-import { Button } from "@/components/ui/button";
+import { ReactNode, useEffect, useId, useState } from "react";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useModalManager } from "@/lib/providers/modal-provider";
+
 
 interface ModalProps {
   isOpen: boolean;
@@ -27,8 +29,32 @@ export function Modal({
 }: ModalProps) {
   const titleId = useId();
   const descriptionId = useId();
+  const { requestOpen, release } = useModalManager();
+  const [hasLock, setHasLock] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) {
+      setHasLock(false);
+      return;
+    }
+
+    const didOpen = requestOpen();
+    if (!didOpen) {
+      onClose();
+      return;
+    }
+
+    setHasLock(true);
+
+    return () => {
+      release();
+      setHasLock(false);
+    };
+  }, [isOpen, onClose, release, requestOpen]);
+
+  if (!isOpen || !hasLock) return null;
+
+
   const maxWidthClasses = {
     sm: 'max-w-sm',
     md: 'max-w-md', 

@@ -1,18 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { BucketDto } from "@/types/bucket";
-import { BucketsTable } from "./bucketsTable";
-import { BucketModal } from "./bucketModal";
-import { DeleteBucketModal } from "./deleteBucketModal";
-import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { 
-  getBuckets, 
-  createBucket, 
-  updateBucket, 
-  deleteBucket 
+import { Button } from "@/components/ui/button";
+import { useModalManager } from "@/lib/providers/modal-provider";
+import { BucketDto } from "@/types/bucket";
+import {
+  createBucket,
+  deleteBucket,
+  getBuckets,
+  updateBucket,
 } from "@/lib/api/bucketApi";
+import { BucketModal } from "./bucketModal";
+import { BucketsTable } from "./bucketsTable";
+import { DeleteBucketModal } from "./deleteBucketModal";
+
 
 interface BucketsPageClientProps {
   initialBuckets: BucketDto[];
@@ -23,6 +25,8 @@ export function BucketsPageClient({ initialBuckets }: BucketsPageClientProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingBucket, setEditingBucket] = useState<BucketDto | null>(null);
   const [deletingBucket, setDeletingBucket] = useState<BucketDto | null>(null);
+  const { isModalOpen } = useModalManager();
+
 
   const refreshBuckets = async () => {
     try {
@@ -98,8 +102,10 @@ export function BucketsPageClient({ initialBuckets }: BucketsPageClientProps) {
       <div className="flex justify-end">
         <Button
           onClick={() => setIsCreateModalOpen(true)}
+          disabled={isModalOpen}
           className="bg-finance-green hover:bg-finance-green-dark"
         >
+
           <Plus className="h-4 w-4 mr-2" />
           Add Bucket
         </Button>

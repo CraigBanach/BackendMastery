@@ -1,21 +1,15 @@
 import React, { useState } from "react";
-import { BudgetSetupModal } from "./budgetSetupModal";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Settings,
-} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BudgetVarianceWithTransactions } from "@/lib/hooks/useBudgetData";
+import { useModalManager } from "@/lib/providers/modal-provider";
 import { CategoryDto, CategoryType } from "@/types/budget";
-import { RadialProgress } from "./radialProgress";
+import { BudgetSetupModal } from "./budgetSetupModal";
 import { BudgetSection } from "./budgetSection";
+import { RadialProgress } from "./radialProgress";
+
+
 
 interface BudgetVarianceDashboardProps {
   data?: BudgetVarianceWithTransactions[];
@@ -48,6 +42,8 @@ export function BudgetVarianceDashboard({
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(
     new Set()
   );
+  const { isModalOpen } = useModalManager();
+
 
   const monthName = new Date(year, month - 1).toLocaleDateString("en-GB", {
     month: "long",
@@ -182,12 +178,13 @@ export function BudgetVarianceDashboard({
               variant="outline"
               size="sm"
               onClick={() => setIsSetupModalOpen(true)}
-              disabled={loading}
+              disabled={loading || isModalOpen}
               className="w-full sm:w-auto"
             >
               <Settings className="h-4 w-4 mr-2" />
               Edit Budgets
             </Button>
+
           </div>
         </CardHeader>
       </Card>

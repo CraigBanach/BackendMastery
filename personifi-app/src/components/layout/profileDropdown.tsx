@@ -1,16 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import { useEffect, useState } from "react";
 import { User } from "lucide-react";
 import { InvitePartnerModal } from "@/components/ui/invitePartnerModal";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { hasAccount } from "@/lib/api/accountApi";
+import { useModalManager } from "@/lib/providers/modal-provider";
+
 
 export function ProfileDropdown() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [userHasAccount, setUserHasAccount] = useState(false);
   const [, setIsCheckingAccount] = useState(true);
   const [selectValue, setSelectValue] = useState("");
+  const { isModalOpen } = useModalManager();
+
 
   useEffect(() => {
     const checkAccount = async () => {
@@ -29,6 +33,11 @@ export function ProfileDropdown() {
   }, []);
 
   const handleValueChange = (value: string) => {
+    if (isModalOpen) {
+      setSelectValue("");
+      return;
+    }
+
     if (value === "logout") {
       window.location.href = "/auth/logout";
     } else if (value === "invite" && userHasAccount) {
@@ -38,9 +47,11 @@ export function ProfileDropdown() {
     setSelectValue("");
   };
 
+
   return (
     <>
-      <Select value={selectValue} onValueChange={handleValueChange}>
+      <Select value={selectValue} onValueChange={handleValueChange} disabled={isModalOpen}>
+
         <SelectTrigger className="w-auto border-0 bg-transparent hover:bg-muted p-2">
           <div className="flex items-center gap-2">
             <User className="h-4 w-4" />
