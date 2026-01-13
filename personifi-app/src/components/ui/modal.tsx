@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useId } from "react";
+
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useModalManager } from "@/lib/providers/modal-provider";
@@ -40,9 +41,14 @@ export function Modal({
     };
   }, [isOpen, onClose, release, requestOpen]);
 
+  const titleId = useId();
+  const descriptionId = useId();
+  const descriptionLabel = description ? descriptionId : undefined;
+
   if (!isOpen || !isModalOpen) return null;
 
   const maxWidthClasses = {
+
     sm: "max-w-sm",
     md: "max-w-md",
     lg: "max-w-lg",
@@ -57,17 +63,23 @@ export function Modal({
         className={`bg-white rounded-lg ${maxWidthClasses[maxWidth]} w-full overflow-hidden flex flex-col`}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={title}
-        aria-describedby={description}
+        aria-labelledby={titleId}
+        aria-describedby={descriptionLabel}
         style={{ maxHeight }}
+
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div>
-            <h2 className="text-lg font-semibold">{title}</h2>
+            <h2 className="text-lg font-semibold" id={titleId}>
+              {title}
+            </h2>
             {description && (
-              <p className="text-sm text-muted-foreground">{description}</p>
+              <p className="text-sm text-muted-foreground" id={descriptionId}>
+                {description}
+              </p>
             )}
+
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />

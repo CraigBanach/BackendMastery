@@ -1,0 +1,8 @@
+{
+  "name": "backend-mastery",
+  "private": true,
+  "scripts": {
+    "int": "node scripts/run-full-stack.js",
+    "int:rebuild": "node scripts/run-full-stack.js --rebuild"
+  }
+}
