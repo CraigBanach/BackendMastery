@@ -14,7 +14,9 @@ import { CategoryIcon } from "@/components/ui/categoryIcon";
 import { BudgetProgressBar } from "./budgetProgressBar";
 import { TransactionTable } from "./transactionTable";
 import { BudgetVarianceWithTransactions } from "@/lib/hooks/useBudgetData";
+import { Pill } from "@/components/ui/pill";
 import { cn } from "@/lib/utils";
+
 
 interface BudgetSectionProps {
   title: string;
@@ -45,13 +47,28 @@ export function BudgetSection({
   const categoryCellClass = isIncome
     ? "bg-blue-50 border-r border-blue-100"
     : "bg-red-50 border-r border-red-100";
+  const totalActual = data.reduce((sum, item) => sum + item.actual, 0);
+  const totalBudgeted = data.reduce((sum, item) => sum + item.budgeted, 0);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>{title}</CardTitle>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Pill>
+              <span className="text-[0.65rem] sm:text-xs font-medium">actual</span>
+              <span>{formatCurrency(totalActual)}</span>
+            </Pill>
+            <Pill variant="muted">
+              <span className="text-[0.65rem] sm:text-xs font-medium">budgeted</span>
+              <span>{formatCurrency(totalBudgeted)}</span>
+            </Pill>
+          </div>
+        </div>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
+
       <CardContent className="px-3 sm:px-6">
         {/* Mobile Card Layout */}
         <div className="block md:hidden space-y-3">

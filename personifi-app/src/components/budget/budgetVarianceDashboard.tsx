@@ -124,6 +124,7 @@ export function BudgetVarianceDashboard({
   );
 
   return (
+
     <div className="space-y-6">
       {/* Month Navigation */}
       <Card>
@@ -265,6 +266,7 @@ export function BudgetVarianceDashboard({
           </CardContent>
         </Card>
       </div>
+
 
       {/* Income Section */}
       <BudgetSection
