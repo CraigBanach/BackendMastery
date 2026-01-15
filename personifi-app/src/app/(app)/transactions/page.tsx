@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { TransactionsPageClient } from "@/components/transactions/transactionsPageClient";
 import { TransactionsPageWithFab } from "@/components/transactions/transactionsPageWithFab";
 import { PageHeader } from "@/components/ui/pageHeader";
@@ -5,6 +6,7 @@ import { InvitePrompt } from "@/components/ui/invitePrompt";
 import { RequireAccount } from "@/components/ui/requireAccount";
 import { getTransactions } from "@/lib/api/transactionApi";
 import { getCategories } from "@/lib/api/categoryApi";
+
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +56,33 @@ async function fetchTransactionsData(year: number, month: number) {
   }
 }
 
+async function TransactionsContent({ year, month }: { year: number; month: number }) {
+  const { transactions, categories, pagination } = await fetchTransactionsData(
+    year,
+    month
+  );
+
+  return (
+    <TransactionsPageWithFab categories={categories}>
+      <TransactionsPageClient
+        initialTransactions={transactions}
+        categories={categories}
+        currentYear={year}
+        currentMonth={month}
+        pagination={pagination}
+      />
+    </TransactionsPageWithFab>
+  );
+}
+
+const TransactionsLoading = () => (
+  <div className="space-y-4 animate-pulse">
+    <div className="h-24 rounded-lg bg-muted" />
+    <div className="h-64 rounded-lg bg-muted" />
+    <div className="h-64 rounded-lg bg-muted" />
+  </div>
+);
+
 export default async function TransactionsPage({
   searchParams,
 }: TransactionsPageProps) {
@@ -64,29 +93,19 @@ export default async function TransactionsPage({
     ? parseInt(params.month)
     : currentDate.getMonth() + 1;
 
-  const { transactions, categories, pagination } = await fetchTransactionsData(
-    year,
-    month
-  );
-
   return (
     <RequireAccount>
-      <TransactionsPageWithFab categories={categories}>
-        <div className="space-y-6">
-          <PageHeader
-            title="Transactions"
-            subTitle="Track and manage your monthly transactions"
-          />
-          <InvitePrompt />
-          <TransactionsPageClient
-            initialTransactions={transactions}
-            categories={categories}
-            currentYear={year}
-            currentMonth={month}
-            pagination={pagination}
-          />
-        </div>
-      </TransactionsPageWithFab>
+      <div className="space-y-6">
+        <PageHeader
+          title="Transactions"
+          subTitle="Track and manage your monthly transactions"
+        />
+        <InvitePrompt />
+        <Suspense fallback={<TransactionsLoading />}>
+          <TransactionsContent year={year} month={month} />
+        </Suspense>
+      </div>
     </RequireAccount>
   );
 }
+
