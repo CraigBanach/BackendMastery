@@ -1,9 +1,7 @@
 import { test, expect } from "@playwright/test";
-import { resetDatabase } from "./db-setup";
 
-test.beforeAll(async () => {
-    await resetDatabase();
-});
+test.describe.configure({ mode: "serial" });
+
 
 test("user can log in with valid credentials", async ({ page }) => {
   await page.goto("/"); // Navigate to the base URL (http://localhost:3000)

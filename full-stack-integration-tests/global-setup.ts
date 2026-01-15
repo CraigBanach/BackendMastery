@@ -1,11 +1,13 @@
 import fs from "fs";
 import path from "path";
 import { chromium, FullConfig } from "@playwright/test";
+import { resetDatabase } from "./tests/db-setup";
 
 const authFile = path.resolve(__dirname, ".auth", "state.json");
 
 async function globalSetup(config: FullConfig) {
   fs.mkdirSync(path.dirname(authFile), { recursive: true });
+  await resetDatabase();
 
   const browser = await chromium.launch();
   const context = await browser.newContext({ ignoreHTTPSErrors: true });
@@ -27,3 +29,4 @@ async function globalSetup(config: FullConfig) {
 }
 
 export default globalSetup;
+
