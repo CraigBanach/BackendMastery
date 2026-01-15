@@ -137,10 +137,15 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
     <div className="space-y-8">
       {/* Add Category Button */}
       <div className="flex justify-end">
-        <Button onClick={() => setIsCreateModalOpen(true)} disabled={isModalOpen}>
+        <Button
+          onClick={() => setIsCreateModalOpen(true)}
+          disabled={isModalOpen}
+          className="bg-finance-green hover:bg-finance-green-dark text-white"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Add Category
         </Button>
+
       </div>
 
 
