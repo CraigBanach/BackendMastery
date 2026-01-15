@@ -1,8 +1,8 @@
 import { expect, test, Page } from "@playwright/test";
 import path from "path";
-import { resetDatabase } from "./db-setup";
 
 const authFile = path.resolve(__dirname, "..", ".auth", "state.json");
+
 
 async function ensureAccount(page: Page) {
   await page.waitForURL(/\/budget|\/onboarding/);
@@ -18,9 +18,6 @@ async function ensureAccount(page: Page) {
 
 test.use({ storageState: authFile });
 
-test.beforeAll(async () => {
-  await resetDatabase();
-});
 
 test("budget modal blocks negative amounts and allows zero", async ({ page }) => {
   await page.goto("/budget");
@@ -31,19 +28,22 @@ test("budget modal blocks negative amounts and allows zero", async ({ page }) =>
 
   await page.getByRole("button", { name: "Edit Budgets" }).click();
 
-  const foodShoppingInput = page.getByLabel("Food Shopping");
-  const saveButton = page.getByRole("button", { name: "Save Budget" });
+  const modal = page.getByRole("dialog", { name: /Edit Budget/ });
+  const foodShoppingInput = modal.getByLabel("Food Shopping");
+  const saveButton = modal.getByRole("button", { name: "Save Budget" });
 
   await foodShoppingInput.fill("-1");
-  await expect(page.getByText("Budget amounts must be zero or greater.")).toBeVisible();
+  await expect(modal.getByText("Budget amounts must be zero or greater.")).toBeVisible();
   await expect(saveButton).toBeDisabled();
 
   await foodShoppingInput.fill("0");
   await expect(saveButton).toBeEnabled();
   await saveButton.click();
 
+
   await expect(saveButton).toBeHidden();
 
   const foodRow = page.getByRole("row", { name: /Food Shopping/ });
-  await expect(foodRow.getByText("£0.00")).toBeVisible();
+  await expect(foodRow.locator("text=£0.00").first()).toBeVisible();
+
 });
