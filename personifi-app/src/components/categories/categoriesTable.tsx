@@ -131,7 +131,8 @@ export function CategoriesTable({ categories, onEdit, onDelete }: CategoriesTabl
                         className="h-8 w-8 p-0"
                       >
 
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-4 w-4 text-blue-600" />
+
                         <span className="sr-only">Edit category</span>
                       </Button>
                       <Button
