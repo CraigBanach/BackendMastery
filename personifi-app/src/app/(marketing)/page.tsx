@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { TrackedLinkButton } from "@/components/ui/tracked-link-button";
+
 import {
+
   CheckCircle,
   Users,
   Target,
@@ -48,6 +51,7 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
+
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-finance-green-light/20 to-white -mt-16 pt-20 pb-20 px-4">
@@ -70,16 +74,16 @@ export default function Home() {
               transparency.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
-              <Button
-                asChild
+              <TrackedLinkButton
+                href="/auth/login?screen_hint=signup"
+                eventName="signup_started"
                 size="lg"
                 className="bg-finance-green hover:bg-finance-green-dark text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 w-full sm:w-auto"
               >
-                <a href="/auth/login?screen_hint=signup">
-                  Get Started Free
-                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-                </a>
-              </Button>
+                Get Started Free
+                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+              </TrackedLinkButton>
+
               <Button
                 asChild
                 variant="outline"
@@ -587,18 +591,18 @@ export default function Home() {
                 </li>
               </ul>
 
-              <Button
-                asChild
+              <TrackedLinkButton
+                href="/auth/login?screen_hint=signup"
+                eventName="signup_started"
                 size="lg"
                 className="w-full bg-finance-green hover:bg-finance-green-dark text-base sm:text-lg py-4 sm:py-6"
               >
-                <a href="/auth/login?screen_hint=signup">
-                  Get Started Free
-                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-                </a>
-              </Button>
+                Get Started Free
+                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+              </TrackedLinkButton>
 
               <p className="text-sm text-muted-foreground mt-4">
+
                 No credit card required • 30-day free trial
               </p>
             </CardContent>
@@ -616,20 +620,18 @@ export default function Home() {
             Join the couples who&apos;ve stopped arguing about money and started
             achieving their goals.
           </p>
-          <Button
-            asChild
+          <TrackedLinkButton
+            href="/auth/login?screen_hint=signup"
+            eventName="signup_started"
             size="lg"
             className="bg-finance-green hover:bg-finance-green-dark text-base sm:text-lg px-8 sm:px-12 py-4 sm:py-6"
           >
-            <a href="/auth/login?screen_hint=signup">
-              Get Started Free
-              <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-            </a>
-          </Button>
+            Get Started Free
+            <ChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+          </TrackedLinkButton>
         </div>
       </section>
-
-
     </div>
   );
 }
+

@@ -12,9 +12,11 @@ import {
   updateCategory,
 } from "@/lib/api/categoryApi";
 import { setBudgetsForMonth } from "@/lib/api/budgetApi";
+import { trackEvent } from "@/lib/analytics";
 import { CategoriesTable } from "./categoriesTable";
 import { CategoryModal } from "./categoryModal";
 import { DeleteCategoryModal } from "./deleteCategoryModal";
+
 
 
 interface CategoriesPageClientProps {
@@ -55,7 +57,10 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
         icon: categoryData.icon,
         color: categoryData.color,
       });
-      
+
+      trackEvent("aha_moment");
+      trackEvent("category_created");
+
       // If budgetAmount provided, create budget for current month
       if (
         typeof categoryData.budgetAmount === "number" &&
@@ -64,15 +69,15 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
         const currentDate = new Date();
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth() + 1; // JavaScript months are 0-based
-        
+
         await setBudgetsForMonth(year, month, [
           {
             categoryId: newCategory.id,
             amount: categoryData.budgetAmount,
-          }
+          },
         ]);
       }
-      
+
       await refreshCategories();
       setIsCreateModalOpen(false);
     } catch (error) {
@@ -80,6 +85,7 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
       throw error;
     }
   };
+
 
   const handleUpdateCategory = async (categoryData: {
     name: string;
@@ -98,20 +104,23 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
         color: categoryData.color,
       });
 
+      trackEvent("aha_moment");
+      trackEvent("category_updated");
+
       // If budgetAmount provided, update budget for current month
-      if (typeof categoryData.budgetAmount === 'number' && categoryData.budgetAmount >= 0) {
+      if (typeof categoryData.budgetAmount === "number" && categoryData.budgetAmount >= 0) {
         const currentDate = new Date();
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth() + 1; // JavaScript months are 0-based
-        
+
         await setBudgetsForMonth(year, month, [
           {
             categoryId: editingCategory.id,
             amount: categoryData.budgetAmount,
-          }
+          },
         ]);
       }
-      
+
       await refreshCategories();
       setEditingCategory(null);
     } catch (error) {
@@ -120,11 +129,14 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
     }
   };
 
+
   const handleDeleteCategory = async () => {
     if (!deletingCategory) return;
 
     try {
       await deleteCategory(deletingCategory.id);
+      trackEvent("aha_moment");
+      trackEvent("category_deleted");
       await refreshCategories();
       setDeletingCategory(null);
     } catch (error) {
@@ -132,6 +144,7 @@ export function CategoriesPageClient({ initialCategories }: CategoriesPageClient
       throw error;
     }
   };
+
 
   return (
     <div className="space-y-8">

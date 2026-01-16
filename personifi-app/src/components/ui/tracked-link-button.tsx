@@ -7,6 +7,7 @@ import { VariantProps } from "class-variance-authority";
 import { ReactNode } from "react";
 import Link from "next/link";
 
+
 interface TrackedLinkButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   href: string;
   eventName: string;
@@ -26,6 +27,8 @@ export function TrackedLinkButton({
   ...props 
 }: TrackedLinkButtonProps) {
   const isExternal = href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("/auth");
+
+
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     trackEvent(eventName);
