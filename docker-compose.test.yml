@@ -45,9 +45,8 @@ services:
 
   backend:
     container_name: integration-test-backend
-    build:
-      context: ./PersonifiBackend
-      dockerfile: Dockerfile
+    image: ghcr.io/craigbanach/personifibackend:latest
+    pull_policy: always
     ports:
       - "5000:7106"
     environment:
@@ -67,9 +66,8 @@ services:
 
   frontend:
     container_name: integration-test-frontend
-    build:
-      context: ./personifi-app
-      dockerfile: Dockerfile
+    image: ghcr.io/craigbanach/personifi-app:latest
+    pull_policy: always
     ports:
       - "3000:3000"
     environment:

@@ -5,6 +5,7 @@ const path = require("path");
 const repoRoot = path.resolve(__dirname, "..");
 const composeFile = path.join(repoRoot, "docker-compose.test.yml");
 const testsDir = path.join(repoRoot, "full-stack-integration-tests");
+const overrideComposeFile = path.join(repoRoot, "docker-compose.test.override.yml");
 
 const args = process.argv.slice(2);
 const shouldRebuild = args.includes("--rebuild") || args.includes("--restart") || args.includes("--fresh");
@@ -76,13 +77,19 @@ const ensureDocker = async () => {
 };
 
 const ensureStack = () => {
+  const composeArgs = ["-f", composeFile];
+
+  if (fs.existsSync(overrideComposeFile)) {
+    composeArgs.push("-f", overrideComposeFile);
+  }
+
   if (shouldRebuild) {
-    runCommand("docker", ["compose", "-f", composeFile, "down"]);
-    runCommand("docker", ["compose", "-f", composeFile, "up", "-d", "--build"]);
+    runCommand("docker", ["compose", ...composeArgs, "down"]);
+    runCommand("docker", ["compose", ...composeArgs, "up", "-d", "--build"]);
     return;
   }
 
-  runCommand("docker", ["compose", "-f", composeFile, "up", "-d"]);
+  runCommand("docker", ["compose", ...composeArgs, "up", "-d"]);
 };
 
 const runTests = () => {
