@@ -57,7 +57,7 @@ jobs:
             --network host \
             -v "${{ github.workspace }}:/work" \
             -w /work/full-stack-integration-tests \
-            mcr.microsoft.com/playwright:v1.53.0-jammy \
+            mcr.microsoft.com/playwright:v1.57.0-jammy \
             npx playwright test
 
       - name: Upload Test Report
