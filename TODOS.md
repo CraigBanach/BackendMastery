@@ -27,6 +27,7 @@
 - Add subscribed_until date to the subscriptions entity & update for users
 - Add FE component tests
 - https://eu.posthog.com/project/87950/ai?chat=56a27847-d9f6-44c5-b62a-8b001af3172c
+- Update subscription with the subscription end date
 
 ---
 
