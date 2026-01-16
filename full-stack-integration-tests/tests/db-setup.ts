@@ -83,7 +83,8 @@ const defaultCategories: DefaultCategory[] = [
 
 export async function resetDatabase() {
   const client = new Client({
-    connectionString: "postgres://postgres:password@localhost:5435/personifi_db",
+    connectionString:
+      "postgres://postgres:password@localhost:5435/personifi_db",
   });
 
   try {
@@ -100,7 +101,7 @@ export async function resetDatabase() {
 
     const userResult = await client.query(
       'INSERT INTO "Users" ("Auth0UserId", "Email", "CreatedAt", "Role", "InvitePromptDismissed") VALUES ($1, $2, $3, $4, $5) RETURNING "Id"',
-      ["test-user-sub", "test@example.com", now, "owner", false]
+      ["test-user-sub", "test@example.com", now, "owner", true]
     );
     const userId = userResult.rows[0].Id as number;
 
@@ -128,13 +129,7 @@ export async function resetDatabase() {
     for (const category of defaultCategories) {
       const categoryResult = await client.query(
         'INSERT INTO "Categories" ("Name", "Type", "Icon", "Color", "AccountId") VALUES ($1, $2, $3, $4, $5) RETURNING "Id"',
-        [
-          category.name,
-          category.type,
-          category.icon,
-          category.color,
-          accountId,
-        ]
+        [category.name, category.type, category.icon, category.color, accountId]
       );
 
       const categoryId = categoryResult.rows[0].Id as number;
@@ -167,4 +162,3 @@ export async function resetDatabase() {
     await client.end();
   }
 }
-

@@ -183,9 +183,9 @@ export function TransactionsList({
                   onTypeFilter(value)
                 }
               >
-                <SelectTrigger className="flex-1">
-                  <SelectValue />
-                </SelectTrigger>
+              <SelectTrigger className="flex-1" aria-label="Filter by type">
+                <SelectValue />
+              </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value={CategoryType.Expense}>Expenses</SelectItem>
@@ -199,9 +199,9 @@ export function TransactionsList({
                 onCategoryFilter(value === "all" ? null : parseInt(value))
               }
             >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Filter by category" />
-              </SelectTrigger>
+            <SelectTrigger className="w-full" aria-label="Filter by category">
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 {filteredCategories.map((category) => (
@@ -225,9 +225,9 @@ export function TransactionsList({
                 onTypeFilter(value)
               }
             >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
+            <SelectTrigger className="w-[140px]" aria-label="Filter by type">
+              <SelectValue />
+            </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value={CategoryType.Expense}>Expenses</SelectItem>
@@ -240,9 +240,9 @@ export function TransactionsList({
                 onCategoryFilter(value === "all" ? null : parseInt(value))
               }
             >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter by category" />
-              </SelectTrigger>
+            <SelectTrigger className="w-[200px]" aria-label="Filter by category">
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 {filteredCategories.map((category) => (
@@ -304,77 +304,102 @@ export function TransactionsList({
                         index === dateTransactions.length - 1;
 
                       return (
-                        <div key={transaction.id}>
-                          <div
-                            className={`relative p-4 sm:p-3 xl:p-2 rounded-lg border-l-4 hover:bg-muted/50 transition-colors ${
-                              isEditing
-                                ? "bg-muted/50 border-primary"
-                                : "border-muted hover:border-muted-foreground"
-                            }`}
-                            style={{
-                              borderLeftColor: isEditing
-                                ? undefined
-                                : transaction.category.color,
-                            }}
-                          >
+                           <div
+                           key={transaction.id}
+                           data-testid="transaction-row"
+                           data-transaction-id={transaction.id}
+                         >
+                             <div
+                               className={`relative p-4 sm:p-3 xl:p-2 rounded-lg border-l-4 hover:bg-muted/50 transition-colors ${
+                                 isEditing
+                                   ? "bg-muted/50 border-primary"
+                                   : "border-muted hover:border-muted-foreground"
+                               }`}
+                               style={{
+                                 borderLeftColor: isEditing
+                                   ? undefined
+                                   : transaction.category.color,
+                               }}
+                             >
+
                             {!isEditing ? (
                               // Display Mode
                               <>
                                 <div className="flex items-center">
                                   {/* Icon */}
-                                  <div className="flex-shrink-0 mr-3 sm:mr-4">
-                                    <span className="text-xl sm:text-2xl">
-                                      {transaction.category.icon}
-                                    </span>
-                                  </div>
+                                     <div className="flex-shrink-0 mr-3 sm:mr-4">
+                                       <span className="text-xl sm:text-2xl" data-testid="transaction-icon">
+                                         {transaction.category.icon}
+                                       </span>
+                                     </div>
+
 
                                   {/* Main Content - optimized for wide screens */}
-                                  <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-1 sm:gap-2 xl:gap-6 items-start xl:items-center min-w-0">
-                                    {/* Primary Info: Description */}
-                                    <div className="xl:col-span-1">
-                                      <div className="font-bold text-base sm:text-lg xl:text-xl text-foreground truncate">
-                                        {transaction.description}
-                                      </div>
-                                      <div className="text-xs sm:text-sm font-medium text-muted-foreground xl:hidden mt-0.5">
-                                        {transaction.category.name}
-                                      </div>
-                                    </div>
+                                   <div className="flex-1 grid grid-cols-1 xl:grid-cols-3 gap-1 sm:gap-2 xl:gap-6 items-start xl:items-center min-w-0">
+                                     {/* Primary Info: Description */}
+                                     <div className="xl:col-span-1">
+                                       <div
+                                         className="font-bold text-base sm:text-lg xl:text-xl text-foreground truncate"
+                                         data-testid="transaction-description"
+                                       >
+                                         {transaction.description}
+                                       </div>
+                                       <div
+                                         className="text-xs sm:text-sm font-medium text-muted-foreground xl:hidden mt-0.5"
+                                         data-testid="transaction-category"
+                                       >
+                                         {transaction.category.name}
+                                       </div>
+                                     </div>
 
-                                    {/* Amount - prominent */}
-                                    <div className="xl:col-span-1 xl:text-center mt-1 xl:mt-0">
-                                      <div
-                                        className={`font-bold text-base sm:text-lg xl:text-xl ${colorClass}`}
-                                      >
-                                        {displayValue}
-                                      </div>
-                                    </div>
+                                     {/* Amount - prominent */}
+                                     <div className="xl:col-span-1 xl:text-center mt-1 xl:mt-0">
+                                       <div
+                                         className={`font-bold text-base sm:text-lg xl:text-xl ${colorClass}`}
+                                         data-testid="transaction-amount"
+                                       >
+                                         {displayValue}
+                                       </div>
+                                     </div>
 
-                                    {/* Category Name - only on larger screens */}
-                                    <div className="hidden xl:block xl:col-span-1">
-                                      <div className="text-sm font-medium text-muted-foreground">
-                                        {transaction.category.name}
-                                      </div>
-                                    </div>
-                                  </div>
+                                     {/* Category Name - only on larger screens */}
+                                     <div className="hidden xl:block xl:col-span-1">
+                                       <div
+                                         className="text-sm font-medium text-muted-foreground"
+                                         data-testid="transaction-category"
+                                       >
+                                         {transaction.category.name}
+                                       </div>
+                                     </div>
+                                   </div>
+
 
                                   {/* Actions */}
                                   <div className="flex items-center space-x-1 ml-2 sm:ml-4 flex-shrink-0">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleEdit(transaction)}
-                                      className="h-8 w-8 sm:h-7 sm:w-7 p-0 hover:bg-blue-100"
-                                    >
+                                     <Button
+                                       variant="ghost"
+                                       size="sm"
+                                       onClick={() => handleEdit(transaction)}
+                                       className="h-8 w-8 sm:h-7 sm:w-7 p-0 hover:bg-blue-100"
+                                       data-testid="transaction-edit"
+                                       aria-label="Edit transaction"
+                                     >
+
+
                                       <Edit className="h-3.5 w-3.5 sm:h-3 sm:w-3 text-blue-600" />
                                     </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() =>
-                                        handleDelete(transaction.id)
-                                      }
-                                      className="h-8 w-8 sm:h-7 sm:w-7 p-0 hover:bg-red-100"
-                                    >
+                                     <Button
+                                       variant="ghost"
+                                       size="sm"
+                                       onClick={() =>
+                                         handleDelete(transaction.id)
+                                       }
+                                       className="h-8 w-8 sm:h-7 sm:w-7 p-0 hover:bg-red-100"
+                                       data-testid="transaction-delete"
+                                       aria-label="Delete transaction"
+                                     >
+
+
                                       <Trash2 className="h-3.5 w-3.5 sm:h-3 sm:w-3 text-red-600" />
                                     </Button>
                                   </div>
@@ -387,9 +412,10 @@ export function TransactionsList({
                                   </div>
                                 )}
                               </>
-                            ) : (
-                              // Edit Mode
-                              <div className="space-y-4">
+                             ) : (
+                               // Edit Mode
+                               <div className="space-y-4" data-testid="transaction-edit-form">
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div>
                                     <label className="text-sm font-medium">
@@ -404,7 +430,10 @@ export function TransactionsList({
                                         })
                                       }
                                       className="mt-1"
+                                      aria-label="Edit description"
+                                      data-testid="transaction-edit-description"
                                     />
+
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium">
@@ -421,7 +450,10 @@ export function TransactionsList({
                                         })
                                       }
                                       className="mt-1"
+                                      aria-label="Edit amount"
+                                      data-testid="transaction-edit-amount"
                                     />
+
                                   </div>
                                 </div>
 
@@ -429,15 +461,18 @@ export function TransactionsList({
                                   <label className="text-sm font-medium">
                                     Category
                                   </label>
-                                  <Select
-                                    value={editForm.categoryId}
-                                    onValueChange={(value) =>
-                                      setEditForm({
-                                        ...editForm,
-                                        categoryId: value,
-                                      })
-                                    }
-                                  >
+                                   <Select
+                                     value={editForm.categoryId}
+                                     onValueChange={(value) =>
+                                       setEditForm({
+                                         ...editForm,
+                                         categoryId: value,
+                                       })
+                                     }
+                                     aria-label="Edit category"
+                                     data-testid="transaction-edit-category"
+                                   >
+
                                     <SelectTrigger className="mt-1">
                                       <SelectValue />
                                     </SelectTrigger>
@@ -463,17 +498,20 @@ export function TransactionsList({
                                   <label className="text-sm font-medium">
                                     Notes
                                   </label>
-                                  <Textarea
-                                    value={editForm.notes}
-                                    onChange={(e) =>
-                                      setEditForm({
-                                        ...editForm,
-                                        notes: e.target.value,
-                                      })
-                                    }
-                                    className="mt-1"
-                                    rows={2}
-                                  />
+                                   <Textarea
+                                     value={editForm.notes}
+                                     onChange={(e) =>
+                                       setEditForm({
+                                         ...editForm,
+                                         notes: e.target.value,
+                                       })
+                                     }
+                                     className="mt-1"
+                                     rows={2}
+                                     aria-label="Edit notes"
+                                     data-testid="transaction-edit-notes"
+                                   />
+
                                 </div>
 
                                 <div className="flex justify-end space-x-2">
