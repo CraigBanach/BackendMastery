@@ -11,6 +11,11 @@ To spin up the complete application stack (Frontend, Backend, Mock OIDC Provider
 docker compose -f docker-compose.test.yml up -d --build
 ```
 
+> Note: `docker-compose.test.override.yml` is checked in for local builds.
+> Docker Compose auto-applies it to build the frontend/backend images locally.
+> CI uses the GHCR images from `docker-compose.test.yml`.
+
+
 ### Services & Ports
 *   **Frontend:** [http://localhost:3000](http://localhost:3000)
 *   **Backend API:** [http://localhost:5000](http://localhost:5000) (Swagger: [http://localhost:5000/swagger](http://localhost:5000/swagger))

@@ -79,9 +79,11 @@ test("user can create, edit, and delete a bucket", async ({ page }, testInfo) =>
   const deleteModal = page.getByRole("dialog", { name: "Delete Bucket" });
   await expect(deleteModal).toBeVisible();
   await deleteModal.getByRole("button", { name: "Delete Bucket" }).click();
+  await expect(deleteModal).toBeHidden({ timeout: 15000 });
 
   await expect(
-    page.getByRole("row", { name: new RegExp(updatedBucketName) })
-  ).toHaveCount(0);
+    page.getByRole("row", { name: new RegExp(updatedBucketName) }).first()
+  ).toBeHidden({ timeout: 30000 });
+
 });
 

@@ -1,14 +1,11 @@
 import { expect, test, Page } from "@playwright/test";
 import path from "path";
-import { resetDatabase } from "./db-setup";
+
 
 const authFile = path.resolve(__dirname, "..", ".auth", "state.json");
 
 test.use({ storageState: authFile });
 
-test.beforeAll(async () => {
-  await resetDatabase();
-});
 
 async function openTransactionsPage(page: Page) {
   await page.goto("/transactions");
@@ -49,23 +46,29 @@ async function replaceInputValue(input: ReturnType<Page["getByLabel"]>, value: s
   await input.type(value);
 }
 
-test("user can create, edit, filter, and delete transactions", async ({ page }) => {
+test("user can create, edit, filter, and delete transactions", async ({ page }, testInfo) => {
   await openTransactionsPage(page);
+
+  const groceriesDescription = `Weekly groceries ${testInfo.project.name}`;
+  const updatedGroceriesDescription = `${groceriesDescription} updated`;
+  const rentDescription = `Monthly rent ${testInfo.project.name}`;
 
   await page.getByRole("button", { name: "Add Transaction" }).click();
   await fillTransactionModal(page, {
     amount: "45.25",
-    description: "Weekly groceries",
+    description: groceriesDescription,
     categorySearch: "Food",
     categoryName: "Food Shopping",
     notes: "Weekly shop for the house",
   });
+
   await page.getByRole("dialog", { name: "Add Transaction" }).getByRole("button", { name: "Add Transaction" }).click();
   await page.getByRole("dialog", { name: "Add Transaction" }).waitFor({ state: "hidden" });
 
-  const transactionSummary = page.getByText("Weekly groceries");
+  const transactionSummary = page.getByText(groceriesDescription);
   await expect(transactionSummary).toBeVisible();
   await expect(page.getByTestId("transaction-amount")).toContainText("£45.25");
+
   await expect(page.getByText("Weekly shop for the house")).toBeVisible();
   await expect(page.getByTestId("transaction-category").first()).toContainText(
     "Food Shopping"
@@ -74,23 +77,26 @@ test("user can create, edit, filter, and delete transactions", async ({ page }) 
   await page.getByRole("button", { name: "Add Transaction" }).click();
   await fillTransactionModal(page, {
     amount: "1200",
-    description: "Monthly rent",
+    description: rentDescription,
     categorySearch: "Rent",
     categoryName: "Rent/Mortgage",
   });
+
   await page.getByRole("dialog", { name: "Add Transaction" }).getByRole("button", { name: "Add Transaction" }).click();
   await page.getByRole("dialog", { name: "Add Transaction" }).waitFor({ state: "hidden" });
 
   const rentAmount = page
-    .getByText("Monthly rent")
+    .getByText(rentDescription)
     .locator("../..")
     .getByTestId("transaction-amount");
-  await expect(page.getByText("Monthly rent")).toBeVisible();
+  await expect(page.getByText(rentDescription)).toBeVisible();
   await expect(rentAmount).toContainText("£1,200.00");
+
 
   const groceriesRow = page
     .getByTestId("transaction-row")
-    .filter({ hasText: "Weekly groceries" });
+    .filter({ hasText: groceriesDescription });
+
 
   await groceriesRow.getByTestId("transaction-edit").click();
 
@@ -99,7 +105,8 @@ test("user can create, edit, filter, and delete transactions", async ({ page }) 
 
   await editForm
     .getByTestId("transaction-edit-description")
-    .fill("Weekly groceries updated");
+    .fill(updatedGroceriesDescription);
+
   await editForm
     .getByTestId("transaction-edit-amount")
     .fill("60.00");
@@ -115,7 +122,8 @@ test("user can create, edit, filter, and delete transactions", async ({ page }) 
 
   const updatedRow = page
     .locator("[data-testid='transaction-row']:visible")
-    .filter({ hasText: "Weekly groceries updated" });
+    .filter({ hasText: updatedGroceriesDescription });
+
   await expect(updatedRow).toBeVisible();
   await expect(updatedRow.getByTestId("transaction-amount")).toContainText(
     "£60.00"
@@ -127,29 +135,35 @@ test("user can create, edit, filter, and delete transactions", async ({ page }) 
 
   await page.getByRole("combobox", { name: "Filter by category" }).click();
   await page.getByRole("option", { name: /Eating Out/ }).click();
-  await expect(page.getByText("Monthly rent")).not.toBeVisible();
-  await expect(page.getByText("Weekly groceries updated")).toBeVisible();
+  await expect(page.getByText(rentDescription)).not.toBeVisible();
+  await expect(page.getByText(updatedGroceriesDescription)).toBeVisible();
+
 
   await page.getByRole("button", { name: "Clear Filter" }).click();
-  await expect(page.getByText("Monthly rent")).toBeVisible();
+  await expect(page.getByText(rentDescription)).toBeVisible();
+
 
   const updatedRowToDelete = page
     .getByTestId("transaction-row")
-    .filter({ hasText: "Weekly groceries updated" })
+    .filter({ hasText: updatedGroceriesDescription })
     .first();
+
 
   page.once("dialog", (dialog) => dialog.accept());
   await updatedRowToDelete.getByTestId("transaction-delete").click();
-  await expect(page.getByText("Weekly groceries updated")).not.toBeVisible();
+  await expect(page.getByText(updatedGroceriesDescription)).not.toBeVisible();
+
 
   const rentRowToDelete = page
     .getByTestId("transaction-row")
-    .filter({ hasText: "Monthly rent" })
+    .filter({ hasText: rentDescription })
     .first();
+
 
   page.once("dialog", (dialog) => dialog.accept());
   await rentRowToDelete.getByTestId("transaction-delete").click();
-  await expect(page.getByText("Monthly rent")).not.toBeVisible();
+  await expect(page.getByText(rentDescription)).not.toBeVisible();
+
   await expect(
     page.getByRole("main").getByText("No transactions found for this month.").first()
   ).toBeVisible();
