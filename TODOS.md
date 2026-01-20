@@ -28,6 +28,9 @@
 - Add FE component tests
 - https://eu.posthog.com/project/87950/ai?chat=56a27847-d9f6-44c5-b62a-8b001af3172c
 - Update subscription with the subscription end date
+- When I tab onto the category selection, I should be able to start typing to filter
+- Allow the user to specify the ordering of categories
+- Allow the date picker to select a future date on mobile
 
 ---
 
