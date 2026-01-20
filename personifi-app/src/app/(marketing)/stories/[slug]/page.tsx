@@ -87,10 +87,10 @@ export default async function BlogPostPage({ params }: Props) {
         <div className="mt-12 pt-8 border-t border-gray-200">
           <div className="bg-white rounded-2xl p-8 text-center shadow-md">
             <h3 className="text-2xl font-bold mb-4">
-              Ready to master your own budget?
+              Ready to try Personifi?
             </h3>
             <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
-              Join Personifi today to track expenses, manage budgets, and achieve financial harmony with your partner.
+              Create a shared view of your money and start planning together.
             </p>
             <TrackedLinkButton
               href="/auth/login?screen_hint=signup"
@@ -98,7 +98,7 @@ export default async function BlogPostPage({ params }: Props) {
               size="lg"
               className="bg-finance-green hover:bg-finance-green-dark"
             >
-              Get Started for Free
+              Try it with your partner
             </TrackedLinkButton>
 
 

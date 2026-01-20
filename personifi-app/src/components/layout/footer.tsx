@@ -11,7 +11,7 @@ const Footer = () => {
               personifi
             </h3>
             <p className="text-muted-foreground mb-4">
-              Personal finance for your family
+              Personal finance for couples
             </p>
             <p className="text-sm text-muted-foreground">
               ✅ 30-day money-back guarantee
