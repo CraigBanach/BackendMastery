@@ -1,36 +1,51 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Plus } from "lucide-react";
 import { createAccountAction, joinAccountAction } from "@/lib/actions/accountActions";
+import { trackEvent, trackEventOnce } from "@/lib/analytics";
+import { captureSignupCompleted } from "@/lib/analytics-server";
 
 export function AccountSetupPrompt() {
   const [mode, setMode] = useState<"choose" | "create" | "join">("choose");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const key = "posthog_once_signup_completed";
+      if (!window.localStorage.getItem(key)) {
+        captureSignupCompleted();
+        window.localStorage.setItem(key, "true");
+      }
+    }
+    trackEventOnce("onboarding_started");
+  }, []);
+
   const handleCreateAccountSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (isPending) return; // Prevent double submission
-    
+
+    trackEvent("onboarding_form_submitted");
+
     const formData = new FormData(e.currentTarget);
     const accountName = formData.get("accountName") as string;
-    
+
     if (!accountName.trim()) {
       setError("Account name is required");
       return;
     }
 
     setError(null);
-    
+
     startTransition(async () => {
       const result = await createAccountAction(accountName.trim());
-      
+
       if (result?.error) {
         setError(result.error);
       }
@@ -40,22 +55,24 @@ export function AccountSetupPrompt() {
 
   const handleJoinAccountSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (isPending) return; // Prevent double submission
-    
+
+    trackEvent("onboarding_form_submitted");
+
     const formData = new FormData(e.currentTarget);
     const invitationToken = formData.get("invitationToken") as string;
-    
+
     if (!invitationToken.trim()) {
       setError("Invitation link or token is required");
       return;
     }
 
     setError(null);
-    
+
     startTransition(async () => {
       const result = await joinAccountAction(invitationToken.trim());
-      
+
       if (result?.error) {
         setError(result.error);
       }
@@ -76,7 +93,10 @@ export function AccountSetupPrompt() {
           <CardContent className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6 px-4">
               <Button
-                onClick={() => setMode("create")}
+                onClick={() => {
+                  trackEvent("onboarding_choice_create");
+                  setMode("create");
+                }}
                 className="h-32 flex flex-col items-center justify-center space-y-3 p-6"
                 variant="outline"
               >
@@ -84,9 +104,12 @@ export function AccountSetupPrompt() {
                 <span className="text-lg font-medium">Create New Account</span>
                 <span className="text-sm text-muted-foreground text-center">Start managing your finances</span>
               </Button>
-              
+
               <Button
-                onClick={() => setMode("join")}
+                onClick={() => {
+                  trackEvent("onboarding_choice_join");
+                  setMode("join");
+                }}
                 className="h-32 flex flex-col items-center justify-center space-y-3 p-6"
                 variant="outline"
               >
@@ -123,7 +146,6 @@ export function AccountSetupPrompt() {
                   disabled={isPending}
                 />
               </div>
-
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                   <p className="text-red-700 text-sm">{error}</p>
@@ -184,7 +206,6 @@ export function AccountSetupPrompt() {
                   disabled={isPending}
                 />
               </div>
-
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                   <p className="text-red-700 text-sm">{error}</p>

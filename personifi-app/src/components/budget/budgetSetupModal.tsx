@@ -13,7 +13,9 @@ import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setBudgetsForMonth } from "@/lib/api/budgetApi";
+import { trackEvent } from "@/lib/analytics";
 import { CategoryDto, CategoryType } from "@/types/budget";
+
 
 interface BudgetAmount {
   categoryId: number;
@@ -92,16 +94,19 @@ export function BudgetSetupModal({
         }))
         .filter((budget) => !Number.isNaN(budget.amount) && budget.amount >= 0);
 
-      if (budgetsToSave.length > 0) {
-        await setBudgetsForMonth(
-          currentMonth.getFullYear(),
-          currentMonth.getMonth() + 1,
-          budgetsToSave
-        );
-      }
+       if (budgetsToSave.length > 0) {
+         await setBudgetsForMonth(
+           currentMonth.getFullYear(),
+           currentMonth.getMonth() + 1,
+           budgetsToSave
+         );
+         trackEvent("aha_moment");
+         trackEvent("budget_saved");
+       }
 
-      onBudgetSaved?.();
-      onClose();
+       onBudgetSaved?.();
+       onClose();
+
     } catch (error) {
       console.error("Error saving budgets:", error);
       setSubmitError("Failed to save budgets.");

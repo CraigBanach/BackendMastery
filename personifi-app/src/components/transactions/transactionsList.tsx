@@ -23,6 +23,8 @@ import { CategoryType } from "@/types/budget";
 import { formatCurrency } from "@/lib/currency";
 import { format } from "date-fns";
 import { Edit, Trash2, Filter, Check, X } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
+
 
 interface TransactionsListProps {
   transactions: TransactionDto[];
@@ -70,8 +72,10 @@ export function TransactionsList({
         categoryId: parseInt(editForm.categoryId),
         transactionDate: new Date(transaction.transactionDate),
       });
+      trackEvent("transaction_updated");
       setEditingId(null);
       onTransactionUpdated();
+
     } catch (error: unknown) {
       console.error("Error updating transaction:", error);
       alert("Failed to update transaction. Please try again.");
@@ -92,7 +96,9 @@ export function TransactionsList({
     if (confirm("Are you sure you want to delete this transaction?")) {
       try {
         await deleteTransaction(id);
+        trackEvent("transaction_deleted");
         onTransactionUpdated();
+
       } catch (error: unknown) {
         console.error("Error deleting transaction:", error);
         alert("Failed to delete transaction. Please try again.");

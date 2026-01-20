@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Check, ChevronsUpDown, PoundSterlingIcon } from "lucide-react";
 
 import { z } from "zod";
+
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -30,7 +31,9 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { createTransaction } from "@/lib/api/createTransaction";
+import { trackEvent, trackEventOnce } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
+
 
 
 enum TransactionType {
@@ -83,8 +86,8 @@ export function TransactionModal({
 
 
   const form = useForm<z.infer<typeof formSchema>>({
-
     resolver: zodResolver(formSchema),
+
     defaultValues: {
       type:
         preSelectedType === "income"
@@ -117,7 +120,7 @@ export function TransactionModal({
   const [categorySearch, setCategorySearch] = useState("");
 
   // Update categoryId when type changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (filteredCategories.length === 0) {
       return;
     }
@@ -131,12 +134,16 @@ export function TransactionModal({
     }
   }, [selectedType, filteredCategories, selectedCategoryId, form]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isOpen) {
       setIsCategoryOpen(false);
       setCategorySearch("");
+      return;
     }
+
+    trackEvent("feature_transaction_modal_opened");
   }, [isOpen]);
+
 
   const filteredComboboxCategories = categorySearch
     ? filteredCategories.filter((category) =>
@@ -160,6 +167,8 @@ export function TransactionModal({
         notes: values.notes,
         transactionDate: values.date,
       });
+      trackEventOnce("first_meaningful_action");
+      trackEvent("transaction_created");
       form.reset();
       onTransactionSaved?.(); // Trigger data refresh
       onClose();
@@ -170,6 +179,7 @@ export function TransactionModal({
       setIsSubmitting(false);
     }
   };
+
 
   const footer = (
     <div className="flex justify-end space-x-3">

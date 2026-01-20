@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Metadata } from "next";
+
 import { Button } from "@/components/ui/button";
+import { TrackedLinkButton } from "@/components/ui/tracked-link-button";
+
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -89,11 +92,16 @@ export default async function BlogPostPage({ params }: Props) {
             <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
               Join Personifi today to track expenses, manage budgets, and achieve financial harmony with your partner.
             </p>
-            <Button asChild size="lg" className="bg-finance-green hover:bg-finance-green-dark">
-              <Link href="/auth/login?screen_hint=signup">
-                Get Started for Free
-              </Link>
-            </Button>
+            <TrackedLinkButton
+              href="/auth/login?screen_hint=signup"
+              eventName="signup_started"
+              size="lg"
+              className="bg-finance-green hover:bg-finance-green-dark"
+            >
+              Get Started for Free
+            </TrackedLinkButton>
+
+
           </div>
         </div>
       </div>
