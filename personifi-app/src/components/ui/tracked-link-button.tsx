@@ -7,7 +7,6 @@ import { VariantProps } from "class-variance-authority";
 import { ReactNode } from "react";
 import Link from "next/link";
 
-
 interface TrackedLinkButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   href: string;
   eventName: string;
@@ -27,10 +26,15 @@ export function TrackedLinkButton({
   ...props 
 }: TrackedLinkButtonProps) {
   const isExternal = href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("/auth");
-
-
-
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    if (eventName === "signup_started" && typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem("posthog_signup_started", "true");
+      } catch {
+        // Ignore storage failures.
+      }
+    }
+
     trackEvent(eventName);
     if (onClick) onClick(e as any);
   };
@@ -38,7 +42,7 @@ export function TrackedLinkButton({
   if (isExternal) {
     return (
       <Button asChild {...props}>
-        <a 
+        <a
           href={href}
           target={target}
           rel={rel}
@@ -52,7 +56,7 @@ export function TrackedLinkButton({
 
   return (
     <Button asChild {...props}>
-      <Link 
+      <Link
         href={href}
         target={target}
         rel={rel}

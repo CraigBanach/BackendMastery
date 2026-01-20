@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { getAccessToken } from '@/lib/AuthProvider';
 import { acceptInvitation, getInvitationDetails } from "@/lib/api/accountApi";
+import { auth0 } from "@/lib/auth0";
+import { captureServerEvent } from "@/lib/analytics-server";
 
 const API_BASE_URL = process.env.PERSONIFI_BACKEND_URL || "https://localhost:7106/api";
 
@@ -42,6 +44,19 @@ export async function createAccountAction(accountName: string) {
     return { error: errorMessage };
   }
   
+  const session = await auth0.getSession();
+  if (session?.user?.sub) {
+    await captureServerEvent({
+      distinctId: session.user.sub,
+      event: "onboarding_completed",
+      properties: {
+        email: session.user.email,
+        signup_date: new Date().toISOString(),
+        referral_source: "auth0",
+      },
+    });
+  }
+
   // Only redirect if we get here (success case)
   redirect("/budget");
 }
@@ -65,6 +80,19 @@ export async function joinAccountAction(invitationToken: string) {
     return { error: errorMessage };
   }
   
+  const session = await auth0.getSession();
+  if (session?.user?.sub) {
+    await captureServerEvent({
+      distinctId: session.user.sub,
+      event: "onboarding_completed",
+      properties: {
+        email: session.user.email,
+        signup_date: new Date().toISOString(),
+        referral_source: "auth0",
+      },
+    });
+  }
+
   // Only redirect if we get here (success case)
   redirect("/budget");
 }
