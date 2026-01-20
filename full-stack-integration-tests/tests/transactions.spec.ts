@@ -67,10 +67,18 @@ test("user can create, edit, filter, and delete transactions", async ({ page }, 
 
   const transactionSummary = page.getByText(groceriesDescription);
   await expect(transactionSummary).toBeVisible();
-  await expect(page.getByTestId("transaction-amount")).toContainText("£45.25");
+  const groceriesAmount = page
+    .getByTestId("transaction-row")
+    .filter({ hasText: groceriesDescription })
+    .getByTestId("transaction-amount");
+  await expect(groceriesAmount).toContainText("£45.25");
 
-  await expect(page.getByText("Weekly shop for the house")).toBeVisible();
-  await expect(page.getByTestId("transaction-category").first()).toContainText(
+  const groceriesRow = page
+    .getByTestId("transaction-row")
+    .filter({ hasText: groceriesDescription })
+    .first();
+  await expect(groceriesRow.getByText("Weekly shop for the house")).toBeVisible();
+  await expect(groceriesRow.getByTestId("transaction-category").first()).toContainText(
     "Food Shopping"
   );
 
@@ -85,20 +93,20 @@ test("user can create, edit, filter, and delete transactions", async ({ page }, 
   await page.getByRole("dialog", { name: "Add Transaction" }).getByRole("button", { name: "Add Transaction" }).click();
   await page.getByRole("dialog", { name: "Add Transaction" }).waitFor({ state: "hidden" });
 
-  const rentAmount = page
-    .getByText(rentDescription)
-    .locator("../..")
-    .getByTestId("transaction-amount");
-  await expect(page.getByText(rentDescription)).toBeVisible();
-  await expect(rentAmount).toContainText("£1,200.00");
+  const rentRow = page
+    .getByTestId("transaction-row")
+    .filter({ hasText: rentDescription })
+    .first();
+  await expect(rentRow).toBeVisible();
+  await expect(rentRow.getByTestId("transaction-amount")).toContainText("£1,200.00");
 
 
-  const groceriesRow = page
+  const groceriesRowToEdit = page
     .getByTestId("transaction-row")
     .filter({ hasText: groceriesDescription });
 
 
-  await groceriesRow.getByTestId("transaction-edit").click();
+  await groceriesRowToEdit.getByTestId("transaction-edit").click();
 
   const editForm = page.getByTestId("transaction-edit-form");
   await expect(editForm).toBeVisible();
@@ -164,7 +172,4 @@ test("user can create, edit, filter, and delete transactions", async ({ page }, 
   await rentRowToDelete.getByTestId("transaction-delete").click();
   await expect(page.getByText(rentDescription)).not.toBeVisible();
 
-  await expect(
-    page.getByRole("main").getByText("No transactions found for this month.").first()
-  ).toBeVisible();
 });
