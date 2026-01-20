@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrackedLinkButton } from "@/components/ui/tracked-link-button";
+import Link from "next/link";
 
-import { CheckCircle, ArrowRight, ChevronRight, Download } from "lucide-react";
+import { CheckCircle, ArrowRight, ChevronRight } from "lucide-react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -75,7 +76,7 @@ export default function Home() {
                 size="lg"
                 className="border-finance-green text-finance-green hover:bg-finance-green-light hover:text-finance-green-dark text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 w-full sm:w-auto"
               >
-                <a href="/stories/how-we-use-personifi">See a real example</a>
+                <Link href="/stories/how-we-use-personifi">See a real example</Link>
               </Button>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
@@ -173,8 +174,8 @@ export default function Home() {
             <p className="text-lg sm:text-xl text-muted-foreground mb-4">
               Some things do not fit neatly into a monthly budget. Personifi
               helps you separate day-to-day spending from longer-term goals, so
-              you can see progress without constantly asking, "Are we still on
-              track?"
+              you can see progress without constantly asking, &quot;Are we still on
+              track?&quot;
             </p>
             <ul className="space-y-2 text-muted-foreground text-sm sm:text-base">
               <li className="flex items-start gap-2">
@@ -248,7 +249,7 @@ export default function Home() {
               </li>
               <li className="flex items-center justify-center gap-3">
                 <CheckCircle className="mt-0.5 h-4 w-4 text-finance-green" />
-                No forced methodology or "correct" way to spend
+                No forced methodology or &quot;correct&quot; way to spend
               </li>
             </ul>
           </div>
