@@ -12,8 +12,12 @@ export const trackEvent = (eventName: string, properties?: Record<string, unknow
     (window as any).beacon("sendEvent", eventName);
   }
 
-  if (hasWindow && posthog.__loaded) {
+  if (!hasWindow) return;
+
+  try {
     posthog.capture(eventName, properties);
+  } catch {
+    // Ignore capture failures.
   }
 };
 
@@ -29,8 +33,22 @@ export const trackEventOnce = (
       return;
     }
 
-    trackEvent(eventName, properties);
-    window.localStorage.setItem(key, "true");
+    const capture = () => {
+      trackEvent(eventName, properties);
+      window.localStorage.setItem(key, "true");
+    };
+
+    if (posthog.__loaded) {
+      capture();
+      return;
+    }
+
+    (posthog as any).onReady(() => {
+      if (window.localStorage.getItem(key)) {
+        return;
+      }
+      capture();
+    });
   } catch {
     trackEvent(eventName, properties);
   }

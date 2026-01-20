@@ -25,11 +25,12 @@ export function TrackedLinkButton({
   rel,
   ...props 
 }: TrackedLinkButtonProps) {
-  const isExternal = href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("/auth");
+const isExternal = href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("/auth");
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     if (eventName === "signup_started" && typeof window !== "undefined") {
       try {
         window.localStorage.setItem("posthog_signup_started", "true");
+        window.localStorage.setItem("posthog_signup_started_at", Date.now().toString());
       } catch {
         // Ignore storage failures.
       }

@@ -15,16 +15,19 @@ export function AppHeaderAnalytics({ userId, email }: AppHeaderAnalyticsProps) {
   useEffect(() => {
     if (hasTrackedSignup.current) return;
 
-    const referrer = typeof document !== "undefined" ? document.referrer : "";
-    const fromAuth0 = referrer.includes("auth0.com");
-    const fromLogin = referrer.includes("/auth/login");
-    const signupStarted = typeof window !== "undefined"
+    const signupStartedAt = typeof window !== "undefined"
+      ? window.localStorage.getItem("posthog_signup_started_at")
+      : null;
+    const signupStartedLegacy = typeof window !== "undefined"
       ? window.localStorage.getItem("posthog_signup_started")
       : null;
+    const signupStartedAtMs = signupStartedAt ? Number(signupStartedAt) : Number.NaN;
+    const isFreshSignup = signupStartedLegacy || (!Number.isNaN(signupStartedAtMs) && Date.now() - signupStartedAtMs <= 30 * 60 * 1000);
 
-    if ((fromAuth0 || fromLogin) && signupStarted) {
+    if (isFreshSignup) {
       trackEventOnce("signup_form_submitted");
       window.localStorage.removeItem("posthog_signup_started");
+      window.localStorage.removeItem("posthog_signup_started_at");
       hasTrackedSignup.current = true;
     }
   }, []);
