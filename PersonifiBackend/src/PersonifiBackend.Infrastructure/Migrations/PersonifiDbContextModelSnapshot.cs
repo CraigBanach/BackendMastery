@@ -49,6 +49,41 @@ namespace PersonifiBackend.Infrastructure.Migrations
                     b.ToTable("Accounts");
                 });
 
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.Bucket", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("CurrentBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal?>("TargetAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Buckets");
+                });
+
             modelBuilder.Entity("PersonifiBackend.Core.Entities.Budget", b =>
                 {
                     b.Property<int>("Id")
@@ -460,6 +495,17 @@ namespace PersonifiBackend.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("PersonifiBackend.Core.Entities.Bucket", b =>
+                {
+                    b.HasOne("PersonifiBackend.Core.Entities.Account", "Account")
+                        .WithMany("Buckets")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("PersonifiBackend.Core.Entities.Budget", b =>
                 {
                     b.HasOne("PersonifiBackend.Core.Entities.Account", "Account")
@@ -627,6 +673,8 @@ namespace PersonifiBackend.Infrastructure.Migrations
 
             modelBuilder.Entity("PersonifiBackend.Core.Entities.Account", b =>
                 {
+                    b.Navigation("Buckets");
+
                     b.Navigation("Budgets");
 
                     b.Navigation("Categories");

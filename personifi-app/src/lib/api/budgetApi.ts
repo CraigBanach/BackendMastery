@@ -31,8 +31,16 @@ async function fetchWithAuth(
   if (!response.ok) {
     let errorMessage = `HTTP ${response.status}`;
     try {
-      const errorData = (await response.json()) as ApiError;
-      errorMessage = errorData.error?.message || errorMessage;
+      const responseText = await response.text();
+
+      if (responseText) {
+        try {
+          const errorData = JSON.parse(responseText) as ApiError;
+          errorMessage = errorData.error?.message || responseText;
+        } catch {
+          errorMessage = responseText;
+        }
+      }
     } catch {
       // If we can't parse the error, use the status text
       errorMessage = response.statusText || errorMessage;

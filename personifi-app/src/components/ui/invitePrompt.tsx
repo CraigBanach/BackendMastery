@@ -1,16 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, X } from "lucide-react";
 import { InvitePartnerModal } from "@/components/ui/invitePartnerModal";
 import { dismissInvitePrompt, getInvitePromptStatus } from "@/lib/api/userPreferencesApi";
+import { useModalManager } from "@/lib/providers/modal-provider";
+
 
 export function InvitePrompt() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { isModalOpen } = useModalManager();
+
 
   useEffect(() => {
     const checkDismissalStatus = async () => {
@@ -70,8 +74,10 @@ export function InvitePrompt() {
           </CardDescription>
           <Button 
             onClick={() => setIsInviteModalOpen(true)}
+            disabled={isModalOpen}
             className="bg-blue-600 hover:bg-blue-700"
           >
+
             Invite Partner
           </Button>
         </CardContent>

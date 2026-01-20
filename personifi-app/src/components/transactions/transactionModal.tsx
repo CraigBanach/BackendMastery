@@ -1,7 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Check, ChevronsUpDown, PoundSterlingIcon } from "lucide-react";
+
 import { z } from "zod";
+
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
@@ -14,18 +18,23 @@ import {
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
-import { PoundSterlingIcon } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { createTransaction } from "@/lib/api/createTransaction";
+import { trackEvent, trackEventOnce } from "@/lib/analytics";
+import { cn } from "@/lib/utils";
+
+
 
 enum TransactionType {
   Expense = "Expense",
@@ -73,9 +82,12 @@ export function TransactionModal({
 }: TransactionModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+
     defaultValues: {
       type:
         preSelectedType === "income"
@@ -101,12 +113,46 @@ export function TransactionModal({
         : CategoryType.Expense)
   );
 
+  const selectedCategoryId = form.watch("categoryId");
+  const selectedCategory = filteredCategories.find(
+    (category) => category.id === selectedCategoryId
+  );
+  const [categorySearch, setCategorySearch] = useState("");
+
   // Update categoryId when type changes
-  React.useEffect(() => {
-    if (filteredCategories.length > 0) {
+  useEffect(() => {
+    if (filteredCategories.length === 0) {
+      return;
+    }
+
+    const hasValidSelection = filteredCategories.some(
+      (category) => category.id === selectedCategoryId
+    );
+
+    if (!hasValidSelection) {
       form.setValue("categoryId", filteredCategories[0].id);
     }
-  }, [selectedType, filteredCategories, form]);
+  }, [selectedType, filteredCategories, selectedCategoryId, form]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsCategoryOpen(false);
+      setCategorySearch("");
+      return;
+    }
+
+    trackEvent("feature_transaction_modal_opened");
+  }, [isOpen]);
+
+
+  const filteredComboboxCategories = categorySearch
+    ? filteredCategories.filter((category) =>
+        category.name.toLowerCase().includes(categorySearch.toLowerCase())
+      )
+    : filteredCategories;
+
+
+
 
   const onSubmit = async (values: CreateTransaction) => {
     setIsSubmitting(true);
@@ -121,6 +167,8 @@ export function TransactionModal({
         notes: values.notes,
         transactionDate: values.date,
       });
+      trackEventOnce("first_meaningful_action");
+      trackEvent("transaction_created");
       form.reset();
       onTransactionSaved?.(); // Trigger data refresh
       onClose();
@@ -131,6 +179,7 @@ export function TransactionModal({
       setIsSubmitting(false);
     }
   };
+
 
   const footer = (
     <div className="flex justify-end space-x-3">
@@ -265,37 +314,113 @@ export function TransactionModal({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={(value) => field.onChange(parseInt(value))}
-                    value={field.value?.toString()}
+                  <Popover
+                    open={isCategoryOpen}
+                    onOpenChange={(open) => {
+                      setIsCategoryOpen(open);
+                      if (!open) {
+                        setCategorySearch("");
+                      }
+                    }}
                   >
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {filteredCategories.map((category) => (
-                        <SelectItem
-                          key={category.id}
-                          value={category.id.toString()}
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={isCategoryOpen}
+                          className="w-full justify-between"
                         >
-                          <div className="flex items-center gap-2">
-                            <CategoryIcon
-                              icon={category.icon}
-                              color={category.color}
-                              size="sm"
-                            />
-                            <span>{category.name}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                          {selectedCategory ? (
+                            <div className="flex items-center gap-2">
+                              <CategoryIcon
+                                icon={selectedCategory.icon}
+                                color={selectedCategory.color}
+                                size="sm"
+                              />
+                              <span>{selectedCategory.name}</span>
+                            </div>
+                          ) : (
+                            "Select a category"
+                          )}
+                          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-[var(--radix-popover-trigger-width)] p-0"
+                      align="start"
+                    >
+                      <Command shouldFilter={false}>
+                        <CommandInput
+                          placeholder="Search category..."
+                          className="h-9"
+                          autoFocus
+                          value={categorySearch}
+                          onValueChange={setCategorySearch}
+                          onInput={(event) =>
+                            setCategorySearch(
+                              (event.target as HTMLInputElement).value
+                            )
+                          }
+                          aria-label="Search category"
+                        />
+                        <CommandList>
+                          <CommandGroup>
+                            {filteredComboboxCategories.map((category) => (
+                                <CommandItem
+                                  key={category.id}
+                                  value={category.name}
+                                  onSelect={(value) => {
+                                    const nextCategory = filteredCategories.find(
+                                      (item) =>
+                                        item.name.toLowerCase() ===
+                                        value.toLowerCase()
+                                    );
+                                    if (!nextCategory) {
+                                      return;
+                                    }
+
+                                    field.onChange(nextCategory.id);
+                                    form.setValue("categoryId", nextCategory.id, {
+                                      shouldValidate: true,
+                                    });
+                                    setCategorySearch("");
+                                    setIsCategoryOpen(false);
+                                  }}
+                                  data-value={category.name}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      selectedCategory?.id === category.id
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  <CategoryIcon
+                                    icon={category.icon}
+                                    color={category.color}
+                                    size="sm"
+                                  />
+                                  <span>{category.name}</span>
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                          {filteredComboboxCategories.length === 0 && (
+                            <CommandEmpty>No category found.</CommandEmpty>
+                          )}
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+
                   <FormMessage />
                 </FormItem>
+
               )}
             />
+
 
             <FormField
               control={form.control}

@@ -19,10 +19,13 @@ export function RadialProgress({
   className = "",
   size = 120 
 }: RadialProgressProps) {
-  const percentage = budgeted > 0 ? Math.min((actual / budgeted) * 100, 120) : 0;
+  const percentage = budgeted > 0 ? (actual / budgeted) * 100 : 0;
+  const visualPercentage = Math.min(Math.max(percentage, 0), 100);
   const radius = (size - 20) / 2;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+  const strokeDashoffset =
+    circumference - (visualPercentage / 100) * circumference;
+
 
   // Color scheme based on type and performance
   const getColors = () => {

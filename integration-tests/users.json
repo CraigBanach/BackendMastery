@@ -8,5 +8,15 @@
       { "Type": "email_verified", "Value": "true" },
       { "Type": "name", "Value": "Test User" }
     ]
+  },
+  {
+    "SubjectId": "new-user-sub",
+    "Username": "newuser",
+    "Password": "Password123!",
+    "Claims": [
+      { "Type": "email", "Value": "newuser@example.com" },
+      { "Type": "email_verified", "Value": "true" },
+      { "Type": "name", "Value": "New User" }
+    ]
   }
 ]

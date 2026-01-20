@@ -25,9 +25,17 @@ export function TrackedLinkButton({
   rel,
   ...props 
 }: TrackedLinkButtonProps) {
-  const isExternal = href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("/auth");
-
+const isExternal = href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("/auth");
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    if (eventName === "signup_started" && typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem("posthog_signup_started", "true");
+        window.localStorage.setItem("posthog_signup_started_at", Date.now().toString());
+      } catch {
+        // Ignore storage failures.
+      }
+    }
+
     trackEvent(eventName);
     if (onClick) onClick(e as any);
   };
@@ -35,7 +43,7 @@ export function TrackedLinkButton({
   if (isExternal) {
     return (
       <Button asChild {...props}>
-        <a 
+        <a
           href={href}
           target={target}
           rel={rel}
@@ -49,7 +57,7 @@ export function TrackedLinkButton({
 
   return (
     <Button asChild {...props}>
-      <Link 
+      <Link
         href={href}
         target={target}
         rel={rel}

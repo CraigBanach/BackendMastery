@@ -1,9 +1,7 @@
 import { test, expect } from "@playwright/test";
-import { resetDatabase } from "./db-setup";
 
-test.beforeAll(async () => {
-    await resetDatabase();
-});
+test.describe.configure({ mode: "serial" });
+
 
 test("user can log in with valid credentials", async ({ page }) => {
   await page.goto("/"); // Navigate to the base URL (http://localhost:3000)
@@ -17,8 +15,9 @@ test("user can log in with valid credentials", async ({ page }) => {
   await expect(page).toHaveURL(/localhost:4001/); // Verify redirection to OIDC mock server
 
   // Fill in the username and password for the test user
-  await page.getByLabel("Username").fill("testuser");
+  await page.getByLabel("Username").fill("newuser");
   await page.getByLabel("Password").fill("Password123!");
+
 
   // Click the login button on the OIDC mock server's page
   await page.getByRole('button', { name: 'Login' }).click();
@@ -30,6 +29,7 @@ test("user can log in with valid credentials", async ({ page }) => {
   await page.fill('input[name="accountName"]', "My Family Finances");
   await page.locator('button[type="submit"]').click();
   // Verify that the user is logged in
+
   // This depends on your application's UI after login.
   // Examples:
   // - Check for a "Welcome, Test User" text

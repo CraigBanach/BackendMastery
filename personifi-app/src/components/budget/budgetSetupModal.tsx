@@ -13,7 +13,9 @@ import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setBudgetsForMonth } from "@/lib/api/budgetApi";
+import { trackEvent } from "@/lib/analytics";
 import { CategoryDto, CategoryType } from "@/types/budget";
+
 
 interface BudgetAmount {
   categoryId: number;
@@ -46,6 +48,7 @@ export function BudgetSetupModal({
 }: BudgetSetupModalProps) {
   const [budgetAmounts, setBudgetAmounts] = useState<Record<number, string>>({});
   const [saving, setSaving] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     const initial: Record<number, string> = {};
@@ -65,31 +68,48 @@ export function BudgetSetupModal({
       ...prev,
       [categoryId]: value,
     }));
+    setSubmitError("");
   };
 
+  const hasNegativeAmounts = Object.values(budgetAmounts).some((value) => {
+    if (!value) return false;
+    const parsed = parseFloat(value);
+    return !Number.isNaN(parsed) && parsed < 0;
+  });
+
   const handleSave = async () => {
+    if (hasNegativeAmounts) {
+      setSubmitError("Budget amounts must be zero or greater.");
+      return;
+    }
+
     setSaving(true);
     try {
       // Convert budget amounts to API format
       const budgetsToSave = Object.entries(budgetAmounts)
-        .filter(([, value]) => value && parseFloat(value) > 0)
+        .filter(([, value]) => value !== "")
         .map(([categoryId, value]) => ({
           categoryId: parseInt(categoryId),
           amount: parseFloat(value),
-        }));
+        }))
+        .filter((budget) => !Number.isNaN(budget.amount) && budget.amount >= 0);
 
-      if (budgetsToSave.length > 0) {
-        await setBudgetsForMonth(
-          currentMonth.getFullYear(),
-          currentMonth.getMonth() + 1,
-          budgetsToSave
-        );
-      }
+       if (budgetsToSave.length > 0) {
+         await setBudgetsForMonth(
+           currentMonth.getFullYear(),
+           currentMonth.getMonth() + 1,
+           budgetsToSave
+         );
+         trackEvent("aha_moment");
+         trackEvent("budget_saved");
+       }
 
-      onBudgetSaved?.();
-      onClose();
+       onBudgetSaved?.();
+       onClose();
+
     } catch (error) {
-      console.error('Error saving budgets:', error);
+      console.error("Error saving budgets:", error);
+      setSubmitError("Failed to save budgets.");
     } finally {
       setSaving(false);
     }
@@ -108,20 +128,38 @@ export function BudgetSetupModal({
     return sum + (isNaN(amount) ? 0 : amount);
   }, 0);
 
+  const validationMessage = hasNegativeAmounts
+    ? "Budget amounts must be zero or greater."
+    : submitError;
+
+  const isNegativeAmount = (categoryId: number) => {
+    const value = budgetAmounts[categoryId];
+    if (!value) return false;
+    const parsed = parseFloat(value);
+    return !Number.isNaN(parsed) && parsed < 0;
+  };
+
   const netBudget = totalBudgetedIncome - totalBudgetedExpenses;
 
   const footer = (
-    <div className="flex justify-end space-x-3">
-      <Button variant="outline" onClick={onClose}>
-        Cancel
-      </Button>
-      <Button
-        onClick={handleSave}
-        disabled={saving}
-        className="bg-finance-green hover:bg-finance-green-dark"
-      >
-        {saving ? 'Saving...' : 'Save Budget'}
-      </Button>
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      {validationMessage ? (
+        <span className="text-sm text-red-600">{validationMessage}</span>
+      ) : (
+        <span />
+      )}
+      <div className="flex justify-end space-x-3">
+        <Button variant="outline" onClick={onClose} disabled={saving}>
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSave}
+          disabled={saving || hasNegativeAmounts}
+          className="bg-finance-green hover:bg-finance-green-dark"
+        >
+          {saving ? "Saving..." : "Save Budget"}
+        </Button>
+      </div>
     </div>
   );
 
@@ -201,18 +239,22 @@ export function BudgetSetupModal({
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
                       £
                     </span>
-                    <Input
-                      id={`income-${category.id}`}
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={budgetAmounts[category.id] || ""}
-                      onChange={(e) =>
-                        handleAmountChange(category.id, e.target.value)
-                      }
-                      className="pl-8"
-                    />
+                      <Input
+                        id={`income-${category.id}`}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={budgetAmounts[category.id] || ""}
+                        onChange={(e) =>
+                          handleAmountChange(category.id, e.target.value)
+                        }
+                        className={`pl-8 ${
+                          isNegativeAmount(category.id)
+                            ? "border-red-500 focus-visible:ring-red-500"
+                            : ""
+                        }`}
+                      />
                   </div>
                 </div>
               ))}
@@ -240,18 +282,22 @@ export function BudgetSetupModal({
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
                       £
                     </span>
-                    <Input
-                      id={`expense-${category.id}`}
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={budgetAmounts[category.id] || ""}
-                      onChange={(e) =>
-                        handleAmountChange(category.id, e.target.value)
-                      }
-                      className="pl-8"
-                    />
+                      <Input
+                        id={`expense-${category.id}`}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={budgetAmounts[category.id] || ""}
+                        onChange={(e) =>
+                          handleAmountChange(category.id, e.target.value)
+                        }
+                        className={`pl-8 ${
+                          isNegativeAmount(category.id)
+                            ? "border-red-500 focus-visible:ring-red-500"
+                            : ""
+                        }`}
+                      />
                   </div>
                 </div>
               ))}

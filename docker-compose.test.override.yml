@@ -1,0 +1,10 @@
+services:
+  backend:
+    build:
+      context: ./PersonifiBackend
+      dockerfile: Dockerfile
+
+  frontend:
+    build:
+      context: ./personifi-app
+      dockerfile: Dockerfile

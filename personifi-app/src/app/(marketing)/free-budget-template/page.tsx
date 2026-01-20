@@ -7,6 +7,8 @@ import {
   Calculator,
 } from "lucide-react";
 import { Metadata } from "next";
+import { TrackedLinkButton } from "@/components/ui/tracked-link-button";
+
 
 export const metadata: Metadata = {
   title:
@@ -28,6 +30,7 @@ export const metadata: Metadata = {
 export default function FreeBudgetTemplate() {
   return (
     <div className="flex flex-col min-h-screen">
+
       {/* Hero Section */}
       <section className="flex-1 -mt-16 pt-36 pb-8 md:pt-40 md:pb-16 bg-gradient-to-br from-finance-green-light/10 to-white">
         <div className="container mx-auto max-w-6xl px-4">
@@ -65,17 +68,17 @@ export default function FreeBudgetTemplate() {
                     <Download className="ml-2 h-4 w-4" />
                   </a>
                 </Button>
-                <Button
-                  asChild
+                <TrackedLinkButton
+                  href="/auth/login?screen_hint=signup"
+                  eventName="signup_started"
                   variant="outline"
                   size="lg"
                   className="border-finance-green text-finance-green hover:bg-finance-green-light hover:text-finance-green-dark text-base px-6 py-3"
                 >
-                  <a href="/auth/login?screen_hint=signup">
-                    Try Personifi App Free
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
+                  Try Personifi App Free
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </TrackedLinkButton>
+
               </div>
               <p className="text-sm text-muted-foreground">
                 Downloads to your Google Drive • No email required • Works

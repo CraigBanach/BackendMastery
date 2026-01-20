@@ -100,6 +100,11 @@ public class BudgetService : IBudgetService
             throw new InvalidCategoriesException(invalidCategoryIds);
         }
 
+        if (budgets.Any(b => b.Amount < 0))
+        {
+            throw new InvalidOperationException("Budget amounts must be zero or greater.");
+        }
+
         var setBudgetRequests = budgets.Select(b => new SetBudgetRequest(b.CategoryId, b.Amount));
         var updatedBudgets = await _budgetRepository.SetBudgetsForMonthAsync(
             accountId,
