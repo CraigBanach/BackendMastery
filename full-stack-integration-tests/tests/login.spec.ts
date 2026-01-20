@@ -6,9 +6,7 @@ test.describe.configure({ mode: "serial" });
 test("user can log in with valid credentials", async ({ page }) => {
   await page.goto("/"); // Navigate to the base URL (http://localhost:3000)
 
-  // Assuming there's a login button or link on the homepage
-  // You might need to adjust the selector based on your actual frontend UI
-  await page.locator("text=Get Started Free").first().click(); // Adjust selector as needed
+  await page.getByRole("link", { name: "Try it with your partner" }).first().click();
 
   // The page should redirect to the OIDC mock server's login page (http://localhost:4001)
   // Wait for the login form to appear

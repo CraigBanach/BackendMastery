@@ -14,7 +14,7 @@ async function globalSetup(config: FullConfig) {
   const page = await context.newPage();
 
   await page.goto("http://localhost:3000/");
-  await page.locator("text=Get Started Free").first().click();
+  await page.getByRole("link", { name: "Try it with your partner" }).first().click();
   await page.waitForURL(/localhost:4001/);
 
   await page.getByLabel("Username").fill("testuser");

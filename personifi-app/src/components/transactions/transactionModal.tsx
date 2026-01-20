@@ -253,7 +253,6 @@ export function TransactionModal({
                           field.onChange(new Date()); // Default to today when cleared
                         }
                       }}
-                      max={new Date().toISOString().split("T")[0]} // Prevent future dates
                     />
                   </FormControl>
                   <FormMessage />
@@ -330,6 +329,19 @@ export function TransactionModal({
                           role="combobox"
                           aria-expanded={isCategoryOpen}
                           className="w-full justify-between"
+                          onKeyDown={(event) => {
+                            if (
+                              event.key.length === 1 &&
+                              !event.metaKey &&
+                              !event.ctrlKey &&
+                              !event.altKey &&
+                              event.key !== " "
+                            ) {
+                              event.preventDefault();
+                              setIsCategoryOpen(true);
+                              setCategorySearch(event.key);
+                            }
+                          }}
                         >
                           {selectedCategory ? (
                             <div className="flex items-center gap-2">

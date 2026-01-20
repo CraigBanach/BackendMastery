@@ -9,6 +9,7 @@ const overrideComposeFile = path.join(repoRoot, "docker-compose.test.override.ym
 
 const args = process.argv.slice(2);
 const shouldRebuild = args.includes("--rebuild") || args.includes("--restart") || args.includes("--fresh");
+const isCi = process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
 
 const runCommand = (command, commandArgs, options = {}) => {
   const result = spawnSync(command, commandArgs, {
@@ -78,18 +79,46 @@ const ensureDocker = async () => {
 
 const ensureStack = () => {
   const composeArgs = ["-f", composeFile];
+  const pullArg = isCi ? "--pull=always" : "--pull=never";
 
-  if (fs.existsSync(overrideComposeFile)) {
+  if (!isCi && fs.existsSync(overrideComposeFile)) {
     composeArgs.push("-f", overrideComposeFile);
   }
 
-  if (shouldRebuild) {
+  if (shouldRebuild && !isCi) {
     runCommand("docker", ["compose", ...composeArgs, "down"]);
-    runCommand("docker", ["compose", ...composeArgs, "up", "-d", "--build"]);
+    runCommand("docker", ["compose", ...composeArgs, "up", "-d", "--build", pullArg]);
     return;
   }
 
-  runCommand("docker", ["compose", ...composeArgs, "up", "-d"]);
+  runCommand("docker", ["compose", ...composeArgs, "up", "-d", pullArg]);
+};
+
+const logCiImages = () => {
+  if (!isCi) {
+    return;
+  }
+
+  const images = [
+    "ghcr.io/craigbanach/personifibackend:latest",
+    "ghcr.io/craigbanach/personifi-app:latest",
+  ];
+
+  images.forEach((image) => {
+    const result = spawnSync(
+      "docker",
+      ["image", "inspect", image, "--format", "{{.Id}} {{join .RepoDigests \",\"}}"],
+      { encoding: "utf8" }
+    );
+
+    if (result.status === 0) {
+      const output = result.stdout.trim();
+      console.log(`[ci] Using image ${image}: ${output || "(no digest)"}`);
+      return;
+    }
+
+    console.log(`[ci] Unable to inspect image ${image}.`);
+  });
 };
 
 const runTests = () => {
@@ -104,6 +133,7 @@ const runTests = () => {
 const main = async () => {
   await ensureDocker();
   ensureStack();
+  logCiImages();
   runTests();
 };
 

@@ -242,7 +242,6 @@ export function BudgetSetupModal({
                       <Input
                         id={`income-${category.id}`}
                         type="number"
-                        min="0"
                         step="0.01"
                         placeholder="0.00"
                         value={budgetAmounts[category.id] || ""}
@@ -285,7 +284,6 @@ export function BudgetSetupModal({
                       <Input
                         id={`expense-${category.id}`}
                         type="number"
-                        min="0"
                         step="0.01"
                         placeholder="0.00"
                         value={budgetAmounts[category.id] || ""}
