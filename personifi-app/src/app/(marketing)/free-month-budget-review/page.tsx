@@ -294,9 +294,9 @@ export default function FreeMonthBudgetReview() {
                   What early users are saying
                 </h3>
                 <p className="text-muted-foreground text-sm sm:text-base">
-                  "The review pointed out a pattern we could never explain. It
-                  was simple, actionable, and made our monthly check-in feel
-                  lighter."
+                  &ldquo;The review pointed out a pattern we could never explain.
+                  It was simple, actionable, and made our monthly check-in feel
+                  lighter.&rdquo;
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-finance-green text-white flex items-center justify-center text-sm font-semibold">
