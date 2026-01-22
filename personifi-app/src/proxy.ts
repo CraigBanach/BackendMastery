@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth0 } from "./lib/auth0";
 
 export async function proxy(request: NextRequest) {
+  if (
+    request.nextUrl.pathname === "/sitemap.xml" ||
+    request.nextUrl.pathname === "/robots.txt"
+  ) {
+    return NextResponse.next();
+  }
+
   const authResponse = await auth0.middleware(request);
   authResponse.headers.set("x-current-path", request.nextUrl.pathname);
 
