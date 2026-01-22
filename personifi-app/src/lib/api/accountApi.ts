@@ -13,6 +13,7 @@ interface ApiError {
 
 interface CreateAccountRequest {
   name: string;
+  signupSource?: string;
 }
 
 interface CreateAccountResponse {
@@ -82,10 +83,13 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Re
   return response;
 }
 
-export async function createAccount(name: string): Promise<CreateAccountResponse> {
+export async function createAccount(
+  name: string,
+  signupSource?: string
+): Promise<CreateAccountResponse> {
   const response = await fetchWithAuth(`${API_BASE_URL}/Account/create`, {
     method: 'POST',
-    body: JSON.stringify({ name } as CreateAccountRequest),
+    body: JSON.stringify({ name, signupSource } as CreateAccountRequest),
   });
   return response.json();
 }

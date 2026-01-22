@@ -181,8 +181,22 @@ public class AccountController : ControllerBase
 
         try
         {
+            if (!string.IsNullOrWhiteSpace(request.SignupSource))
+            {
+                _logger.LogInformation(
+                    "Creating account {AccountName} for user {UserId} from signup source {SignupSource}",
+                    request.Name,
+                    _userContext.UserId,
+                    request.SignupSource
+                );
+            }
+
             // Use the new method that creates account with subscription in one go
-            var account = await _accountService.CreateAccountWithSubscriptionAsync(request.Name, _userContext.UserId.Value);
+            var account = await _accountService.CreateAccountWithSubscriptionAsync(
+                request.Name,
+                _userContext.UserId.Value,
+                request.SignupSource
+            );
 
             // Refresh user context to include the new account
             if (_userContext is UserContext userContextImpl)
@@ -270,6 +284,7 @@ public class AccountMemberResponse
 public class CreateAccountRequest
 {
     public string Name { get; set; } = string.Empty;
+    public string? SignupSource { get; set; }
 }
 
 public class CreateAccountResponse

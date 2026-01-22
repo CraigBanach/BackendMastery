@@ -26,3 +26,4 @@
 - Add FE component tests
 - Update subscription with the subscription end date
 - Allow the user to specify the ordering of categories
+- Remove the category type selector on transaction entering - Update the Combobox to separate income from expense categories visually

@@ -21,11 +21,17 @@ export function AppHeaderAnalytics({ userId, email }: AppHeaderAnalyticsProps) {
     const signupStartedLegacy = typeof window !== "undefined"
       ? window.localStorage.getItem("posthog_signup_started")
       : null;
+    const signupSource = typeof window !== "undefined"
+      ? window.localStorage.getItem("posthog_signup_source")
+      : null;
     const signupStartedAtMs = signupStartedAt ? Number(signupStartedAt) : Number.NaN;
     const isFreshSignup = signupStartedLegacy || (!Number.isNaN(signupStartedAtMs) && Date.now() - signupStartedAtMs <= 30 * 60 * 1000);
 
     if (isFreshSignup) {
-      trackEventOnce("signup_form_submitted");
+      trackEventOnce(
+        "signup_form_submitted",
+        signupSource ? { signup_source: signupSource } : undefined
+      );
       window.localStorage.removeItem("posthog_signup_started");
       window.localStorage.removeItem("posthog_signup_started_at");
       hasTrackedSignup.current = true;
@@ -43,6 +49,13 @@ export function AppHeaderAnalytics({ userId, email }: AppHeaderAnalyticsProps) {
 
     if (email) {
       properties.email = email;
+    }
+
+    const signupSource = typeof window !== "undefined"
+      ? window.localStorage.getItem("posthog_signup_source")
+      : null;
+    if (signupSource) {
+      properties.signup_source = signupSource;
     }
 
     identifyUserOnce(userId, properties);

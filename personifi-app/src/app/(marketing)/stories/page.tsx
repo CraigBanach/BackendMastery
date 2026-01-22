@@ -12,7 +12,7 @@ import { format } from "date-fns";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Stories & Financial Tips for UK Couples | Personifi Blog",
+  title: "Personifi Blog | Stories & Financial Tips for UK Couples  Blog",
   description: "Real money stories, budgeting tips, and financial advice for UK couples. Learn how to manage money together without the arguments.",
   keywords: "couples finance blog, UK money tips, relationship finance, wedding budget breakdown, shared finances, money arguments",
   openGraph: {

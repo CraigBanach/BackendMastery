@@ -161,6 +161,7 @@ public class PersonifiDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.SignupSource).HasMaxLength(100);
 
             // Configure DateTime columns to use timestamp without time zone
             entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");

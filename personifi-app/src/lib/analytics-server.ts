@@ -28,7 +28,7 @@ export async function captureServerEvent({
   await client._shutdown();
 }
 
-export async function captureSignupCompleted() {
+export async function captureSignupCompleted(signupSource?: string | null) {
   const session = await auth0.getSession();
   const user = session?.user;
 
@@ -41,6 +41,7 @@ export async function captureSignupCompleted() {
       email: user.email,
       signup_date: new Date().toISOString(),
       referral_source: "auth0",
+      ...(signupSource ? { signup_source: signupSource } : {}),
     },
   });
 }

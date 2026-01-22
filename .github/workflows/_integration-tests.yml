@@ -38,6 +38,15 @@ jobs:
         working-directory: ./full-stack-integration-tests
         run: npm ci
 
+      - name: Log integration image digests
+        run: |
+          echo "Using backend image:"
+          docker pull ghcr.io/craigbanach/personifibackend:latest
+          docker image inspect ghcr.io/craigbanach/personifibackend:latest --format "{{.Id}} {{if .RepoDigests}}{{index .RepoDigests 0}}{{else}}<none>{{end}}"
+          echo "Using frontend image:"
+          docker pull ghcr.io/craigbanach/personifi-app:latest
+          docker image inspect ghcr.io/craigbanach/personifi-app:latest --format "{{.Id}} {{if .RepoDigests}}{{index .RepoDigests 0}}{{else}}<none>{{end}}"
+
       - name: Start Environment
         run: docker compose -f docker-compose.test.yml up -d
 

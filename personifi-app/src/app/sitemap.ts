@@ -9,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "",
     "/stories",
     "/free-budget-template",
+    "/free-month-budget-review",
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
