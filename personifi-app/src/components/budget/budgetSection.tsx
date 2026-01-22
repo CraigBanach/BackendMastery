@@ -6,17 +6,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/categoryIcon";
 import { BudgetProgressBar } from "./budgetProgressBar";
 import { TransactionTable } from "./transactionTable";
 import { BudgetVarianceWithTransactions } from "@/lib/hooks/useBudgetData";
 import { Pill } from "@/components/ui/pill";
 import { cn } from "@/lib/utils";
-
+import { CategoryType } from "@/types/budget";
 
 interface BudgetSectionProps {
   title: string;
@@ -42,11 +39,14 @@ export function BudgetSection({
   expandedCategories,
   onToggleExpand,
 }: BudgetSectionProps) {
-  const isIncome = type === "income";
-  const actualColorClass = isIncome ? "text-green-600" : "text-red-600";
-  const categoryCellClass = isIncome
-    ? "bg-blue-50 border-r border-blue-100"
-    : "bg-red-50 border-r border-red-100";
+  const categoryType =
+    type === "income" ? CategoryType.Income : CategoryType.Expense;
+  const actualColorClass =
+    categoryType === CategoryType.Income ? "text-green-600" : "text-red-600";
+  const categoryCellClass =
+    categoryType === CategoryType.Income
+      ? "bg-blue-50 border-r border-blue-100"
+      : "bg-red-50 border-r border-red-100";
   const totalActual = data.reduce((sum, item) => sum + item.actual, 0);
   const totalBudgeted = data.reduce((sum, item) => sum + item.budgeted, 0);
 
@@ -57,11 +57,15 @@ export function BudgetSection({
           <CardTitle>{title}</CardTitle>
           <div className="flex flex-wrap justify-end gap-2">
             <Pill>
-              <span className="text-[0.65rem] sm:text-xs font-medium">actual</span>
+              <span className="text-[0.65rem] sm:text-xs font-medium">
+                actual
+              </span>
               <span>{formatCurrency(totalActual)}</span>
             </Pill>
             <Pill variant="muted">
-              <span className="text-[0.65rem] sm:text-xs font-medium">budgeted</span>
+              <span className="text-[0.65rem] sm:text-xs font-medium">
+                budgeted
+              </span>
               <span>{formatCurrency(totalBudgeted)}</span>
             </Pill>
           </div>
@@ -93,7 +97,9 @@ export function BudgetSection({
                         <div className="text-sm space-y-1">
                           <div className="text-muted-foreground">
                             Actual:{" "}
-                            <span className={cn("font-medium", actualColorClass)}>
+                            <span
+                              className={cn("font-medium", actualColorClass)}
+                            >
                               {formatCurrency(item.actual)}
                             </span>
                           </div>
@@ -118,6 +124,7 @@ export function BudgetSection({
                     monthlyPaceStatus={item.monthlyPaceStatus}
                     className="w-full"
                     showPercentage={true}
+                    categoryType={categoryType}
                   />
                 </div>
               </div>
@@ -160,7 +167,12 @@ export function BudgetSection({
                     className="border-b hover:bg-gray-50 cursor-pointer"
                     onClick={() => onToggleExpand(item.category.id)}
                   >
-                    <td className={cn("py-2 sm:py-3 px-2 sm:px-4 font-medium text-xs sm:text-sm", categoryCellClass)}>
+                    <td
+                      className={cn(
+                        "py-2 sm:py-3 px-2 sm:px-4 font-medium text-xs sm:text-sm",
+                        categoryCellClass,
+                      )}
+                    >
                       <div className="flex items-center space-x-2">
                         <CategoryIcon
                           icon={item.category.icon}
@@ -180,6 +192,7 @@ export function BudgetSection({
                         monthlyPaceStatus={item.monthlyPaceStatus}
                         className="w-full"
                         showPercentage={false}
+                        categoryType={categoryType}
                       />
                     </td>
                     <td className="text-right py-2 sm:py-3 px-1 sm:px-4 text-xs sm:text-sm">
