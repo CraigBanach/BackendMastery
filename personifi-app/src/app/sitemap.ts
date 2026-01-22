@@ -1,10 +1,11 @@
 import { getBlogPosts } from "@/lib/blog";
 import { MetadataRoute } from "next";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://personifi.xyz"; // Replace with your actual domain if different
+export const dynamic = "force-static";
 
-  // Static routes
+export default function sitemap(): MetadataRoute.Sitemap {
+  const baseUrl = "https://personifi.xyz";
+
   const routes = [
     "",
     "/stories",
@@ -17,7 +18,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === "" ? 1 : 0.8,
   }));
 
-  // Dynamic blog posts
   const posts = getBlogPosts().map((post) => ({
     url: `${baseUrl}/stories/${post.slug}`,
     lastModified: new Date(post.date),
