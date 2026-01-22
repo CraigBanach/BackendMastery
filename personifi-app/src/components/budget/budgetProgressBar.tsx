@@ -1,11 +1,13 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { CategoryType } from "@/types/budget";
 
 interface BudgetProgressBarProps {
   actual: number;
   budgeted: number;
   monthlyPaceStatus: string;
+  categoryType: CategoryType;
   className?: string;
   showPercentage?: boolean;
 }
@@ -14,6 +16,7 @@ export function BudgetProgressBar({
   actual,
   budgeted,
   monthlyPaceStatus,
+  categoryType,
   className = "",
   showPercentage = true,
 }: BudgetProgressBarProps) {
@@ -21,42 +24,59 @@ export function BudgetProgressBar({
   const percentage = budgeted > 0 ? (actual / budgeted) * 100 : 0;
   const barPercentage = Math.min(Math.max(percentage, 0), 100);
 
-
   // Determine color based on status and amount
   const getBarColor = () => {
     if (actual > budgeted) {
-      return "bg-red-500"; // Over budget - red
+      return categoryType === CategoryType.Expense
+        ? "bg-red-500"
+        : "bg-green-500"; // Over budget
     }
 
     if (monthlyPaceStatus === "ahead") {
-      return "bg-yellow-500"; // Ahead of pace but under budget - yellow
+      return categoryType === CategoryType.Expense
+        ? "bg-yellow-500"
+        : "bg-green-500"; // Ahead of pace but under budget
     }
 
-    return "bg-green-500"; // On track or behind - green
+    return categoryType === CategoryType.Expense
+      ? "bg-green-500"
+      : "bg-yellow-500"; // On track or behind
   };
 
   const getBarBackgroundColor = () => {
     if (actual > budgeted) {
-      return "bg-red-100"; // Over budget - red background
+      return categoryType === CategoryType.Expense
+        ? "bg-red-100"
+        : "bg-green-100"; // Over budget
     }
 
     if (monthlyPaceStatus === "ahead") {
-      return "bg-yellow-100"; // Ahead of pace - yellow background
+      return categoryType === CategoryType.Expense
+        ? "bg-yellow-100"
+        : "bg-green-100"; // Ahead of pace
     }
 
-    return "bg-green-100"; // On track - green background
+    return categoryType === CategoryType.Expense
+      ? "bg-green-100"
+      : "bg-yellow-100"; // On track
   };
 
   const getTextColor = () => {
     if (actual > budgeted) {
-      return "text-red-700";
+      return categoryType === CategoryType.Expense
+        ? "text-red-700"
+        : "text-green-700";
     }
 
     if (monthlyPaceStatus === "ahead") {
-      return "text-yellow-700";
+      return categoryType === CategoryType.Expense
+        ? "text-yellow-700"
+        : "text-green-700";
     }
 
-    return "text-green-700";
+    return categoryType === CategoryType.Expense
+      ? "text-green-700"
+      : "text-yellow-700";
   };
 
   return (
@@ -65,22 +85,26 @@ export function BudgetProgressBar({
       <div
         className={cn(
           "relative w-full h-2 rounded-full overflow-hidden",
-          getBarBackgroundColor()
+          getBarBackgroundColor(),
         )}
       >
         {/* Progress bar fill */}
         <div
           className={cn(
             "h-full transition-all duration-300 ease-out rounded-full",
-            getBarColor()
+            getBarColor(),
           )}
           style={{ width: `${barPercentage}%` }}
-
         />
 
         {/* Overflow indicator for over-budget */}
         {percentage > 100 && (
-          <div className="absolute inset-0 bg-red-500 opacity-20 animate-pulse" />
+          <div
+            className={cn(
+              "absolute inset-0 opacity-20 animate-pulse",
+              getBarColor(),
+            )}
+          />
         )}
       </div>
 
