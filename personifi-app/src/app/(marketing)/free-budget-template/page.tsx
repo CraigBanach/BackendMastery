@@ -12,7 +12,7 @@ import { TrackedLinkButton } from "@/components/ui/tracked-link-button";
 
 export const metadata: Metadata = {
   title:
-    "Free UK Couples Budget Template | Google Sheets Budget Planner | Personifi",
+    "Personifi | Free UK Couples Budget Template | Google Sheets Budget Planner ",
   description:
     "Download our free Google Sheets budget template designed for UK couples. Track expenses, plan finances together, and manage your household budget with our proven spreadsheet system.",
   keywords:
@@ -69,7 +69,7 @@ export default function FreeBudgetTemplate() {
                   </a>
                 </Button>
                 <TrackedLinkButton
-                  href="/auth/login?screen_hint=signup"
+                  href="/auth/login?screen_hint=signup&signup_source=default"
                   eventName="signup_started"
                   variant="outline"
                   size="lg"

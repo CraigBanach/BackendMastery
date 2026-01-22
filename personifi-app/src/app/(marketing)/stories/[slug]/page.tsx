@@ -21,12 +21,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!post) {
     return {
-      title: "Post Not Found | Personifi",
+      title: "Personifi | Post Not Found ",
     };
   }
 
   return {
-    title: `${post.title} | Personifi Stories`,
+    title: `Personifi Stories | ${post.title} `,
     description: post.description,
     openGraph: {
       title: post.title,
@@ -92,8 +92,8 @@ export default async function BlogPostPage({ params }: Props) {
             <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
               Create a shared view of your money and start planning together.
             </p>
-            <TrackedLinkButton
-              href="/auth/login?screen_hint=signup"
+              <TrackedLinkButton
+                href="/auth/login?screen_hint=signup&signup_source=default"
               eventName="signup_started"
               size="lg"
               className="bg-finance-green hover:bg-finance-green-dark"

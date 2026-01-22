@@ -65,18 +65,16 @@ test("user can create, edit, filter, and delete transactions", async ({ page }, 
   await page.getByRole("dialog", { name: "Add Transaction" }).getByRole("button", { name: "Add Transaction" }).click();
   await page.getByRole("dialog", { name: "Add Transaction" }).waitFor({ state: "hidden" });
 
-  const transactionSummary = page.getByText(groceriesDescription);
-  await expect(transactionSummary).toBeVisible();
-  const groceriesAmount = page
-    .getByTestId("transaction-row")
-    .filter({ hasText: groceriesDescription })
-    .getByTestId("transaction-amount");
-  await expect(groceriesAmount).toContainText("£45.25");
-
   const groceriesRow = page
     .getByTestId("transaction-row")
     .filter({ hasText: groceriesDescription })
     .first();
+  await expect(groceriesRow).toBeVisible();
+  await expect(groceriesRow.getByTestId("transaction-description")).toHaveText(
+    groceriesDescription
+  );
+  const groceriesAmount = groceriesRow.getByTestId("transaction-amount");
+  await expect(groceriesAmount).toContainText("£45.25");
   await expect(groceriesRow.getByText("Weekly shop for the house")).toBeVisible();
   await expect(groceriesRow.getByTestId("transaction-category").first()).toContainText(
     "Food Shopping"

@@ -48,9 +48,14 @@ public class AccountService : IAccountService
         return user;
     }
 
-    public async Task<Account> CreateAccountAsync(string name)
+    public async Task<Account> CreateAccountAsync(string name, string? signupSource = null)
     {
-        var account = new Account { Name = name, CreatedAt = DateTime.UtcNow };
+        var account = new Account
+        {
+            Name = name,
+            SignupSource = signupSource,
+            CreatedAt = DateTime.UtcNow,
+        };
 
         _context.Accounts.Add(account);
         await _context.SaveChangesAsync();
@@ -58,10 +63,19 @@ public class AccountService : IAccountService
         return account;
     }
 
-    public async Task<Account> CreateAccountWithSubscriptionAsync(string name, int ownerUserId)
+    public async Task<Account> CreateAccountWithSubscriptionAsync(
+        string name,
+        int ownerUserId,
+        string? signupSource = null
+    )
     {
         // Create the account
-        var account = new Account { Name = name, CreatedAt = DateTime.UtcNow };
+        var account = new Account
+        {
+            Name = name,
+            SignupSource = signupSource,
+            CreatedAt = DateTime.UtcNow,
+        };
 
         _context.Accounts.Add(account);
         await _context.SaveChangesAsync(); // Save to get ID

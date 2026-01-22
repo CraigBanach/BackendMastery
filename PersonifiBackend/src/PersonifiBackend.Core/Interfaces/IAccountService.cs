@@ -5,8 +5,8 @@ namespace PersonifiBackend.Core.Interfaces;
 public interface IAccountService
 {
     Task<User?> GetOrCreateUserAsync(string auth0UserId, string email);
-    Task<Account> CreateAccountAsync(string name);
-    Task<Account> CreateAccountWithSubscriptionAsync(string name, int ownerUserId);
+    Task<Account> CreateAccountAsync(string name, string? signupSource = null);
+    Task<Account> CreateAccountWithSubscriptionAsync(string name, int ownerUserId, string? signupSource = null);
     Task<Account?> GetUserPrimaryAccountAsync(int userId);
     Task<List<Account>> GetUserAccountsAsync(int userId);
     Task<List<User>> GetAccountMembersAsync(int accountId);

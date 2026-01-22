@@ -8,7 +8,10 @@ import { captureServerEvent } from "@/lib/analytics-server";
 
 const API_BASE_URL = process.env.PERSONIFI_BACKEND_URL || "https://localhost:7106/api";
 
-export async function createAccountAction(accountName: string) {
+export async function createAccountAction(
+  accountName: string,
+  signupSource?: string
+) {
   try {
     // Get the access token for the authenticated user
     const { token } = await getAccessToken();
@@ -24,7 +27,10 @@ export async function createAccountAction(accountName: string) {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name: accountName.trim() }),
+      body: JSON.stringify({
+        name: accountName.trim(),
+        signupSource,
+      }),
     });
 
     if (!response.ok) {
@@ -53,6 +59,7 @@ export async function createAccountAction(accountName: string) {
         email: session.user.email,
         signup_date: new Date().toISOString(),
         referral_source: "auth0",
+        ...(signupSource ? { signup_source: signupSource } : {}),
       },
     });
   }
@@ -61,7 +68,10 @@ export async function createAccountAction(accountName: string) {
   redirect("/budget");
 }
 
-export async function joinAccountAction(invitationToken: string) {
+export async function joinAccountAction(
+  invitationToken: string,
+  signupSource?: string
+) {
   try {
     // Extract token from URL if full URL was pasted
     const token = invitationToken.includes('/invite/') 
@@ -89,6 +99,7 @@ export async function joinAccountAction(invitationToken: string) {
         email: session.user.email,
         signup_date: new Date().toISOString(),
         referral_source: "auth0",
+        ...(signupSource ? { signup_source: signupSource } : {}),
       },
     });
   }

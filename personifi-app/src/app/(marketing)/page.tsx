@@ -8,16 +8,16 @@ import { CheckCircle, ArrowRight, ChevronRight } from "lucide-react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Personifi | Conscious Spending for Couples",
+  title: "Personifi | Conscious Spending for Couples | Shared Money, Big Goals ",
   description:
-    "Be intentional with your money, enjoy your spending, and move forward together on the goals that matter most.",
+    "A simple shared money tool for couples who want to spend intentionally and save together for life goals like a house, a wedding, or travel.",
   keywords:
     "conscious spending, couples budgeting, shared finances, money goals, UK couples finance app, joint budget app",
   robots: "index, follow",
   openGraph: {
-    title: "Personifi: Conscious Spending for Couples",
+    title: "Personifi | Conscious Spending for Couples ",
     description:
-      "Be intentional with your money, enjoy your spending, and move forward together on the goals that matter most.",
+      "A simple shared money tool for couples who want to spend intentionally and save together for life goals like a house, a wedding, or travel.",
     type: "website",
     url: "https://personifi.xyz",
     locale: "en_GB",
@@ -61,7 +61,7 @@ export default function Home() {
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
               <TrackedLinkButton
-                href="/auth/login?screen_hint=signup"
+                href="/auth/login?screen_hint=signup&signup_source=default"
                 eventName="signup_started"
                 size="lg"
                 className="bg-finance-green hover:bg-finance-green-dark text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 w-full sm:w-auto"
@@ -357,7 +357,7 @@ export default function Home() {
               </ul>
 
               <TrackedLinkButton
-                href="/auth/login?screen_hint=signup"
+                href="/auth/login?screen_hint=signup&signup_source=default"
                 eventName="signup_started"
                 size="lg"
                 className="w-full bg-finance-green hover:bg-finance-green-dark text-base sm:text-lg py-4 sm:py-6"
@@ -385,7 +385,7 @@ export default function Home() {
             without constant friction, Personifi might be for you.
           </p>
           <TrackedLinkButton
-            href="/auth/login?screen_hint=signup"
+            href="/auth/login?screen_hint=signup&signup_source=default"
             eventName="signup_started"
             size="lg"
             className="bg-finance-green hover:bg-finance-green-dark text-base sm:text-lg px-8 sm:px-12 py-4 sm:py-6"

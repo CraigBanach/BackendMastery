@@ -25,18 +25,39 @@ export function TrackedLinkButton({
   rel,
   ...props 
 }: TrackedLinkButtonProps) {
-const isExternal = href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("/auth");
+  const isExternal = href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("/auth");
+  const getSignupSource = () => {
+    if (typeof window === "undefined") return null;
+
+    try {
+      const url = new URL(href, window.location.origin);
+      return url.searchParams.get("signup_source");
+    } catch {
+      return null;
+    }
+  };
+
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    const signupSource =
+      eventName === "signup_started" ? getSignupSource() ?? "default" : null;
+
     if (eventName === "signup_started" && typeof window !== "undefined") {
       try {
         window.localStorage.setItem("posthog_signup_started", "true");
         window.localStorage.setItem("posthog_signup_started_at", Date.now().toString());
+        window.localStorage.setItem(
+          "posthog_signup_source",
+          signupSource ?? "default"
+        );
       } catch {
         // Ignore storage failures.
       }
     }
 
-    trackEvent(eventName);
+    trackEvent(
+      eventName,
+      signupSource ? { signup_source: signupSource } : undefined
+    );
     if (onClick) onClick(e as any);
   };
 

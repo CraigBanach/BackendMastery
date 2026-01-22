@@ -19,7 +19,8 @@ export function AccountSetupPrompt() {
     if (typeof window !== "undefined") {
       const key = "posthog_once_signup_completed";
       if (!window.localStorage.getItem(key)) {
-        captureSignupCompleted();
+        const signupSource = window.localStorage.getItem("posthog_signup_source");
+        captureSignupCompleted(signupSource);
         window.localStorage.setItem(key, "true");
       }
     }
@@ -44,7 +45,14 @@ export function AccountSetupPrompt() {
     setError(null);
 
     startTransition(async () => {
-      const result = await createAccountAction(accountName.trim());
+      const signupSource =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem("posthog_signup_source")
+          : null;
+      const result = await createAccountAction(
+        accountName.trim(),
+        signupSource ?? undefined
+      );
 
       if (result?.error) {
         setError(result.error);
@@ -71,7 +79,14 @@ export function AccountSetupPrompt() {
     setError(null);
 
     startTransition(async () => {
-      const result = await joinAccountAction(invitationToken.trim());
+      const signupSource =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem("posthog_signup_source")
+          : null;
+      const result = await joinAccountAction(
+        invitationToken.trim(),
+        signupSource ?? undefined
+      );
 
       if (result?.error) {
         setError(result.error);

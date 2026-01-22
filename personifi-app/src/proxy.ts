@@ -21,6 +21,7 @@ export async function proxy(request: NextRequest) {
     if (
       request.nextUrl.pathname !== "/" &&
       request.nextUrl.pathname !== "/free-budget-template" &&
+      request.nextUrl.pathname !== "/free-month-budget-review" &&
       request.nextUrl.pathname !== "/personifi-opengraph-image.png" &&
       !request.nextUrl.pathname.startsWith("/stories") &&
       !request.nextUrl.pathname.startsWith("/ingest")
