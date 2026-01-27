@@ -45,6 +45,24 @@ export function MarketingHeader() {
             >
               Stories
             </Link>
+            <div className="relative group">
+              <Link
+                href="/tools"
+                className="text-finance-green-dark font-medium hover:text-finance-green transition-colors duration-200"
+              >
+                Tools
+              </Link>
+              <div className="absolute left-1/2 top-full z-50 hidden w-64 -translate-x-1/2 pt-4 group-hover:block">
+                <div className="rounded-xl border bg-white shadow-lg p-3 text-sm">
+                  <Link
+                    href="/tools/mortgage-deposit-vs-invest-calculator"
+                    className="block rounded-lg px-3 py-2 text-finance-navy hover:bg-finance-green-light/20"
+                  >
+                    Mortgage Deposit vs Investment
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Login Button */}

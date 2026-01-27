@@ -41,6 +41,12 @@ const Footer = () => {
                 Free Budget Template
               </Link>
               <Link
+                href="/tools"
+                className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
+              >
+                Tools
+              </Link>
+              <Link
                 href="/stories"
                 className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
               >
