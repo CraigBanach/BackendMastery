@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer className="bg-white border-t py-12 px-4">
       <div className="container mx-auto max-w-6xl">
-        <div className="grid md:grid-cols-3 gap-8 text-center md:text-left">
+        <div className="grid md:grid-cols-4 gap-8 text-center md:text-left">
           {/* Company Section */}
           <div>
             <h3 className="text-xl font-bold text-finance-green mb-2">
@@ -41,16 +41,23 @@ const Footer = () => {
                 Free Budget Template
               </Link>
               <Link
-                href="/tools"
-                className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
-              >
-                Tools
-              </Link>
-              <Link
                 href="/stories"
                 className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
               >
                 Stories
+              </Link>
+            </div>
+          </div>
+
+          {/* Tools */}
+          <div>
+            <h4 className="font-semibold mb-4 text-finance-navy">Tools</h4>
+            <div className="space-y-2 flex flex-col items-center md:items-start">
+              <Link
+                href="/tools/mortgage-deposit-vs-invest-calculator"
+                className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
+              >
+                Mortgage Deposit vs Investment
               </Link>
             </div>
           </div>

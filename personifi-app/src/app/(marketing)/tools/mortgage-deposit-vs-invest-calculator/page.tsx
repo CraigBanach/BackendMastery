@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
-import { TrackedLinkButton } from "@/components/ui/tracked-link-button";
+import Link from "next/link";
+
+import { CalculatorCtaButton } from "@/components/marketing/calculator-cta-button";
 import { MortgageDepositInvestCalculator } from "@/components/marketing/mortgage-deposit-invest-calculator";
 
 export const metadata: Metadata = {
@@ -41,15 +43,25 @@ export default function MortgageDepositInvestCalculatorPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <section className="relative overflow-hidden bg-gradient-to-br from-finance-green-light/20 to-white -mt-16 pt-20 pb-16 px-4">
-        <div className="container mx-auto max-w-5xl text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4">
-            Mortgage Deposit vs Investment Calculator
-          </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-            Compare a larger deposit vs investing the difference. A smaller
-            deposit plus investment growth can sometimes leave you better off,
-            depending on the rate uplift.
-          </p>
+        <div className="container mx-auto max-w-5xl">
+          <div className="flex justify-start">
+            <Link
+              href="/tools"
+              className="inline-flex items-center text-sm font-semibold text-finance-green-dark hover:text-finance-green mb-4"
+            >
+              ← Back to Tools
+            </Link>
+          </div>
+          <div className="text-center">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl mb-4">
+              Mortgage Deposit vs Investment Calculator
+            </h1>
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
+              Compare a larger deposit vs investing the difference. A smaller
+              deposit plus investment growth can sometimes leave you better off,
+              depending on the rate uplift.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -86,14 +98,7 @@ export default function MortgageDepositInvestCalculatorPage() {
                 Personifi helps couples track shared goals and make intentional
                 decisions with their money.
               </p>
-              <TrackedLinkButton
-                href="/auth/login?screen_hint=signup&signup_source=calculator"
-                eventName="signup_started"
-                size="lg"
-                className="w-full bg-finance-green hover:bg-finance-green-dark text-base"
-              >
-                Try it with your partner
-              </TrackedLinkButton>
+              <CalculatorCtaButton className="w-full bg-finance-green hover:bg-finance-green-dark text-base" />
             </div>
           </div>
         </div>

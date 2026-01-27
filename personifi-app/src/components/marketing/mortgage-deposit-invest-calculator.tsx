@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { trackEvent } from "@/lib/analytics";
 
 const currency = "GBP";
 
@@ -131,6 +132,8 @@ export function MortgageDepositInvestCalculator() {
   const router = useRouter();
   const pathname = usePathname();
   const hasInitialized = useRef(false);
+  const hasInteracted = useRef(false);
+  const completionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (hasInitialized.current) return;
@@ -193,6 +196,16 @@ export function MortgageDepositInvestCalculator() {
 
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }, [form, pathname, router]);
+
+  const updateForm = (
+    updater: (prev: typeof form) => typeof form
+  ) => {
+    if (!hasInteracted.current) {
+      hasInteracted.current = true;
+      trackEvent("calc_start");
+    }
+    setForm(updater);
+  };
 
   const calculations = useMemo(() => {
     const propertyPrice = Math.max(0, form.propertyPrice);
@@ -337,6 +350,29 @@ export function MortgageDepositInvestCalculator() {
     };
   }, [form]);
 
+  useEffect(() => {
+    if (!hasInteracted.current) return;
+    if (completionTimeout.current) {
+      clearTimeout(completionTimeout.current);
+    }
+
+    completionTimeout.current = setTimeout(() => {
+      const termResult = calculations.resultsByHorizon.find(
+        (result) => result.years === Math.max(1, Math.round(form.termYears))
+      );
+      trackEvent("calc_complete", {
+        term_years: form.termYears,
+        net_delta: termResult?.netDelta,
+      });
+    }, 800);
+
+    return () => {
+      if (completionTimeout.current) {
+        clearTimeout(completionTimeout.current);
+      }
+    };
+  }, [calculations.resultsByHorizon, form.termYears]);
+
   const chart = useMemo(() => {
     const chartData = calculations.chartData;
     const maxValue = Math.max(
@@ -399,6 +435,7 @@ export function MortgageDepositInvestCalculator() {
   const handleCopy = async () => {
     if (typeof window === "undefined") return;
     await navigator.clipboard.writeText(window.location.href);
+    trackEvent("share_link_copy");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -418,7 +455,7 @@ export function MortgageDepositInvestCalculator() {
                 type="number"
                 value={form.propertyPrice}
                 onChange={(event) =>
-                  setForm((prev) => ({
+                  updateForm((prev) => ({
                     ...prev,
                     propertyPrice: parseNumber(event.target.value, 0),
                   }))
@@ -433,7 +470,7 @@ export function MortgageDepositInvestCalculator() {
                 type="number"
                 value={form.termYears}
                 onChange={(event) =>
-                  setForm((prev) => ({
+                  updateForm((prev) => ({
                     ...prev,
                     termYears: parseNumber(event.target.value, 0),
                   }))
@@ -456,7 +493,7 @@ export function MortgageDepositInvestCalculator() {
                     type="number"
                     value={form.depositScenarioA}
                     onChange={(event) =>
-                      setForm((prev) => ({
+                      updateForm((prev) => ({
                         ...prev,
                         depositScenarioA: parseNumber(event.target.value, 0),
                       }))
@@ -471,7 +508,7 @@ export function MortgageDepositInvestCalculator() {
                     type="number"
                     value={form.investmentAmountA}
                     onChange={(event) =>
-                      setForm((prev) => ({
+                      updateForm((prev) => ({
                         ...prev,
                         investmentAmountA: parseNumber(event.target.value, 0),
                       }))
@@ -487,7 +524,7 @@ export function MortgageDepositInvestCalculator() {
                     step="0.1"
                     value={form.interestRateA}
                     onChange={(event) =>
-                      setForm((prev) => ({
+                      updateForm((prev) => ({
                         ...prev,
                         interestRateA: parseNumber(event.target.value, 0),
                       }))
@@ -510,7 +547,7 @@ export function MortgageDepositInvestCalculator() {
                     type="number"
                     value={form.depositScenarioB}
                     onChange={(event) =>
-                      setForm((prev) => ({
+                      updateForm((prev) => ({
                         ...prev,
                         depositScenarioB: parseNumber(event.target.value, 0),
                       }))
@@ -525,7 +562,7 @@ export function MortgageDepositInvestCalculator() {
                     type="number"
                     value={form.investmentAmountB}
                     onChange={(event) =>
-                      setForm((prev) => ({
+                      updateForm((prev) => ({
                         ...prev,
                         investmentAmountB: parseNumber(event.target.value, 0),
                       }))
@@ -541,7 +578,7 @@ export function MortgageDepositInvestCalculator() {
                     step="0.1"
                     value={form.interestRateB}
                     onChange={(event) =>
-                      setForm((prev) => ({
+                      updateForm((prev) => ({
                         ...prev,
                         interestRateB: parseNumber(event.target.value, 0),
                       }))
@@ -562,7 +599,7 @@ export function MortgageDepositInvestCalculator() {
                 step="1"
                 value={form.expectedReturn}
                 onChange={(event) =>
-                  setForm((prev) => ({
+                  updateForm((prev) => ({
                     ...prev,
                     expectedReturn: parseNumber(event.target.value, 0),
                   }))
