@@ -30,3 +30,5 @@
 - Optimistic transactions
 - Stop Transactions refreshing the page
 - Dashboard graph that shows a stacked bar graph with spending by category per month
+- Figure out what to do if you're logged in & on the tools pages. The current navbar doesn't feel appropriate.
+- Figure out sitemap

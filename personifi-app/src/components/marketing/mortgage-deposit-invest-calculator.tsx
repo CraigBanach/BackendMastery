@@ -36,8 +36,6 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 2,
   }).format(value);
 
-const formatPercent = (value: number) => `${value.toFixed(2)}%`;
-
 const amortize = (
   principal: number,
   annualRate: number,
@@ -126,21 +124,16 @@ const buildPath = (values: Array<{ x: number; y: number }>) => {
 };
 
 export function MortgageDepositInvestCalculator() {
-  const [form, setForm] = useState(defaultForm);
   const [copied, setCopied] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const hasInitialized = useRef(false);
   const hasInteracted = useRef(false);
   const completionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (hasInitialized.current) return;
-
+  const [form, setForm] = useState(() => {
     const params = searchParams;
 
-    const nextForm = {
+    return {
       ...defaultForm,
       propertyPrice: parseNumber(
         params.get("price") ?? "",
@@ -176,13 +169,9 @@ export function MortgageDepositInvestCalculator() {
         defaultForm.expectedReturn,
       ),
     };
-
-    setForm(nextForm);
-    hasInitialized.current = true;
-  }, [searchParams]);
+  });
 
   useEffect(() => {
-    if (!hasInitialized.current) return;
     const params = new URLSearchParams();
     params.set("price", form.propertyPrice.toString());
     params.set("depositA", form.depositScenarioA.toString());
@@ -247,18 +236,6 @@ export function MortgageDepositInvestCalculator() {
         years,
       );
       const investmentDelta = investmentValueB - investmentValueA;
-
-      const principalPaidA = Math.max(
-        0,
-        loanScenarioA - scenarioAResult.balance,
-      );
-      const principalPaidB = Math.max(
-        0,
-        loanScenarioB - scenarioBResult.balance,
-      );
-      const totalPaymentsA = principalPaidA + scenarioAResult.totalInterest;
-      const totalPaymentsB = principalPaidB + scenarioBResult.totalInterest;
-      const extraCost = totalPaymentsB - totalPaymentsA;
       const netDelta =
         investmentValueB -
         scenarioBResult.balance -
@@ -275,10 +252,7 @@ export function MortgageDepositInvestCalculator() {
         investmentValueA,
         investmentValueB,
         investmentDelta,
-        extraCost,
         netDelta,
-        totalPaymentsA,
-        totalPaymentsB,
         totalA,
         totalB,
       };
@@ -316,19 +290,6 @@ export function MortgageDepositInvestCalculator() {
         form.expectedReturn,
         year,
       );
-      const principalPaidA = Math.max(
-        0,
-        loanScenarioA - scenarioAResult.balance,
-      );
-      const principalPaidB = Math.max(
-        0,
-        loanScenarioB - scenarioBResult.balance,
-      );
-      const totalPaymentsA = principalPaidA + scenarioAResult.totalInterest;
-      const totalPaymentsB = principalPaidB + scenarioBResult.totalInterest;
-      const interestDelta =
-        scenarioBResult.totalInterest - scenarioAResult.totalInterest;
-      const balanceDelta = scenarioBResult.balance - scenarioAResult.balance;
       const totalA =
         form.propertyPrice + investmentValueA - scenarioAResult.balance;
       const totalB =
@@ -430,7 +391,7 @@ export function MortgageDepositInvestCalculator() {
         mortgageB: buildPath(mapSeries("mortgageBalanceB")),
       },
     };
-  }, [calculations.chartData]);
+  }, [calculations.chartData, form.termYears]);
 
   const handleCopy = async () => {
     if (typeof window === "undefined") return;

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import Link from "next/link";
 
@@ -87,7 +88,9 @@ export default function MortgageDepositInvestCalculatorPage() {
             </div>
 
             <div className="order-2 lg:order-3 lg:col-span-2">
-              <MortgageDepositInvestCalculator />
+              <Suspense fallback={<div className="text-center text-muted-foreground">Loading calculator...</div>}>
+                <MortgageDepositInvestCalculator />
+              </Suspense>
             </div>
 
             <div className="order-3 rounded-xl border bg-white p-6 shadow-sm lg:order-2 lg:col-start-2">
