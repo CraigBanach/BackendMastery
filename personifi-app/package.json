@@ -27,7 +27,7 @@
     "date-fns": "^4.1.0",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.556.0",
-    "next": "^16.0.10",
+    "next": "^16.1.5",
     "posthog-js": "^1.324.0",
     "posthog-node": "^5.17.0",
     "react": "19.2.1",
