@@ -27,3 +27,8 @@
 - Update subscription with the subscription end date
 - Allow the user to specify the ordering of categories
 - Remove the category type selector on transaction entering - Update the Combobox to separate income from expense categories visually
+- Optimistic transactions
+- Stop Transactions refreshing the page
+- Dashboard graph that shows a stacked bar graph with spending by category per month
+- Figure out what to do if you're logged in & on the tools pages. The current navbar doesn't feel appropriate.
+- Figure out sitemap

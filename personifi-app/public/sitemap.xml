@@ -25,6 +25,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://personifi.xyz/tools</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://personifi.xyz/tools/mortgage-deposit-vs-invest-calculator</loc>
+    <lastmod>2026-01-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://personifi.xyz/stories/how-we-use-personifi</loc>
     <lastmod>2026-01-20</lastmod>
     <changefreq>monthly</changefreq>

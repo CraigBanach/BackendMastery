@@ -8,7 +8,8 @@ import { CheckCircle, ArrowRight, ChevronRight } from "lucide-react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Personifi | Conscious Spending for Couples | Shared Money, Big Goals ",
+  title:
+    "Personifi | Conscious Spending for Couples | Shared Money, Big Goals ",
   description:
     "A simple shared money tool for couples who want to spend intentionally and save together for life goals like a house, a wedding, or travel.",
   keywords:
@@ -76,7 +77,9 @@ export default function Home() {
                 size="lg"
                 className="border-finance-green text-finance-green hover:bg-finance-green-light hover:text-finance-green-dark text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 w-full sm:w-auto"
               >
-                <Link href="/stories/how-we-use-personifi">See a real example</Link>
+                <Link href="/stories/how-we-use-personifi">
+                  See a real example
+                </Link>
               </Button>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
@@ -174,8 +177,25 @@ export default function Home() {
             <p className="text-lg sm:text-xl text-muted-foreground mb-4">
               Some things do not fit neatly into a monthly budget. Personifi
               helps you separate day-to-day spending from longer-term goals, so
-              you can see progress without constantly asking, &quot;Are we still on
-              track?&quot;
+              you can see progress without constantly asking, &quot;Are we still
+              on track?&quot;
+            </p>
+            <p className="text-sm text-muted-foreground mb-6">
+              Curious about your deposit strategy? Try the{" "}
+              <Link
+                href="/tools/mortgage-deposit-vs-invest-calculator"
+                className="text-finance-green font-medium hover:fill-finance-green-dark"
+              >
+                Mortgage Deposit vs Investment Calculator
+              </Link>{" "}
+              in our{" "}
+              <Link
+                href="/tools"
+                className="text-finance-green font-medium hover:text-finance-green-dark"
+              >
+                tools library
+              </Link>
+              .
             </p>
             <ul className="space-y-2 text-muted-foreground text-sm sm:text-base">
               <li className="flex items-start gap-2">
