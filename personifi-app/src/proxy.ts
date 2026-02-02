@@ -30,7 +30,8 @@ export async function proxy(request: NextRequest) {
       request.nextUrl.pathname !== "/free-budget-template" &&
       request.nextUrl.pathname !== "/free-month-budget-review" &&
       request.nextUrl.pathname !== "/tools" &&
-      request.nextUrl.pathname !== "/tools/mortgage-deposit-vs-invest-calculator" &&
+      request.nextUrl.pathname !==
+        "/tools/mortgage-deposit-vs-invest-calculator" &&
       request.nextUrl.pathname !== "/personifi-opengraph-image.png" &&
       !request.nextUrl.pathname.startsWith("/stories") &&
       !request.nextUrl.pathname.startsWith("/ingest") &&
