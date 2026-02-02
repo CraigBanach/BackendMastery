@@ -8,7 +8,7 @@ export function PostHogProvider({
   children,
   apiKey,
   options,
-  configEndpoint = "/api/posthog-config",
+  configEndpoint = "/posthog-config",
 }: {
   children: React.ReactNode;
   apiKey?: string;
