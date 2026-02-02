@@ -21,7 +21,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
         <PostHogProvider
-          apiKey={process.env.POSTHOG_KEY}
           options={{
             api_host: "/ingest",
             ui_host: "https://eu.posthog.com",
