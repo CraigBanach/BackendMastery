@@ -4,8 +4,6 @@ description: "A simple way to think about personal finance. What actually matter
 date: "2026-02-05"
 ---
 
-# The personal finance pyramid: what actually matters
-
 Most personal finance advice feels overwhelming because everything feels urgent.
 
 When you think everything matters at once, it’s hard to know where to start.
