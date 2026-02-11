@@ -35,6 +35,7 @@ export async function proxy(request: NextRequest) {
       request.nextUrl.pathname !== "/personifi-opengraph-image.png" &&
       request.nextUrl.pathname !== "/finance-pyramid.svg" &&
       request.nextUrl.pathname !== "/house-dollar.jpg" &&
+      request.nextUrl.pathname !== "/5buu69js372bds24myztnye8jtwxzktm.txt" &&
       !request.nextUrl.pathname.startsWith("/stories") &&
       !request.nextUrl.pathname.startsWith("/ingest") &&
       !request.nextUrl.pathname.startsWith("/posthog-config")
