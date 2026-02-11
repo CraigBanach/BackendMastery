@@ -8,8 +8,12 @@ import { PostHogProvider } from "@/lib/providers/posthog-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://personifi.xyz"),
   title: "personifi",
   description: "Personal Finance for couples",
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function RootLayout({

@@ -38,9 +38,15 @@
   </url>
     <url>
     <loc>https://personifi.xyz/stories/the-personal-finance-pyramid</loc>
-    <lastmod>2026-01-20</lastmod>
+    <lastmod>2026-02-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+      <url>
+    <loc>https://personifi.xyz/stories/mortgage-deposit-vs-investing</loc>
+    <lastmod>2026-02-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://personifi.xyz/stories/how-we-use-personifi</loc>
