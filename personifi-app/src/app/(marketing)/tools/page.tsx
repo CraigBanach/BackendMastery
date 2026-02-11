@@ -55,6 +55,26 @@ export default function ToolsPage() {
           </Link>
         </div>
       </section>
+
+      <section className="pb-16 px-4 text-center">
+        <p className="text-sm text-muted-foreground">
+          Looking for a simpler starting point? Try our{" "}
+          <Link
+            href="/free-budget-template"
+            className="text-finance-green font-medium hover:text-finance-green-dark"
+          >
+            free budget spreadsheet
+          </Link>{" "}
+          or read{" "}
+          <Link
+            href="/stories"
+            className="text-finance-green font-medium hover:text-finance-green-dark"
+          >
+            real money stories
+          </Link>{" "}
+          from couples using Personifi.
+        </p>
+      </section>
     </div>
   );
 }

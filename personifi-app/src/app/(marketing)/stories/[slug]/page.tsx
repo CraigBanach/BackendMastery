@@ -28,6 +28,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `Personifi Stories | ${post.title} `,
     description: post.description,
+    keywords: post.keywords,
+    alternates: {
+      canonical: `/stories/${slug}`,
+    },
     openGraph: {
       title: post.title,
       description: post.description,
@@ -101,10 +105,58 @@ export default async function BlogPostPage({ params }: Props) {
               Try it with your partner
             </TrackedLinkButton>
 
+            <p className="text-sm text-muted-foreground mt-4">
+              Or explore our{" "}
+              <Link
+                href="/free-budget-template"
+                className="text-finance-green font-medium hover:text-finance-green-dark"
+              >
+                free budget template
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/tools"
+                className="text-finance-green font-medium hover:text-finance-green-dark"
+              >
+                planning tools
+              </Link>
+              .
+            </p>
 
           </div>
         </div>
       </div>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: post.title,
+            description: post.description,
+            datePublished: post.date,
+            author: {
+              "@type": "Organization",
+              name: "Personifi",
+              url: "https://personifi.xyz",
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "Personifi",
+              url: "https://personifi.xyz",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://personifi.xyz/personifi-opengraph-image.png",
+              },
+            },
+            mainEntityOfPage: {
+              "@type": "WebPage",
+              "@id": `https://personifi.xyz/stories/${slug}`,
+            },
+          }),
+        }}
+      />
     </div>
   );
 }

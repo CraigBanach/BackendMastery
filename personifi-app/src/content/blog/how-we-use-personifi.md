@@ -2,6 +2,7 @@
 title: "How We Use Personifi"
 description: "A quiet look at how we manage money together with conscious spending."
 date: "2026-01-20"
+keywords: "conscious spending, couples budgeting, shared finances, money management for couples, personifi review"
 ---
 
 Money was never really a problem for us day-to-day. It became one when we

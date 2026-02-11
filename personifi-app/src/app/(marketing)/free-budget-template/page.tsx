@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Metadata } from "next";
 import { TrackedLinkButton } from "@/components/ui/tracked-link-button";
+import Link from "next/link";
 
 
 export const metadata: Metadata = {
@@ -18,6 +19,9 @@ export const metadata: Metadata = {
   keywords:
     "UK couples budget template, free budget spreadsheet, couples finance UK, joint budget template, Google Sheets budget, UK personal finance, couples money management, household budget planner",
   robots: "index, follow",
+  alternates: {
+    canonical: "/free-budget-template",
+  },
   openGraph: {
     title: "Free UK Couples Budget Template | Google Sheets Budget Planner",
     description:
@@ -136,6 +140,37 @@ export default function FreeBudgetTemplate() {
 
       {/* Footer */}
       {/* Footer removed as it is now in the global layout */}
+
+      {/* Related Pages */}
+      <section className="py-12 px-4 bg-gray-50">
+        <div className="container mx-auto max-w-5xl">
+          <h2 className="text-xl font-semibold mb-4 text-center">
+            More ways to get started
+          </h2>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center text-center items-center">
+            <Link
+              href="/free-month-budget-review"
+              className="text-finance-green hover:text-finance-green-dark font-medium transition-colors duration-200"
+            >
+              Get a free budget critique →
+            </Link>
+            <span className="hidden sm:inline text-muted-foreground">|</span>
+            <Link
+              href="/stories"
+              className="text-finance-green hover:text-finance-green-dark font-medium transition-colors duration-200"
+            >
+              Read real money stories →
+            </Link>
+            <span className="hidden sm:inline text-muted-foreground">|</span>
+            <Link
+              href="/tools"
+              className="text-finance-green hover:text-finance-green-dark font-medium transition-colors duration-200"
+            >
+              Explore our planning tools →
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

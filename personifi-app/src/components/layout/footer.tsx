@@ -43,6 +43,12 @@ const Footer = () => {
                 Free Budget Template
               </Link>
               <Link
+                href="/free-month-budget-review"
+                className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
+              >
+                Free Budget Review
+              </Link>
+              <Link
                 href="/stories"
                 className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
               >
@@ -56,6 +62,12 @@ const Footer = () => {
             <h4 className="font-semibold mb-4 text-finance-navy">Tools</h4>
             <div className="space-y-2 flex flex-col items-center md:items-start">
               <Link
+                href="/tools"
+                className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
+              >
+                All Tools
+              </Link>
+              <Link
                 href="/tools/mortgage-deposit-vs-invest-calculator"
                 className="text-finance-green hover:text-finance-green-dark transition-colors duration-200 font-medium"
               >
@@ -68,6 +80,9 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4 text-finance-navy">Connect</h4>
             <div className="space-y-2">
+              <p className="text-muted-foreground text-sm">
+                Follow us for updates:
+              </p>
               <div className="flex justify-center md:justify-start space-x-4">
                 <a
                   href="mailto:hello@personifi.xyz"
