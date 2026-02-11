@@ -34,6 +34,7 @@ export async function proxy(request: NextRequest) {
         "/tools/mortgage-deposit-vs-invest-calculator" &&
       request.nextUrl.pathname !== "/personifi-opengraph-image.png" &&
       request.nextUrl.pathname !== "/finance-pyramid.svg" &&
+      request.nextUrl.pathname !== "/house-dollar.jpg" &&
       !request.nextUrl.pathname.startsWith("/stories") &&
       !request.nextUrl.pathname.startsWith("/ingest") &&
       !request.nextUrl.pathname.startsWith("/posthog-config")
