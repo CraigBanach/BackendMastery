@@ -60,9 +60,9 @@ A 0.5% lower interest rate over 25 or 30 years is not trivial. It compounds. It 
 
 | Scenario   | Loan Amount | Interest Rate | Total Interest Paid |
 | ---------- | ----------- | ------------- | ------------------- |
-| 95% LTV    | £225,000    | 4.8%          | £270,159            |
-| 90% LTV    | £225,000    | 4.3%          | £242,103            |
-| Difference | —           | -0.5%         | £28,056 saved       |
+| 95% LTV    | £225,000    | 4.8%          | £161,885            |
+| 90% LTV    | £225,000    | 4.3%          | £142,721            |
+| Difference | —           | -0.5%         | £19,164 saved       |
 
 This is why the “bigger deposit vs investing” decision in the UK is not linear.
 
