@@ -2,6 +2,7 @@
 title: "How We Pulled Off a £10k UK Wedding in 2022 (And Why We Ditched the Spreadsheet)"
 description: "A real line-by-line breakdown of a £10k wedding budget in the UK. See exactly how much we spent on the venue, photographer, and dress—and how we stopped arguing about the costs."
 date: "2025-12-03"
+keywords: "UK wedding budget, £10k wedding, wedding cost breakdown, cheap wedding UK, real wedding budget, couples wedding planning"
 ---
 
 My wife and I were engaged for 11 years before we finally got married. We refused to go into debt for just one day, so we waited until we were in the exact right financial position to do it our way.

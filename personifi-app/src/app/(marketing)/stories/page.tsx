@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   title: "Personifi Blog | Stories & Financial Tips for UK Couples  Blog",
   description: "Real money stories, budgeting tips, and financial advice for UK couples. Learn how to manage money together without the arguments.",
   keywords: "couples finance blog, UK money tips, relationship finance, wedding budget breakdown, shared finances, money arguments",
+  alternates: {
+    canonical: "/stories",
+  },
   openGraph: {
     title: "Personifi Stories: Real Money Talk for Couples",
     description: "Real stories and practical tips for managing money as a team.",
@@ -33,6 +36,24 @@ export default function BlogPage() {
           title="Personifi Stories"
           subTitle="Real stories, financial tips, and updates from the team."
         />
+
+        <p className="text-center text-sm text-muted-foreground mb-6 px-2">
+          Looking for something hands-on? Try our{" "}
+          <Link
+            href="/free-budget-template"
+            className="text-finance-green font-medium hover:text-finance-green-dark"
+          >
+            free budget template
+          </Link>{" "}
+          or explore our{" "}
+          <Link
+            href="/tools"
+            className="text-finance-green font-medium hover:text-finance-green-dark"
+          >
+            planning tools
+          </Link>
+          .
+        </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-2">
           {posts.map((post) => (

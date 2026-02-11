@@ -2,6 +2,7 @@
 title: "Bigger Mortgage Deposit or Invest Instead? UK Guide for Buyers"
 description: "Should you put down a bigger mortgage deposit or invest instead? A clear UK-focused breakdown of LTV bands, investment returns, risk and behaviour for first and second-time buyers."
 date: "2026-02-11"
+keywords: "mortgage deposit vs invest, UK mortgage calculator, LTV bands, bigger deposit or invest, first time buyer deposit, UK mortgage guide"
 ---
 
 Imagine this.

@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   keywords:
     "free month budgeting app, budget review, spending critique, personal finance audit, couples budgeting, Personifi offer",
   robots: "index, follow",
+  alternates: {
+    canonical: "/free-month-budget-review",
+  },
   openGraph: {
     title: "Personifi | Free Extra Month + Budget Review ",
     description:
@@ -336,6 +339,37 @@ export default function FreeMonthBudgetReview() {
           <p className="mt-4 text-sm text-muted-foreground">
             Have questions? Email us at hello@personifi.xyz
           </p>
+        </div>
+      </section>
+
+      {/* Related Pages */}
+      <section className="py-12 px-4 bg-gray-50">
+        <div className="container mx-auto max-w-5xl">
+          <h2 className="text-xl font-semibold mb-4 text-center">
+            Not quite ready? Try these instead
+          </h2>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center text-center items-center">
+            <Link
+              href="/free-budget-template"
+              className="text-finance-green hover:text-finance-green-dark font-medium transition-colors duration-200"
+            >
+              Free budget spreadsheet →
+            </Link>
+            <span className="hidden sm:inline text-muted-foreground">|</span>
+            <Link
+              href="/stories"
+              className="text-finance-green hover:text-finance-green-dark font-medium transition-colors duration-200"
+            >
+              Real money stories →
+            </Link>
+            <span className="hidden sm:inline text-muted-foreground">|</span>
+            <Link
+              href="/tools"
+              className="text-finance-green hover:text-finance-green-dark font-medium transition-colors duration-200"
+            >
+              Planning tools →
+            </Link>
+          </div>
         </div>
       </section>
     </div>

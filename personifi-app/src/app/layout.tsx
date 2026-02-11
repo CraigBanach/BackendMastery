@@ -9,8 +9,21 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://personifi.xyz"),
-  title: "personifi",
-  description: "Personal Finance for couples",
+  title: {
+    default: "Personifi | Conscious Spending for Couples",
+    template: "%s | Personifi",
+  },
+  description: "A simple shared money tool for couples who want to spend intentionally and save together for life goals.",
+  openGraph: {
+    images: [
+      {
+        url: "https://personifi.xyz/personifi-opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Personifi — Conscious Spending for Couples",
+      },
+    ],
+  },
   alternates: {
     canonical: "/",
   },
@@ -24,6 +37,28 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Personifi",
+              url: "https://personifi.xyz",
+              logo: "https://personifi.xyz/personifi-opengraph-image.png",
+              sameAs: [
+                "https://www.instagram.com/personifi_app/",
+                "https://www.youtube.com/@Personifi_app",
+                "https://www.tiktok.com/@personifi_app",
+              ],
+              contactPoint: {
+                "@type": "ContactPoint",
+                email: "hello@personifi.xyz",
+                contactType: "customer service",
+              },
+            }),
+          }}
+        />
         <PostHogProvider
           options={{
             api_host: "/ingest",

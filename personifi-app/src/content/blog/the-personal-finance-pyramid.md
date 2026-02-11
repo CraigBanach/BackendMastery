@@ -2,6 +2,7 @@
 title: "The Personal Finance Pyramid: What Actually Matters"
 description: "A simple way to think about personal finance. What actually matters, in what order, and why getting the foundations right usually matters more than optimising the details."
 date: "2026-02-05"
+keywords: "personal finance pyramid, financial priorities, budgeting basics, positive cashflow, debt reduction, saving vs investing, UK personal finance"
 ---
 
 Most personal finance advice feels overwhelming because everything feels urgent.
