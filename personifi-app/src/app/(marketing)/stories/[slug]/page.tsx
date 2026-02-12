@@ -21,12 +21,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!post) {
     return {
-      title: "Post Not Found | Personifi",
+      title: "Post Not Found",
     };
   }
 
   return {
-    title: `${post.title} | Personifi`,
+    title: post.title,
     description: post.description,
     keywords: post.keywords,
     alternates: {

@@ -12,7 +12,7 @@ import Link from "next/link";
 
 
 export const metadata: Metadata = {
-  title: "Free UK Couples Budget Template | Personifi",
+  title: "Free UK Couples Budget Template",
   description:
     "Download our free Google Sheets budget template designed for UK couples. Track expenses, plan finances together, and manage your household budget with our proven spreadsheet system.",
   keywords:
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     canonical: "/free-budget-template",
   },
   openGraph: {
-    title: "Free UK Couples Budget Template | Personifi",
+    title: "Free UK Couples Budget Template",
     description:
       "Download our free Google Sheets budget template designed for UK couples. No signup required.",
     type: "website",
