@@ -16,7 +16,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Free Monthly Budget Review | Personifi",
+  title: "Free Monthly Budget Review",
   description:
     "Claim a free extra month of Personifi plus a personalized budget and spending critique. Start your trial and get clear, actionable feedback on your money habits.",
   keywords:
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     canonical: "/free-month-budget-review",
   },
   openGraph: {
-    title: "Free Monthly Budget Review | Personifi",
+    title: "Free Monthly Budget Review",
     description:
       "Start your Personifi trial and unlock a free extra month plus a personalized budget critique.",
     type: "website",
