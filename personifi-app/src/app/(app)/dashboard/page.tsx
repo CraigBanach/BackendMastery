@@ -12,7 +12,7 @@ import type { Metadata } from "next";
 
 
 export const metadata: Metadata = {
-  title: "Personifi | Dashboard ",
+  title: "Dashboard | Personifi",
   description: "Manage your personal finances with ease",
 };
 

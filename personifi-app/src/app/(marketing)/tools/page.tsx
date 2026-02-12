@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Tools | Personifi",
+  title: "Financial Planning Tools for Couples | Personifi",
   description:
     "Practical money tools that help you plan, compare, and make confident decisions together.",
   robots: "index, follow",

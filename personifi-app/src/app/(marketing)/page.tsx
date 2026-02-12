@@ -8,15 +8,14 @@ import { CheckCircle, ArrowRight, ChevronRight } from "lucide-react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title:
-    "Personifi | Conscious Spending for Couples | Shared Money, Big Goals ",
+  title: "Conscious Spending for Couples | Personifi",
   description:
     "A simple shared money tool for couples who want to spend intentionally and save together for life goals like a house, a wedding, or travel.",
   keywords:
     "conscious spending, couples budgeting, shared finances, money goals, UK couples finance app, joint budget app",
   robots: "index, follow",
   openGraph: {
-    title: "Personifi | Conscious Spending for Couples ",
+    title: "Conscious Spending for Couples | Personifi",
     description:
       "A simple shared money tool for couples who want to spend intentionally and save together for life goals like a house, a wedding, or travel.",
     type: "website",
