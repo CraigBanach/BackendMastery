@@ -7,7 +7,7 @@ import { CalculatorCtaButton } from "@/components/marketing/calculator-cta-butto
 import { MortgageDepositInvestCalculator } from "@/components/marketing/mortgage-deposit-invest-calculator";
 
 export const metadata: Metadata = {
-  title: "Mortgage Deposit vs Investment Calculator | Personifi",
+  title: "Mortgage Deposit vs Investing Calculator | Personifi",
   description:
     "Compare a larger mortgage deposit vs investing the difference. A smaller deposit plus investment growth can sometimes leave you better off, depending on rate changes.",
   keywords:
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
       "https://personifi.xyz/tools/mortgage-deposit-vs-invest-calculator",
   },
   openGraph: {
-    title: "Mortgage Deposit vs Investment Calculator",
+    title: "Mortgage Deposit vs Investing Calculator | Personifi",
     description:
       "Compare a larger mortgage deposit vs investing the difference and see when a smaller deposit plus investment growth could win.",
     type: "website",

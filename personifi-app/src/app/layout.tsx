@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL("https://personifi.xyz"),
   title: {
-    default: "Personifi | Conscious Spending for Couples",
+    default: "Conscious Spending for Couples | Personifi",
     template: "%s | Personifi",
   },
   description: "A simple shared money tool for couples who want to spend intentionally and save together for life goals.",
