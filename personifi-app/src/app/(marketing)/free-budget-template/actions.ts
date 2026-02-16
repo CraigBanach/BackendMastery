@@ -7,7 +7,7 @@ const subscribeSchema = z.object({
   firstName: z.string().optional(),
 });
 
-type SubscribeState = {
+export type SubscribeState = {
   success: boolean;
   message?: string;
   errors?: {
@@ -22,7 +22,7 @@ export async function subscribeToKit(
 ): Promise<SubscribeState> {
   const validatedFields = subscribeSchema.safeParse({
     email: formData.get("email"),
-    firstName: formData.get("firstName"),
+    firstName: formData.get("firstName") || undefined,
   });
 
   if (!validatedFields.success) {
