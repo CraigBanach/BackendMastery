@@ -1,13 +1,10 @@
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { BudgetTemplateForm } from "@/components/marketing/budget-template-form";
 import {
-  Download,
-  ArrowRight,
   Users,
   Calculator,
 } from "lucide-react";
 import { Metadata } from "next";
-import { TrackedLinkButton } from "@/components/ui/tracked-link-button";
 import Link from "next/link";
 
 
@@ -35,102 +32,85 @@ export default function FreeBudgetTemplate() {
     <div className="flex flex-col min-h-screen">
 
       {/* Hero Section */}
-      <section className="flex-1 -mt-16 pt-36 pb-8 md:pt-40 md:pb-16 bg-gradient-to-br from-finance-green-light/10 to-white">
+      <section className="flex-1 -mt-16 pt-36 pb-12 md:pt-40 md:pb-24 bg-gradient-to-br from-finance-green-light/10 to-white">
         <div className="container mx-auto max-w-6xl px-4">
-          <div className="grid lg:grid-cols-2 gap-8 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-start">
             {/* Left Content */}
-            <div className="text-center lg:text-left">
-              <Badge
-                variant="secondary"
-                className="mb-4 bg-finance-green-light text-finance-green-dark hover:bg-finance-green-light/70 inline-block"
-              >
-                📊 Free Google Sheets Template
-              </Badge>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl mb-4 leading-tight">
-                Free budget spreadsheet{" "}
-                <span className="text-finance-green">for UK couples</span>
-              </h1>
-              <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-                A proven Google Sheets budget template designed specifically for
-                UK couples. Download, customize, and start tracking your
-                finances together.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-4">
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-finance-green hover:bg-finance-green-dark text-base px-6 py-3"
+            <div className="text-center lg:text-left space-y-8">
+              <div>
+                <Badge
+                  variant="secondary"
+                  className="mb-4 bg-finance-green-light text-finance-green-dark hover:bg-finance-green-light/70 inline-block"
                 >
-                  <a
-                    href="https://docs.google.com/spreadsheets/d/1txy_9_NyHuKZpSONJ5QyhHvm8if9Af5G8Zq7bn9eX30/edit#gid=0"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    View Spreadsheet Template
-                    <Download className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
-                <TrackedLinkButton
-                  href="/auth/login?screen_hint=signup&signup_source=default"
-                  eventName="signup_started"
-                  variant="outline"
-                  size="lg"
-                  className="border-finance-green text-finance-green hover:bg-finance-green-light hover:text-finance-green-dark text-base px-6 py-3"
-                >
-                  Try Personifi App Free
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </TrackedLinkButton>
-
+                  📊 Free Google Sheets Template
+                </Badge>
+                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl mb-6 leading-tight">
+                  Free Couples Budget Template{" "}
+                  <span className="text-finance-green block mt-2">Get it Delivered Instantly</span>
+                </h1>
+                <p className="text-xl text-muted-foreground leading-relaxed">
+                  Start building a shared budget system you both trust.
+                  Track expenses, plan together, and stop fighting about money.
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Downloads to your Google Drive • No email required • Works
-                offline
-              </p>
+
+              <div className="grid sm:grid-cols-2 gap-6 text-left max-w-lg mx-auto lg:mx-0">
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-finance-navy flex items-center">
+                    <Users className="h-5 w-5 text-finance-green mr-2" />
+                    For Couples
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Designed specifically for two people managing one life.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-finance-navy flex items-center">
+                    <Calculator className="h-5 w-5 text-finance-green mr-2" />
+                    Smart tracking
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Easy shared monthly tracking that jumpstarts your planning.
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-left bg-blue-50/50 rounded-xl p-6 border border-blue-100 hidden lg:block">
+                <h3 className="font-semibold mb-3">How it works:</h3>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start">
+                    <span className="bg-blue-100 text-blue-700 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">1</span>
+                    Enter your email to get the secure link
+                  </li>
+                  <li className="flex items-start">
+                    <span className="bg-blue-100 text-blue-700 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">2</span>
+                    Make a copy to your own Google Drive
+                  </li>
+                  <li className="flex items-start">
+                    <span className="bg-blue-100 text-blue-700 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">3</span>
+                    Start planning your future together
+                  </li>
+                </ul>
+              </div>
             </div>
 
-            {/* Right Content - Features Preview */}
-            <div className="space-y-4">
-              <div className="bg-white rounded-lg shadow-lg p-4">
-                <div className="bg-gradient-to-br from-finance-green-light/20 to-finance-green-light/10 p-3 rounded-lg mb-3">
-                  <div className="text-sm font-medium text-finance-green-dark mb-2">
-                    This Month&apos;s Budget Overview
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <div className="text-muted-foreground">Total Income</div>
-                      <div className="font-semibold">£4,200</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">
-                        Total Expenses
-                      </div>
-                      <div className="font-semibold">£3,850</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="text-center p-2 bg-green-50 rounded-lg">
-                  <div className="text-sm text-green-700 font-medium">
-                    £350 under budget! 🎉
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white rounded-lg shadow p-3 text-center">
-                  <Calculator className="h-8 w-8 text-finance-green mx-auto mb-2" />
-                  <div className="text-sm font-medium">Smart Calculator</div>
-                  <div className="text-xs text-muted-foreground">
-                    Auto calculations
-                  </div>
-                </div>
-                <div className="bg-white rounded-lg shadow p-3 text-center">
-                  <Users className="h-8 w-8 text-finance-green mx-auto mb-2" />
-                  <div className="text-sm font-medium">Couples Design</div>
-                  <div className="text-xs text-muted-foreground">
-                    Built for two
-                  </div>
-                </div>
+            {/* Right Content - Form */}
+            <div className="w-full max-w-md mx-auto lg:mt-8">
+              <BudgetTemplateForm />
+              
+               {/* Mobile-only "How it works" */}
+              <div className="mt-8 text-left bg-blue-50/50 rounded-xl p-6 border border-blue-100 lg:hidden user-select-none">
+                <h3 className="font-semibold mb-3">How it works:</h3>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start">
+                    <span className="bg-blue-100 text-blue-700 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">1</span>
+                    Enter your email to get the secure link
+                  </li>
+                  <li className="flex items-start">
+                    <span className="bg-blue-100 text-blue-700 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">2</span>
+                    Make a copy to your own Google Drive
+                  </li>
+                </ul>
               </div>
             </div>
           </div>

@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { FooterNewsletterForm } from "@/components/marketing/footer-newsletter-form";
 
 const Footer = () => {
   return (
     <footer className="bg-white border-t py-12 px-4">
       <div className="container mx-auto max-w-6xl">
-        <div className="grid md:grid-cols-4 gap-8 text-center md:text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 text-center sm:text-left">
           {/* Company Section */}
           <div>
             <h3 className="text-xl font-bold text-finance-green mb-2">
@@ -76,13 +77,10 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Contact & Social */}
+          {/* Contact Section */}
           <div>
             <h4 className="font-semibold mb-4 text-finance-navy">Connect</h4>
-            <div className="space-y-2">
-              <p className="text-muted-foreground text-sm">
-                Follow us for updates:
-              </p>
+            <div className="space-y-4">
               <div className="flex justify-center md:justify-start space-x-4">
                 <a
                   href="mailto:hello@personifi.xyz"
@@ -176,6 +174,11 @@ const Footer = () => {
                 </a>
               </div>
             </div>
+          </div>
+
+          {/* Newsletter Section - Moved to its own column and made slightly wider on large screens */}
+          <div className="md:col-span-1 pt-8 md:pt-0">
+            <FooterNewsletterForm />
           </div>
         </div>
 

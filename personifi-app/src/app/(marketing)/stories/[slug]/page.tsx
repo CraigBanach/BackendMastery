@@ -10,6 +10,7 @@ import { TrackedLinkButton } from "@/components/ui/tracked-link-button";
 
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { InlineLeadMagnet } from "@/components/marketing/inline-lead-magnet";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -87,6 +88,10 @@ export default async function BlogPostPage({ params }: Props) {
             </ReactMarkdown>
           </div>
         </article>
+        
+        <div className="mt-12">
+          <InlineLeadMagnet />
+        </div>
 
         <div className="mt-12 pt-8 border-t border-gray-200">
           <div className="bg-white rounded-2xl p-8 text-center shadow-md">

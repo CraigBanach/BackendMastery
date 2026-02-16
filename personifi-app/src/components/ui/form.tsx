@@ -155,6 +155,26 @@ function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
   )
 }
 
+function FormLevelMessage({ className, ...props }: React.ComponentProps<"p">) {
+  const { formState: { errors } } = useFormContext()
+  const error = errors.root
+  const body = error ? String(error.message) : props.children
+
+  if (!body) {
+    return null
+  }
+
+  return (
+    <p
+      data-slot="form-message"
+      className={cn("text-destructive text-sm font-medium", className)}
+      {...props}
+    >
+      {body}
+    </p>
+  )
+}
+
 export {
   useFormField,
   Form,
@@ -163,5 +183,7 @@ export {
   FormControl,
   FormDescription,
   FormMessage,
+  FormLevelMessage,
   FormField,
 }
+

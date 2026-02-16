@@ -10,8 +10,10 @@ import {
 import Link from "next/link";
 import { format } from "date-fns";
 import { Metadata } from "next";
+import { InlineLeadMagnet } from "@/components/marketing/inline-lead-magnet";
 
 export const metadata: Metadata = {
+// ... existing metadata
   title: "Financial Insights for Couples",
   description: "Real money stories, budgeting tips, and financial advice for UK couples. Learn how to manage money together without the arguments.",
   keywords: "couples finance blog, UK money tips, relationship finance, wedding budget breakdown, shared finances, money arguments",
@@ -37,24 +39,6 @@ export default function BlogPage() {
           subTitle="Real stories, financial tips, and updates from the team."
         />
 
-        <p className="text-center text-sm text-muted-foreground mb-6 px-2">
-          Looking for something hands-on? Try our{" "}
-          <Link
-            href="/free-budget-template"
-            className="text-finance-green font-medium hover:text-finance-green-dark"
-          >
-            free budget template
-          </Link>{" "}
-          or explore our{" "}
-          <Link
-            href="/tools"
-            className="text-finance-green font-medium hover:text-finance-green-dark"
-          >
-            planning tools
-          </Link>
-          .
-        </p>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-2">
           {posts.map((post) => (
             <Link
@@ -79,6 +63,10 @@ export default function BlogPage() {
               </Card>
             </Link>
           ))}
+        </div>
+
+        <div className="pt-12">
+          <InlineLeadMagnet />
         </div>
       </div>
     </div>

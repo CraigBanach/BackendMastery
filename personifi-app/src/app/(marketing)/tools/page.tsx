@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { InlineLeadMagnet } from "@/components/marketing/inline-lead-magnet";
 
 export const metadata: Metadata = {
   title: "Financial Planning Tools for Couples",
@@ -56,24 +57,10 @@ export default function ToolsPage() {
         </div>
       </section>
 
-      <section className="pb-16 px-4 text-center">
-        <p className="text-sm text-muted-foreground">
-          Looking for a simpler starting point? Try our{" "}
-          <Link
-            href="/free-budget-template"
-            className="text-finance-green font-medium hover:text-finance-green-dark"
-          >
-            free budget spreadsheet
-          </Link>{" "}
-          or read{" "}
-          <Link
-            href="/stories"
-            className="text-finance-green font-medium hover:text-finance-green-dark"
-          >
-            real money stories
-          </Link>{" "}
-          from couples using Personifi.
-        </p>
+      <section className="pb-16 px-4">
+        <div className="container mx-auto max-w-4xl">
+           <InlineLeadMagnet />
+        </div>
       </section>
     </div>
   );

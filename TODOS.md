@@ -32,3 +32,4 @@
 - Dashboard graph that shows a stacked bar graph with spending by category per month
 - Figure out what to do if you're logged in & on the tools pages. The current navbar doesn't feel appropriate.
 - Figure out sitemap
+- Make the onboarding more lightweight: Don't make the user create an account name, just create one for them. Will still need to allow them to join another account somehow
