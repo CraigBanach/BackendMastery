@@ -1,42 +1,54 @@
 import { test, expect } from "@playwright/test";
+import { verifyUserAccount, countAccountCategories, getUserAndAccountIds } from "./db-setup";
 
 test.describe.configure({ mode: "serial" });
 
+test.describe("Auto Account Creation", () => {
+  test("new user gets account auto-created and lands on budget page", async ({ page }) => {
+    // Navigate to the base URL
+    await page.goto("/");
 
-test("user can log in with valid credentials", async ({ page }) => {
-  await page.goto("/"); // Navigate to the base URL (http://localhost:3000)
+    // Click login button
+    await page.getByRole("link", { name: "Try it with your partner" }).first().click();
 
-  await page.getByRole("link", { name: "Try it with your partner" }).first().click();
+    // Should redirect to OIDC mock server's login page
+    await expect(page).toHaveURL(/localhost:4001/);
 
-  // The page should redirect to the OIDC mock server's login page (http://localhost:4001)
-  // Wait for the login form to appear
-  await expect(page).toHaveURL(/localhost:4001/); // Verify redirection to OIDC mock server
+    // Fill in credentials for a new user (no existing account)
+    await page.getByLabel("Username").fill("newuser");
+    await page.getByLabel("Password").fill("Password123!");
+    await page.getByRole("button", { name: "Login" }).click();
 
-  // Fill in the username and password for the test user
-  await page.getByLabel("Username").fill("newuser");
-  await page.getByLabel("Password").fill("Password123!");
+    // With auto-account creation, user should go directly to /budget (NOT /onboarding)
+    await expect(page).toHaveURL(/localhost:3000\/budget/);
 
+    // Verify the Budget Overview page is displayed
+    await expect(page.getByRole("heading", { name: "Budget Overview" })).toBeVisible();
 
-  // Click the login button on the OIDC mock server's page
-  await page.getByRole('button', { name: 'Login' }).click();
+    // Verify default categories are visible (auto-created with account)
+    await expect(page.getByText("Food Shopping")).toBeVisible();
+    await expect(page.getByText("Salary")).toBeVisible();
 
-  // The page should redirect back to the application after successful login
-  await expect(page).toHaveURL("http://localhost:3000/onboarding");
+    // Verify in database that account was created with correct name
+    const hasAccount = await verifyUserAccount("new-user-sub", "My Account");
+    expect(hasAccount).toBe(true);
 
-  await page.locator("text=Create New Account").click();
-  await page.fill('input[name="accountName"]', "My Family Finances");
-  await page.locator('button[type="submit"]').click();
-  // Verify that the user is logged in
+    // Verify default categories were created
+    const { accountId } = await getUserAndAccountIds("new-user-sub");
+    const categoryCount = await countAccountCategories(accountId!);
+    expect(categoryCount).toBe(10);
 
-  // This depends on your application's UI after login.
-  // Examples:
-  // - Check for a "Welcome, Test User" text
-  // - Check for a "Log Out" button
-  // - Check for a dashboard element
-  await page.locator("text=Profile").click(); // Adjust selector as needed
-  await page.locator("text=Logout").click();
+    // Clean up - logout
+    await page.locator("text=Profile").click();
+    await page.locator("text=Logout").click();
+    await expect(page).toHaveURL(/localhost:4001/);
+  });
 
-  await expect(page).toHaveURL(/localhost:4001/);
-  // You can add more assertions here to check for user-specific content or a dashboard
-  // await expect(page.locator('text=Welcome, Test User')).toBeVisible();
+  test("onboarding page returns 404", async ({ page }) => {
+    // Try to navigate directly to the old onboarding page
+    const response = await page.goto("/onboarding");
+
+    // Should return 404
+    expect(response?.status()).toBe(404);
+  });
 });

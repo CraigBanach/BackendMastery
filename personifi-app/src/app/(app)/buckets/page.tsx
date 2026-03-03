@@ -3,7 +3,6 @@ import { headers } from "next/headers";
 import { getBuckets } from "@/lib/api/bucketApi";
 import { BucketsPageClient } from "@/components/buckets/bucketsPageClient";
 import { PageHeader } from "@/components/ui/pageHeader";
-import { RequireAccount } from "@/components/ui/requireAccount";
 import { BucketDto } from "@/types/bucket";
 
 
@@ -46,17 +45,15 @@ const BucketsLoading = () => (
 
 export default async function BucketsPage() {
   return (
-    <RequireAccount>
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        <PageHeader
-          title="Buckets"
-          subTitle="Manage your savings buckets and goals"
-        />
-        <Suspense fallback={<BucketsLoading />}>
-          <BucketsContent />
-        </Suspense>
-      </div>
-    </RequireAccount>
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      <PageHeader
+        title="Buckets"
+        subTitle="Manage your savings buckets and goals"
+      />
+      <Suspense fallback={<BucketsLoading />}>
+        <BucketsContent />
+      </Suspense>
+    </div>
   );
 }
 

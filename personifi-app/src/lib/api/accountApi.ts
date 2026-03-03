@@ -44,11 +44,14 @@ interface InvitationDetailsResponse {
   inviterEmail: string;
   personalMessage?: string;
   expiresAt: string;
+  isAlreadyMember: boolean;
 }
 
 interface AcceptInvitationResponse {
   success: boolean;
   message: string;
+  errorCode?: string;
+  newAccountName?: string;
 }
 
 interface AccountMemberResponse {
@@ -124,14 +127,4 @@ export async function acceptInvitation(token: string): Promise<AcceptInvitationR
 export async function getAccountMembers(): Promise<AccountMemberResponse[]> {
   const response = await fetchWithAuth(`${API_BASE_URL}/Account/members`);
   return response.json();
-}
-
-export async function hasAccount(): Promise<boolean> {
-  try {
-    const response = await fetchWithAuth(`${API_BASE_URL}/Account/has-account`);
-    return response.json();
-  } catch {
-    // If we get an error, assume user doesn't have an account to avoid redirect loops
-    return false;
-  }
 }

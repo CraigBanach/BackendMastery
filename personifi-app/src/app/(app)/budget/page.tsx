@@ -1,12 +1,9 @@
 import { Suspense } from "react";
 import { BudgetPageClient } from "@/components/budget/budgetPageClient";
 import { PageHeader } from "@/components/ui/pageHeader";
-import { RequireAccount } from "@/components/ui/requireAccount";
-import { hasAccount } from "@/lib/api/accountApi";
 import { getBudgetVariance } from "@/lib/api/budgetApi";
 import { getTransactions } from "@/lib/api/transactionApi";
 import { calculateVarianceData } from "@/lib/hooks/useBudgetData";
-
 
 export const dynamic = "force-dynamic";
 
@@ -16,12 +13,6 @@ interface BudgetPageProps {
     month?: string;
   }>;
 }
-
-const missingAccountMessage =
-  "Please create an account first using POST /api/account/create";
-
-const isMissingAccountError = (errorMessage: string) =>
-  errorMessage.includes(missingAccountMessage);
 
 async function fetchBudgetData(year: number, month: number) {
   try {
@@ -44,19 +35,7 @@ async function fetchBudgetData(year: number, month: number) {
     );
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-
-    // If it's an account-related error, return null to indicate no data available
-    if (isMissingAccountError(errorMessage) || errorMessage === "Bad Request") {
-      const userHasAccount = await hasAccount();
-      if (!userHasAccount) {
-        console.info("Budget data unavailable until onboarding completes.");
-        return null;
-      }
-    }
-
     console.error("Error fetching budget data:", errorMessage);
-
-    // For other errors, return empty array
     return [];
   }
 }
@@ -83,17 +62,15 @@ export default async function BudgetPage({ searchParams }: BudgetPageProps) {
     : currentDate.getMonth() + 1;
 
   return (
-    <RequireAccount>
-      <div className="space-y-6">
-        <PageHeader
-          title="Budget Overview"
-          subTitle="Track your spending against budgeted amounts"
-        />
-        <Suspense fallback={<BudgetLoading />}>
-          <BudgetPageData year={year} month={month} />
-        </Suspense>
-      </div>
-    </RequireAccount>
+    <div className="space-y-6">
+      <PageHeader
+        title="Budget Overview"
+        subTitle="Track your spending against budgeted amounts"
+      />
+      <Suspense fallback={<BudgetLoading />}>
+        <BudgetPageData year={year} month={month} />
+      </Suspense>
+    </div>
   );
 }
 

@@ -6,10 +6,7 @@ import { SavingsGoals } from "@/components/dashboard/savingsGoals";
 import { SpendingChart } from "@/components/dashboard/spendingChart";
 import { UpcomingBills } from "@/components/dashboard/upcomingBills";
 import { PageHeader } from "@/components/ui/pageHeader";
-import { AccountSetupPrompt } from "@/components/ui/accountSetupPrompt";
-import { hasAccount } from "@/lib/api/accountApi";
 import type { Metadata } from "next";
-
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -17,12 +14,6 @@ export const metadata: Metadata = {
 };
 
 const DashboardContent = async () => {
-  const userHasAccount = await hasAccount();
-
-  if (!userHasAccount) {
-    return <AccountSetupPrompt />;
-  }
-
   return (
     <section className="flex flex-col gap-6">
       <OverviewCards />

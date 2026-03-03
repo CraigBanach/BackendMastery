@@ -1,27 +1,11 @@
-import { expect, test, Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import path from "path";
 
 const authFile = path.resolve(__dirname, "..", ".auth", "state.json");
 
-
-async function ensureAccount(page: Page) {
-  await page.waitForURL(/\/budget|\/onboarding/);
-  if (!page.url().includes("/onboarding")) {
-    return;
-  }
-
-  await page.locator("text=Create New Account").click();
-  await page.fill('input[name="accountName"]', "My Family Finances");
-  await page.locator('button[type="submit"]').click();
-  await page.waitForURL(/localhost:3000\/(dashboard|budget|transactions|categories)/);
-}
-
 test.use({ storageState: authFile });
 
-
 test("budget modal blocks negative amounts and allows zero", async ({ page }) => {
-  await page.goto("/budget");
-  await ensureAccount(page);
   await page.goto("/budget");
 
   await expect(page.getByRole("heading", { name: "Budget Overview" })).toBeVisible();

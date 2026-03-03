@@ -3,7 +3,6 @@ import { getCategories } from "@/lib/api/categoryApi";
 import { CategoriesPageClient } from "@/components/categories/categoriesPageClient";
 import { CategoriesPageWithFab } from "@/components/categories/categoriesPageWithFab";
 import { PageHeader } from "@/components/ui/pageHeader";
-import { RequireAccount } from "@/components/ui/requireAccount";
 import { Category } from "@/types/transaction";
 
 
@@ -35,16 +34,14 @@ const CategoriesLoading = () => (
 
 export default async function CategoriesPage() {
   return (
-    <RequireAccount>
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        <PageHeader
-          title="Categories"
-          subTitle="Manage your income and expense categories"
-        />
-        <Suspense fallback={<CategoriesLoading />}>
-          <CategoriesContent />
-        </Suspense>
-      </div>
-    </RequireAccount>
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      <PageHeader
+        title="Categories"
+        subTitle="Manage your income and expense categories"
+      />
+      <Suspense fallback={<CategoriesLoading />}>
+        <CategoriesContent />
+      </Suspense>
+    </div>
   );
 }
