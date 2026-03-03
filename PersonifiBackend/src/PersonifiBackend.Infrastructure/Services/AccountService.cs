@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using PersonifiBackend.Core.DTOs;
 using PersonifiBackend.Core.Entities;
 using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Infrastructure.Data;
@@ -213,22 +214,51 @@ public class AccountService : IAccountService
         return invitation;
     }
 
-    public async Task<bool> AcceptInvitationAsync(string token, int acceptingUserId)
+    public async Task<AcceptInvitationResult> AcceptInvitationAsync(string token, int acceptingUserId)
     {
         var currentTime = DateTime.UtcNow;
-        var invitation = await _context.InvitationTokens.FirstOrDefaultAsync(i =>
-            i.Token == token && !i.IsAccepted && i.ExpiresAt > currentTime
-        );
+        var invitation = await _context
+            .InvitationTokens.Include(i => i.Account)
+            .FirstOrDefaultAsync(i =>
+                i.Token == token && !i.IsAccepted && i.ExpiresAt > currentTime
+            );
 
         if (invitation == null)
-            return false;
+        {
+            return AcceptInvitationResult.Failed(
+                AcceptInvitationResult.ErrorCodes.InvalidToken,
+                "This invitation is invalid, expired, or has already been used."
+            );
+        }
+
+        // Check if user is already a member of the target account
+        var isAlreadyMember = await HasUserAccessToAccountAsync(acceptingUserId, invitation.AccountId);
+        if (isAlreadyMember)
+        {
+            return AcceptInvitationResult.Failed(
+                AcceptInvitationResult.ErrorCodes.AlreadyMember,
+                "You are already a member of this account."
+            );
+        }
+
+        // Get user's current account to archive it
+        var currentAccount = await GetUserPrimaryAccountAsync(acceptingUserId);
+        if (currentAccount != null)
+        {
+            await ArchiveAccountAsync(currentAccount.Id);
+            _logger.LogInformation(
+                "Archived account {AccountId} for user {UserId} before switching",
+                currentAccount.Id,
+                acceptingUserId
+            );
+        }
 
         // Mark invitation as accepted
         invitation.IsAccepted = true;
         invitation.AcceptedAt = DateTime.UtcNow;
         invitation.AcceptedByUserId = acceptingUserId;
 
-        // Add user to account
+        // Add user to new account
         await AddUserToAccountAsync(acceptingUserId, invitation.AccountId);
 
         await _context.SaveChangesAsync();
@@ -240,7 +270,64 @@ public class AccountService : IAccountService
             invitation.AccountId
         );
 
-        return true;
+        return AcceptInvitationResult.Succeeded(invitation.Account.Name);
+    }
+
+    public async Task<InvitationDetailsDto?> GetInvitationDetailsAsync(string token, int userId)
+    {
+        var invitation = await GetValidInvitationAsync(token);
+        if (invitation == null)
+        {
+            return null;
+        }
+
+        var isAlreadyMember = await HasUserAccessToAccountAsync(userId, invitation.AccountId);
+
+        return new InvitationDetailsDto(
+            AccountName: invitation.Account.Name,
+            InviterEmail: invitation.InviterUser.Email,
+            PersonalMessage: invitation.PersonalMessage,
+            ExpiresAt: invitation.ExpiresAt,
+            IsAlreadyMember: isAlreadyMember
+        );
+    }
+
+    public async Task ArchiveAccountAsync(int accountId)
+    {
+        var account = await _context.Accounts.FindAsync(accountId);
+        if (account == null)
+        {
+            return;
+        }
+
+        account.IsArchived = true;
+        account.ArchivedAt = DateTime.UtcNow;
+        account.UpdatedAt = DateTime.UtcNow;
+
+        // Unlink the subscription from this account
+        if (account.SubscriptionId.HasValue)
+        {
+            var subscription = await _context.Subscriptions.FindAsync(account.SubscriptionId.Value);
+            if (subscription != null)
+            {
+                // Remove all users from this subscription
+                var usersInSubscription = await _context
+                    .Users.Where(u => u.SubscriptionId == subscription.Id)
+                    .ToListAsync();
+
+                foreach (var user in usersInSubscription)
+                {
+                    user.SubscriptionId = null;
+                    user.Role = null;
+                }
+            }
+
+            account.SubscriptionId = null;
+        }
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Archived account {AccountId}", accountId);
     }
 
     private async Task CreateDefaultCategoriesAndBudgetsAsync(int accountId)

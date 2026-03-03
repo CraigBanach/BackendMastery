@@ -1,3 +1,4 @@
+using PersonifiBackend.Core.DTOs;
 using PersonifiBackend.Core.Entities;
 
 namespace PersonifiBackend.Core.Interfaces;
@@ -14,5 +15,7 @@ public interface IAccountService
     Task AddUserToAccountAsync(int userId, int accountId);
     Task<InvitationToken> CreateInvitationAsync(int accountId, int inviterUserId, string? email, string? personalMessage = null);
     Task<InvitationToken?> GetValidInvitationAsync(string token);
-    Task<bool> AcceptInvitationAsync(string token, int acceptingUserId);
+    Task<AcceptInvitationResult> AcceptInvitationAsync(string token, int acceptingUserId);
+    Task<InvitationDetailsDto?> GetInvitationDetailsAsync(string token, int userId);
+    Task ArchiveAccountAsync(int accountId);
 }

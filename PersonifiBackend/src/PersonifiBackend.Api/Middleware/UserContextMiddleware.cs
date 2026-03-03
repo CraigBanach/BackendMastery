@@ -46,19 +46,23 @@ public class UserContextMiddleware
                         {
                             userContextImpl.UserId = user.Id;
 
-                            // Get user's primary account (first account they belong to)
+                        // Get user's primary account (first account they belong to)
                             var primaryAccount = await accountService.GetUserPrimaryAccountAsync(user.Id);
                             
-                            // If no account exists, this might be a new user - we'll create account when they make their first transaction
-                            if (primaryAccount != null)
+                            // Auto-create account if user doesn't have one
+                            if (primaryAccount == null)
                             {
-                                userContextImpl.AccountId = primaryAccount.Id;
-                                _logger.LogInformation("User context set - UserId: {UserId}, AccountId: {AccountId}", user.Id, primaryAccount.Id);
+                                _logger.LogInformation("Auto-creating account for new user {UserId}", user.Id);
+                                primaryAccount = await accountService.CreateAccountWithSubscriptionAsync(
+                                    "My Account",
+                                    user.Id,
+                                    signupSource: null
+                                );
+                                _logger.LogInformation("Auto-created account {AccountId} for user {UserId}", primaryAccount.Id, user.Id);
                             }
-                            else
-                            {
-                                _logger.LogWarning("No primary account found for user {UserId} - they may need to create an account", user.Id);
-                            }
+
+                            userContextImpl.AccountId = primaryAccount.Id;
+                            _logger.LogInformation("User context set - UserId: {UserId}, AccountId: {AccountId}", user.Id, primaryAccount.Id);
                         }
                     }
                     catch (Exception ex)
