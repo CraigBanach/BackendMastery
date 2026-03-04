@@ -51,7 +51,9 @@ export function ProfileDropdown() {
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="invite">Invite Partner</SelectItem>
-          <SelectItem value="switch-account">Join Partner's Account</SelectItem>
+          <SelectItem value="switch-account">
+            Join Partner&apos;s Account
+          </SelectItem>
           <SelectItem value="logout" className="text-red-600">
             Logout
           </SelectItem>

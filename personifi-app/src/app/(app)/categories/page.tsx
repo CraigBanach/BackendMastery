@@ -8,15 +8,17 @@ import { Category } from "@/types/transaction";
 
 export const dynamic = 'force-dynamic';
 
-async function CategoriesContent() {
-  let categories: Category[];
-
+async function fetchCategories(): Promise<Category[]> {
   try {
-    categories = await getCategories();
+    return await getCategories();
   } catch (error: unknown) {
     console.error("Error fetching categories:", error);
-    categories = [];
+    return [];
   }
+}
+
+async function CategoriesContent() {
+  const categories = await fetchCategories();
 
   return (
     <CategoriesPageWithFab categories={categories}>

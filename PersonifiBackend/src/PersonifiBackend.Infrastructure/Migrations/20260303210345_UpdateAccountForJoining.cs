@@ -14,7 +14,7 @@ namespace PersonifiBackend.Infrastructure.Migrations
             migrationBuilder.AddColumn<DateTime>(
                 name: "ArchivedAt",
                 table: "Accounts",
-                type: "timestamp with time zone",
+                type: "timestamp without time zone",
                 nullable: true);
 
             migrationBuilder.AddColumn<bool>(

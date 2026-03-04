@@ -30,6 +30,17 @@ public class UserContextMiddleware
             var email = context.User.Claims.FirstOrDefault(c => c.Type == "email")?.Value ??
                        context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
+            // Debug: Log all claims to help diagnose missing email
+            if (string.IsNullOrEmpty(email))
+            {
+                var allClaims = string.Join(", ", context.User.Claims.Select(c => $"{c.Type}={c.Value}"));
+                _logger.LogWarning("No email claim found. Available claims: {Claims}", allClaims);
+            }
+            else
+            {
+                _logger.LogInformation("Email claim found: {Email}", email);
+            }
+
             if (!string.IsNullOrEmpty(auth0UserId))
             {
                 // Cast to implementation to set values
@@ -39,35 +50,29 @@ public class UserContextMiddleware
 
                     try
                     {
-                        // Get or create user in our system using Auth0 user ID and email
-                        var user = await accountService.GetOrCreateUserAsync(auth0UserId, email ?? string.Empty);
-                        
-                        if (user != null)
-                        {
-                            userContextImpl.UserId = user.Id;
+                        // Get or create user with account atomically
+                        // This ensures user always has a fully initialized account
+                        var user = await accountService.GetOrCreateUserWithAccountAsync(
+                            auth0UserId,
+                            email ?? string.Empty
+                        );
 
-                        // Get user's primary account (first account they belong to)
-                            var primaryAccount = await accountService.GetUserPrimaryAccountAsync(user.Id);
-                            
-                            // Auto-create account if user doesn't have one
-                            if (primaryAccount == null)
-                            {
-                                _logger.LogInformation("Auto-creating account for new user {UserId}", user.Id);
-                                primaryAccount = await accountService.CreateAccountWithSubscriptionAsync(
-                                    "My Account",
-                                    user.Id,
-                                    signupSource: null
-                                );
-                                _logger.LogInformation("Auto-created account {AccountId} for user {UserId}", primaryAccount.Id, user.Id);
-                            }
+                        userContextImpl.UserId = user.Id;
+                        userContextImpl.AccountId = user.Subscription!.AccountId;
 
-                            userContextImpl.AccountId = primaryAccount.Id;
-                            _logger.LogInformation("User context set - UserId: {UserId}, AccountId: {AccountId}", user.Id, primaryAccount.Id);
-                        }
+                        _logger.LogDebug(
+                            "User context set - UserId: {UserId}, AccountId: {AccountId}",
+                            user.Id,
+                            user.Subscription.AccountId
+                        );
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error setting up user context for Auth0 user {Auth0UserId}", auth0UserId);
+                        _logger.LogError(
+                            ex,
+                            "Error setting up user context for Auth0 user {Auth0UserId}",
+                            auth0UserId
+                        );
                     }
                 }
             }

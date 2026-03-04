@@ -8,12 +8,12 @@ To spin up the complete application stack (Frontend, Backend, Mock OIDC Provider
 
 ### Start the Stack
 ```powershell
-docker compose -f docker-compose.test.yml up -d --build
+docker compose -f docker-compose.test.yml -f docker-compose.test.override.yml up -d --build
 ```
 
 > Note: `docker-compose.test.override.yml` is checked in for local builds.
-> Docker Compose auto-applies it to build the frontend/backend images locally.
-> CI uses the GHCR images from `docker-compose.test.yml`.
+> Both files must be passed to the command since Compose doesn't auto-apply overrides for non-standard filenames.
+> CI uses only `docker-compose.test.yml` to pull GHCR images.
 
 
 ### Services & Ports
@@ -24,7 +24,7 @@ docker compose -f docker-compose.test.yml up -d --build
 
 ### Stop the Stack
 ```powershell
-docker compose -f docker-compose.test.yml down
+docker compose -f docker-compose.test.yml -f docker-compose.test.override.yml down
 ```
 
 ---

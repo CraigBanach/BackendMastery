@@ -48,22 +48,22 @@ export function SwitchAccountModal({ isOpen, onClose }: SwitchAccountModalProps)
     setIsLoading(true);
     setError(null);
 
-    try {
-      const details = await getInvitationDetails(cleanToken);
-      setInvitationDetails(details);
+    const result = await getInvitationDetails(cleanToken);
+    setIsLoading(false);
 
-      if (details.isAlreadyMember) {
-        setError("You are already a member of this account.");
-        setStep("error");
-      } else {
-        setStep("confirm");
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Invalid or expired invitation";
-      setError(errorMessage);
+    if (!result.success || !result.data) {
+      setError(result.error || "Invalid or expired invitation");
       setStep("error");
-    } finally {
-      setIsLoading(false);
+      return;
+    }
+
+    setInvitationDetails(result.data);
+
+    if (result.data.isAlreadyMember) {
+      setError("You are already a member of this account.");
+      setStep("error");
+    } else {
+      setStep("confirm");
     }
   };
 
@@ -116,6 +116,19 @@ export function SwitchAccountModal({ isOpen, onClose }: SwitchAccountModalProps)
       month: "long",
       day: "numeric",
     });
+  };
+
+  const formatInviterDisplay = (email: string) => {
+    // Extract a display name from the email address
+    const localPart = email.split("@")[0];
+    // Convert common email formats to readable names
+    // e.g., "john.doe" -> "John Doe", "jane_smith" -> "Jane Smith"
+    const formattedName = localPart
+      .replace(/[._]/g, " ")
+      .split(" ")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+    return formattedName;
   };
 
   const renderContent = () => {
@@ -180,10 +193,13 @@ export function SwitchAccountModal({ isOpen, onClose }: SwitchAccountModalProps)
                   <p className="text-sm text-gray-500">You are joining:</p>
                   <p className="text-lg font-semibold">{invitationDetails.accountName}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">Invited by:</p>
-                  <p className="text-sm font-medium">{invitationDetails.inviterEmail}</p>
-                </div>
+                {invitationDetails.inviterEmail && (
+                  <div>
+                    <p className="text-sm text-gray-500">Invited by:</p>
+                    <p className="text-sm font-medium">{formatInviterDisplay(invitationDetails.inviterEmail)}</p>
+                    <p className="text-xs text-gray-400">{invitationDetails.inviterEmail}</p>
+                  </div>
+                )}
                 {invitationDetails.personalMessage && (
                   <div>
                     <p className="text-sm text-gray-500">Message:</p>

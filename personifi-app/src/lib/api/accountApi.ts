@@ -47,6 +47,12 @@ interface InvitationDetailsResponse {
   isAlreadyMember: boolean;
 }
 
+export interface GetInvitationResult {
+  success: boolean;
+  data?: InvitationDetailsResponse;
+  error?: string;
+}
+
 interface AcceptInvitationResponse {
   success: boolean;
   message: string;
@@ -75,8 +81,15 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Re
   if (!response.ok) {
     let errorMessage = `HTTP ${response.status}`;
     try {
-      const errorData = await response.json() as ApiError;
-      errorMessage = errorData.error?.message || errorMessage;
+      const contentType = response.headers.get("content-type");
+      if (contentType?.includes("application/json")) {
+        const errorData = await response.json() as ApiError;
+        errorMessage = errorData.error?.message || errorMessage;
+      } else {
+        // Handle plain text error responses
+        const textError = await response.text();
+        errorMessage = textError || response.statusText || errorMessage;
+      }
     } catch {
       errorMessage = response.statusText || errorMessage;
     }
@@ -112,9 +125,15 @@ export async function generateInviteToken(): Promise<GenerateTokenResponse> {
   return response.json();
 }
 
-export async function getInvitationDetails(token: string): Promise<InvitationDetailsResponse> {
-  const response = await fetchWithAuth(`${API_BASE_URL}/Account/invitation/${token}`);
-  return response.json();
+export async function getInvitationDetails(token: string): Promise<GetInvitationResult> {
+  try {
+    const response = await fetchWithAuth(`${API_BASE_URL}/Account/invitation/${token}`);
+    const data = await response.json();
+    return { success: true, data };
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : "Invalid or expired invitation";
+    return { success: false, error: errorMessage };
+  }
 }
 
 export async function acceptInvitation(token: string): Promise<AcceptInvitationResponse> {

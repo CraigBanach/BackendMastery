@@ -16,7 +16,17 @@ interface TransactionsPageProps {
   }>;
 }
 
-async function fetchTransactionsData(year: number, month: number) {
+interface TransactionsData {
+  transactions: Awaited<ReturnType<typeof getTransactions>>["items"];
+  categories: Awaited<ReturnType<typeof getCategories>>;
+  pagination: {
+    totalCount: number;
+    currentPage: number;
+    totalPages: number;
+  };
+}
+
+async function fetchTransactionsData(year: number, month: number): Promise<TransactionsData> {
   try {
     // TODO: Stop fucking around with strings here
     const startDate = `${year}-${month.toString().padStart(2, "0")}-01`;

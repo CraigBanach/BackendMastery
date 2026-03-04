@@ -14,7 +14,7 @@ interface BudgetPageProps {
   }>;
 }
 
-async function fetchBudgetData(year: number, month: number) {
+async function fetchBudgetData(year: number, month: number): Promise<ReturnType<typeof calculateVarianceData>> {
   try {
     const [budgetVariances, transactionsResponse] = await Promise.all([
       getBudgetVariance(year, month),
@@ -34,8 +34,7 @@ async function fetchBudgetData(year: number, month: number) {
       transactionsResponse?.items || []
     );
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("Error fetching budget data:", errorMessage);
+    console.error("Error fetching budget data:", error);
     return [];
   }
 }

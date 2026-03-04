@@ -12,7 +12,7 @@ using PersonifiBackend.Infrastructure.Data;
 namespace PersonifiBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(PersonifiDbContext))]
-    [Migration("20260303202450_UpdateAccountForJoining")]
+    [Migration("20260303210345_UpdateAccountForJoining")]
     partial class UpdateAccountForJoining
     {
         /// <inheritdoc />
@@ -34,7 +34,7 @@ namespace PersonifiBackend.Infrastructure.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("ArchivedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");

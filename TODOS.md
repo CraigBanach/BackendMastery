@@ -35,3 +35,4 @@
 - Make the onboarding more lightweight: Don't make the user create an account name, just create one for them. Will still need to allow them to join another account somehow
 - Rework signup source, it should probably be on the subscription/user
 - Restrict users on an account to 2
+- Add a pill to transactions to represent who added them. Will need to add a name field to the users table to make this happen
