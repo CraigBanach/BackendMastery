@@ -21,7 +21,7 @@ test.describe("Switch Account Feature", () => {
 
     // Verify menu items are visible
     await expect(page.getByRole("option", { name: "Invite Partner" })).toBeVisible();
-    await expect(page.getByRole("option", { name: "Switch Account" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "Join Partner's Account" })).toBeVisible();
     await expect(page.getByRole("option", { name: "Logout" })).toBeVisible();
   });
 
@@ -30,7 +30,7 @@ test.describe("Switch Account Feature", () => {
 
     // Open profile dropdown and click Switch Account
     await page.locator("text=Profile").click();
-    await page.getByRole("option", { name: "Switch Account" }).click();
+    await page.getByRole("option", { name: "Join Partner's Account" }).click();
 
     // Verify dialog opens
     const dialog = page.getByRole("dialog", { name: "Switch Account" });
@@ -49,7 +49,7 @@ test.describe("Switch Account Feature", () => {
 
     // Open Switch Account dialog
     await page.locator("text=Profile").click();
-    await page.getByRole("option", { name: "Switch Account" }).click();
+    await page.getByRole("option", { name: "Join Partner's Account" }).click();
 
     const dialog = page.getByRole("dialog", { name: "Switch Account" });
 
@@ -73,7 +73,7 @@ test.describe("Switch Account Feature", () => {
 
     // Open Switch Account dialog
     await page.locator("text=Profile").click();
-    await page.getByRole("option", { name: "Switch Account" }).click();
+    await page.getByRole("option", { name: "Join Partner's Account" }).click();
 
     const dialog = page.getByRole("dialog", { name: "Switch Account" });
 
@@ -94,7 +94,7 @@ test.describe("Switch Account Feature", () => {
 
     // Open Switch Account dialog
     await page.locator("text=Profile").click();
-    await page.getByRole("option", { name: "Switch Account" }).click();
+    await page.getByRole("option", { name: "Join Partner's Account" }).click();
 
     const dialog = page.getByRole("dialog", { name: "Switch Account" });
 
@@ -123,7 +123,7 @@ test.describe("Switch Account Feature", () => {
 
     // Open Switch Account dialog
     await page.locator("text=Profile").click();
-    await page.getByRole("option", { name: "Switch Account" }).click();
+    await page.getByRole("option", { name: "Join Partner's Account" }).click();
 
     const dialog = page.getByRole("dialog", { name: "Switch Account" });
 
@@ -140,7 +140,7 @@ test.describe("Switch Account Feature", () => {
 
     // Open Switch Account dialog
     await page.locator("text=Profile").click();
-    await page.getByRole("option", { name: "Switch Account" }).click();
+    await page.getByRole("option", { name: "Join Partner's Account" }).click();
 
     const dialog = page.getByRole("dialog", { name: "Switch Account" });
     await expect(dialog).toBeVisible();
@@ -161,7 +161,7 @@ test.describe("Switch Account Feature", () => {
 
     // Open Switch Account dialog
     await page.locator("text=Profile").click();
-    await page.getByRole("option", { name: "Switch Account" }).click();
+    await page.getByRole("option", { name: "Join Partner's Account" }).click();
 
     const dialog = page.getByRole("dialog", { name: "Switch Account" });
 

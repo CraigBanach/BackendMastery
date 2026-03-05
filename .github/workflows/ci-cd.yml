@@ -57,6 +57,10 @@ jobs:
       (needs.frontend.result == 'success' || needs.frontend.result == 'skipped') &&
       !(needs.backend.result == 'failure' || needs.frontend.result == 'failure')
     uses: ./.github/workflows/_integration-tests.yml
+    with:
+      backend-image: ${{ needs.backend.outputs.image-tag }}
+      frontend-image: ${{ needs.frontend.outputs.image-tag }}
+    secrets: inherit
 
   # Deploy to GitOps repository
   deploy:

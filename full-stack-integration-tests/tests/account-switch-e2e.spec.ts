@@ -77,7 +77,7 @@ test.describe("Account Switch E2E Flow", () => {
 
     // Step 3: User B opens Switch Account dialog
     await userBPage.locator("text=Profile").click();
-    await userBPage.getByRole("option", { name: "Switch Account" }).click();
+    await userBPage.getByRole("option", { name: "Join Partner's Account" }).click();
 
     const switchDialog = userBPage.getByRole("dialog", { name: "Switch Account" });
     await expect(switchDialog).toBeVisible();
@@ -141,7 +141,7 @@ test.describe("Already Member Validation", () => {
 
     // Try to use the token on own account
     await page.locator("text=Profile").click();
-    await page.getByRole("option", { name: "Switch Account" }).click();
+    await page.getByRole("option", { name: "Join Partner's Account" }).click();
 
     const switchDialog = page.getByRole("dialog", { name: "Switch Account" });
     await switchDialog.getByLabel(/Invitation Token or Link/i).fill(ownToken);
