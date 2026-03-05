@@ -88,11 +88,12 @@ export function InvitePartnerModal({ isOpen, onClose }: InvitePartnerModalProps)
         ) : token ? (
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
+              <label htmlFor="invite-token" className="text-sm font-medium text-gray-700 mb-2 block">
                 Invite Token
               </label>
               <div className="flex gap-2">
                 <Input
+                  id="invite-token"
                   value={token}
                   readOnly
                   className="font-mono text-sm bg-gray-50"

@@ -25,6 +25,11 @@ test.describe("Auto Account Creation", () => {
     // Verify the Budget Overview page is displayed
     await expect(page.getByRole("heading", { name: "Budget Overview" })).toBeVisible();
 
+    // Wait for the budget data to load - look for section titles that indicate data is rendering
+    // The Income and Expenses sections should appear once data loads
+    await expect(page.getByRole("heading", { name: "Income" })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole("heading", { name: "Expenses" })).toBeVisible({ timeout: 10000 });
+
     // Verify default categories are visible (auto-created with account)
     await expect(page.getByText("Food Shopping")).toBeVisible();
     await expect(page.getByText("Salary")).toBeVisible();

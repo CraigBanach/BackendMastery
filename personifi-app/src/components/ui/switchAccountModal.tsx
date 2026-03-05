@@ -141,10 +141,11 @@ export function SwitchAccountModal({ isOpen, onClose }: SwitchAccountModalProps)
             </p>
 
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
+              <label htmlFor="invitation-token" className="text-sm font-medium text-gray-700 mb-2 block">
                 Invitation Token or Link
               </label>
               <Input
+                id="invitation-token"
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 placeholder="Enter token or paste invitation link..."
