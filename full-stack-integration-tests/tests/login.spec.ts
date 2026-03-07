@@ -27,9 +27,9 @@ test.describe("Auto Account Creation", () => {
 
     // Verify default categories are visible (auto-created with account)
     // These appear in the Income and Expenses sections once budget data loads
-    // Use .first() as category names appear in both mobile and desktop layouts
-    await expect(page.getByText("Food Shopping").first()).toBeVisible({ timeout: 15000 });
-    await expect(page.getByText("Salary").first()).toBeVisible({ timeout: 15000 });
+    // Wait for the desktop table rows (visible on md+ screens) containing category names
+    await expect(page.locator("table").getByText("Food Shopping")).toBeVisible({ timeout: 15000 });
+    await expect(page.locator("table").getByText("Salary")).toBeVisible({ timeout: 15000 });
 
     // Verify in database that account was created with correct name
     const hasAccount = await verifyUserAccount("new-user-sub", "My Account");
