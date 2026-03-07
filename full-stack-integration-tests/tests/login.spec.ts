@@ -46,11 +46,13 @@ test.describe("Auto Account Creation", () => {
     await expect(page).toHaveURL(/localhost:4001/);
   });
 
-  test("onboarding page returns 404", async ({ page }) => {
+  test("onboarding page no longer exists", async ({ page }) => {
     // Try to navigate directly to the old onboarding page
-    const response = await page.goto("/onboarding");
+    // Since the user is unauthenticated, the middleware redirects to home page
+    // This verifies that /onboarding is not a special route anymore
+    await page.goto("/onboarding");
 
-    // Should return 404
-    expect(response?.status()).toBe(404);
+    // Should redirect to home page (middleware redirects unauthenticated users)
+    await expect(page).toHaveURL(/localhost:3000\/$/);
   });
 });
