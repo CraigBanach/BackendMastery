@@ -3,7 +3,6 @@ import { TransactionsPageClient } from "@/components/transactions/transactionsPa
 import { TransactionsPageWithFab } from "@/components/transactions/transactionsPageWithFab";
 import { PageHeader } from "@/components/ui/pageHeader";
 import { InvitePrompt } from "@/components/ui/invitePrompt";
-import { RequireAccount } from "@/components/ui/requireAccount";
 import { getTransactions } from "@/lib/api/transactionApi";
 import { getCategories } from "@/lib/api/categoryApi";
 
@@ -17,7 +16,17 @@ interface TransactionsPageProps {
   }>;
 }
 
-async function fetchTransactionsData(year: number, month: number) {
+interface TransactionsData {
+  transactions: Awaited<ReturnType<typeof getTransactions>>["items"];
+  categories: Awaited<ReturnType<typeof getCategories>>;
+  pagination: {
+    totalCount: number;
+    currentPage: number;
+    totalPages: number;
+  };
+}
+
+async function fetchTransactionsData(year: number, month: number): Promise<TransactionsData> {
   try {
     // TODO: Stop fucking around with strings here
     const startDate = `${year}-${month.toString().padStart(2, "0")}-01`;
@@ -94,18 +103,16 @@ export default async function TransactionsPage({
     : currentDate.getMonth() + 1;
 
   return (
-    <RequireAccount>
-      <div className="space-y-6">
-        <PageHeader
-          title="Transactions"
-          subTitle="Track and manage your monthly transactions"
-        />
-        <InvitePrompt />
-        <Suspense fallback={<TransactionsLoading />}>
-          <TransactionsContent year={year} month={month} />
-        </Suspense>
-      </div>
-    </RequireAccount>
+    <div className="space-y-6">
+      <PageHeader
+        title="Transactions"
+        subTitle="Track and manage your monthly transactions"
+      />
+      <InvitePrompt />
+      <Suspense fallback={<TransactionsLoading />}>
+        <TransactionsContent year={year} month={month} />
+      </Suspense>
+    </div>
   );
 }
 

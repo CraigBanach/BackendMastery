@@ -88,21 +88,30 @@ public class AccountController : ControllerBase
     [HttpGet("invitation/{token}")]
     public async Task<IActionResult> GetInvitation(string token)
     {
+        if (!_userContext.UserId.HasValue)
+        {
+            return Unauthorized("User context not properly initialized");
+        }
+
         try
         {
-            var invitation = await _accountService.GetValidInvitationAsync(token);
+            var invitationDetails = await _accountService.GetInvitationDetailsAsync(
+                token, 
+                _userContext.UserId.Value
+            );
             
-            if (invitation == null)
+            if (invitationDetails == null)
             {
                 return NotFound("Invitation not found or expired");
             }
 
             return Ok(new InvitationDetailsResponse
             {
-                AccountName = invitation.Account.Name,
-                InviterEmail = invitation.InviterUser.Email,
-                PersonalMessage = invitation.PersonalMessage,
-                ExpiresAt = invitation.ExpiresAt
+                AccountName = invitationDetails.AccountName,
+                InviterEmail = invitationDetails.InviterEmail,
+                PersonalMessage = invitationDetails.PersonalMessage,
+                ExpiresAt = invitationDetails.ExpiresAt,
+                IsAlreadyMember = invitationDetails.IsAlreadyMember
             });
         }
         catch (Exception ex)
@@ -122,23 +131,33 @@ public class AccountController : ControllerBase
 
         try
         {
-            var success = await _accountService.AcceptInvitationAsync(token, _userContext.UserId.Value);
+            var result = await _accountService.AcceptInvitationAsync(token, _userContext.UserId.Value);
             
-            if (!success)
+            if (!result.Success)
             {
-                return BadRequest("Invalid or expired invitation");
+                return BadRequest(new AcceptInvitationResponse
+                {
+                    Success = false,
+                    Message = result.ErrorMessage ?? "Failed to accept invitation",
+                    ErrorCode = result.ErrorCode
+                });
             }
 
             return Ok(new AcceptInvitationResponse
             {
                 Success = true,
-                Message = "Successfully joined account"
+                Message = "Successfully joined account",
+                NewAccountName = result.NewAccountName
             });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error accepting invitation {Token} for user {UserId}", token, _userContext.UserId);
-            return BadRequest("Failed to accept invitation");
+            return BadRequest(new AcceptInvitationResponse
+            {
+                Success = false,
+                Message = "Failed to accept invitation"
+            });
         }
     }
 
@@ -223,25 +242,6 @@ public class AccountController : ControllerBase
         }
     }
 
-    [HttpGet("has-account")]
-    public async Task<ActionResult<bool>> HasAccount()
-    {
-        if (!_userContext.UserId.HasValue)
-        {
-            return Unauthorized("User context not properly initialized");
-        }
-
-        try
-        {
-            var account = await _accountService.GetUserPrimaryAccountAsync(_userContext.UserId.Value);
-            return Ok(account != null);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error checking if user {UserId} has account", _userContext.UserId);
-            return Ok(false); // Return false on error to avoid redirect loops
-        }
-    }
 }
 
 // DTOs for API requests and responses
@@ -265,12 +265,15 @@ public class InvitationDetailsResponse
     public string InviterEmail { get; set; } = string.Empty;
     public string? PersonalMessage { get; set; }
     public DateTime ExpiresAt { get; set; }
+    public bool IsAlreadyMember { get; set; }
 }
 
 public class AcceptInvitationResponse
 {
     public bool Success { get; set; }
     public string Message { get; set; } = string.Empty;
+    public string? ErrorCode { get; set; }
+    public string? NewAccountName { get; set; }
 }
 
 public class AccountMemberResponse

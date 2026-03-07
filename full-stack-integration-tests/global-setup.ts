@@ -20,9 +20,9 @@ async function globalSetup(config: FullConfig) {
   await page.getByLabel("Username").fill("testuser");
   await page.getByLabel("Password").fill("Password123!");
   await page.getByRole("button", { name: "Login" }).click();
-  await page.waitForURL(
-    /localhost:3000\/(onboarding|budget|transactions|categories|dashboard)/
-  );
+
+  // With auto-account creation, users go directly to /budget (no onboarding)
+  await page.waitForURL(/localhost:3000\/(budget|transactions|categories|dashboard)/);
 
   await context.storageState({ path: authFile });
   await browser.close();

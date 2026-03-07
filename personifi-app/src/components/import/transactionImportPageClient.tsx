@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AccountRequiredWrapper } from "@/components/ui/accountRequiredWrapper";
 import { PageHeader } from "@/components/ui/pageHeader";
 import {
   Upload,
@@ -174,8 +173,7 @@ export default function TransactionImportPageClient() {
   };
 
   return (
-    <AccountRequiredWrapper>
-      <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-6">
         <PageHeader
           title="Import Transactions"
           subTitle="Upload and process bank transaction files"
@@ -354,6 +352,5 @@ export default function TransactionImportPageClient() {
           </CardContent>
         </Card>
       </div>
-    </AccountRequiredWrapper>
   );
 }

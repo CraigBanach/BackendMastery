@@ -2,6 +2,15 @@ name: Integration Tests
 
 on:
   workflow_call:
+    inputs:
+      backend-image:
+        description: 'Backend Docker image tag to use'
+        type: string
+        required: false
+      frontend-image:
+        description: 'Frontend Docker image tag to use'
+        type: string
+        required: false
     outputs:
       success:
         description: 'Whether tests were successful'
@@ -38,17 +47,33 @@ jobs:
         working-directory: ./full-stack-integration-tests
         run: npm ci
 
-      - name: Log integration image digests
+      - name: Pull images from registry
+        if: inputs.backend-image && inputs.frontend-image
         run: |
-          echo "Using backend image:"
-          docker pull ghcr.io/craigbanach/personifibackend:latest
-          docker image inspect ghcr.io/craigbanach/personifibackend:latest --format "{{.Id}} {{if .RepoDigests}}{{index .RepoDigests 0}}{{else}}<none>{{end}}"
-          echo "Using frontend image:"
-          docker pull ghcr.io/craigbanach/personifi-app:latest
-          docker image inspect ghcr.io/craigbanach/personifi-app:latest --format "{{.Id}} {{if .RepoDigests}}{{index .RepoDigests 0}}{{else}}<none>{{end}}"
+          echo "Using backend image: ${{ inputs.backend-image }}"
+          echo "Using frontend image: ${{ inputs.frontend-image }}"
+          docker pull ${{ inputs.backend-image }}
+          docker pull ${{ inputs.frontend-image }}
 
-      - name: Start Environment
-        run: docker compose -f docker-compose.test.yml up -d
+      - name: Start Environment (using pre-built images)
+        if: inputs.backend-image && inputs.frontend-image
+        env:
+          BACKEND_IMAGE: ${{ inputs.backend-image }}
+          FRONTEND_IMAGE: ${{ inputs.frontend-image }}
+        run: |
+          # Create a temporary compose override with the specific images
+          cat > docker-compose.test.images.yml << EOF
+          services:
+            backend:
+              image: ${BACKEND_IMAGE}
+            frontend:
+              image: ${FRONTEND_IMAGE}
+          EOF
+          docker compose -f docker-compose.test.yml -f docker-compose.test.images.yml up -d
+
+      - name: Start Environment (build locally - fallback)
+        if: ${{ !inputs.backend-image || !inputs.frontend-image }}
+        run: docker compose -f docker-compose.test.yml -f docker-compose.test.override.yml up -d --build
 
       - name: Wait for Services
         run: |
@@ -80,7 +105,13 @@ jobs:
           
       - name: Stop Environment
         if: always()
-        run: docker compose -f docker-compose.test.yml down
+        run: |
+          if [ -f docker-compose.test.images.yml ]; then
+            docker compose -f docker-compose.test.yml -f docker-compose.test.images.yml down
+            rm docker-compose.test.images.yml
+          else
+            docker compose -f docker-compose.test.yml -f docker-compose.test.override.yml down
+          fi
 
       - name: Set success status
         if: success()

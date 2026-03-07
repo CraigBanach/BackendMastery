@@ -166,6 +166,7 @@ public class PersonifiDbContext : DbContext
             // Configure DateTime columns to use timestamp without time zone
             entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
             entity.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.ArchivedAt).HasColumnType("timestamp without time zone");
         });
 
         // Subscription configuration

@@ -60,9 +60,8 @@ jobs:
         working-directory: ./personifi-app
         run: npm run build
 
-      # Docker Build (only if pushing)
+      # Docker Build - always build and push (with PR-specific tags for PRs)
       - name: Setup Docker
-        if: inputs.push-image
         uses: ./.github/actions/setup-docker
         id: docker-setup
         with:
@@ -71,7 +70,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
-        if: inputs.push-image
         uses: docker/build-push-action@v6
         with:
           context: "{{defaultContext}}:personifi-app"
@@ -83,17 +81,13 @@ jobs:
       - name: Get primary tag
         id: get-tag
         run: |
-          if [ "${{ inputs.push-image }}" = "true" ]; then
-            # Select the SHA-based tag (main-xxxxxxx) for deployments
-            TAG=$(echo "${{ steps.docker-setup.outputs.tags }}" | grep "main-" | head -n1)
-            if [ -z "$TAG" ]; then
-              # Fallback to first tag if no SHA tag found
-              TAG=$(echo "${{ steps.docker-setup.outputs.tags }}" | head -n1)
-            fi
-            echo "tag=$TAG" >> $GITHUB_OUTPUT
-          else
-            echo "tag=not-built" >> $GITHUB_OUTPUT
+          # Select the SHA-based tag for deployments/integration tests
+          TAG=$(echo "${{ steps.docker-setup.outputs.tags }}" | grep -E "(main-|pr-)" | head -n1)
+          if [ -z "$TAG" ]; then
+            # Fallback to first tag if no SHA tag found
+            TAG=$(echo "${{ steps.docker-setup.outputs.tags }}" | head -n1)
           fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Set success status
         id: set-success

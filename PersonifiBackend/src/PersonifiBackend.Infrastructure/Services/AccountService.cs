@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using PersonifiBackend.Core.DTOs;
 using PersonifiBackend.Core.Entities;
 using PersonifiBackend.Core.Interfaces;
 using PersonifiBackend.Infrastructure.Data;
@@ -15,6 +16,122 @@ public class AccountService : IAccountService
     {
         _context = context;
         _logger = logger;
+    }
+
+    public async Task<User> GetOrCreateUserWithAccountAsync(string auth0UserId, string email)
+    {
+        // Fast path: Simple lookup without joins for existing users
+        var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Auth0UserId == auth0UserId);
+
+        if (existingUser != null)
+        {
+            // User exists - update email if needed
+            if (!string.IsNullOrEmpty(email) && existingUser.Email != email)
+            {
+                existingUser.Email = email;
+                existingUser.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                _logger.LogInformation(
+                    "Updated email for existing user {Auth0UserId}: {Email}",
+                    auth0UserId,
+                    email
+                );
+            }
+
+            // Fast path: User has subscription - just load it to get AccountId
+            if (existingUser.SubscriptionId != null)
+            {
+                // Load subscription to get AccountId (single join, no Account entity needed)
+                await _context.Entry(existingUser).Reference(u => u.Subscription).LoadAsync();
+                return existingUser;
+            }
+
+            // Slow path: User exists but has no account - create one
+            _logger.LogInformation(
+                "Existing user {Auth0UserId} has no account, creating one",
+                auth0UserId
+            );
+            await CreateAccountWithSubscriptionAsync("My Account", existingUser.Id);
+
+            // Reload to get the subscription
+            await _context.Entry(existingUser).ReloadAsync();
+            await _context.Entry(existingUser).Reference(u => u.Subscription).LoadAsync();
+            return existingUser;
+        }
+
+        // User doesn't exist - create user and account in a transaction
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            // Create the user
+            var user = new User
+            {
+                Auth0UserId = auth0UserId,
+                Email = email,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Created new user for Auth0 ID: {Auth0UserId}", auth0UserId);
+
+            // Create the account with subscription and defaults
+            await CreateAccountWithSubscriptionAsync("My Account", user.Id);
+
+            await transaction.CommitAsync();
+
+            // Reload to get the subscription
+            await _context.Entry(user).ReloadAsync();
+            await _context.Entry(user).Reference(u => u.Subscription).LoadAsync();
+
+            return user;
+        }
+        catch (DbUpdateException ex) when (IsDuplicateKeyException(ex))
+        {
+            // Race condition: another request created this user simultaneously
+            await transaction.RollbackAsync();
+
+            _logger.LogInformation(
+                "Race condition detected for Auth0 ID {Auth0UserId}, fetching existing user",
+                auth0UserId
+            );
+
+            // Clear the change tracker to avoid issues with the rolled-back entities
+            _context.ChangeTracker.Clear();
+
+            // Re-fetch the user that was created by the other request
+            // Use a retry loop in case the other transaction hasn't committed yet
+            User? user = null;
+            for (int i = 0; i < 5; i++)
+            {
+                user = await _context
+                    .Users.Include(u => u.Subscription)
+                    .FirstOrDefaultAsync(u => u.Auth0UserId == auth0UserId);
+
+                if (user?.SubscriptionId != null)
+                    break;
+
+                // Wait a bit for the other transaction to complete
+                await Task.Delay(100 * (i + 1));
+            }
+
+            if (user == null)
+            {
+                throw new InvalidOperationException(
+                    $"Failed to create or retrieve user for Auth0 ID: {auth0UserId}"
+                );
+            }
+
+            return user;
+        }
+    }
+
+    private static bool IsDuplicateKeyException(DbUpdateException ex)
+    {
+        // PostgreSQL error code 23505 = unique_violation
+        return ex.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505";
     }
 
     public async Task<User?> GetOrCreateUserAsync(string auth0UserId, string email)
@@ -165,6 +282,31 @@ public class AccountService : IAccountService
         }
     }
 
+    public async Task RemoveUserFromAccountAsync(int userId, int accountId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+            return;
+
+        // Verify the user is actually on this account
+        var subscription = await _context.Subscriptions.FirstOrDefaultAsync(s =>
+            s.AccountId == accountId
+        );
+
+        if (subscription != null && user.SubscriptionId == subscription.Id)
+        {
+            user.SubscriptionId = null;
+            user.Role = "owner"; // Reset to default role for when they get a new account
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "Removed user {UserId} from account {AccountId}",
+                userId,
+                accountId
+            );
+        }
+    }
+
     public async Task<InvitationToken> CreateInvitationAsync(
         int accountId,
         int inviterUserId,
@@ -213,22 +355,69 @@ public class AccountService : IAccountService
         return invitation;
     }
 
-    public async Task<bool> AcceptInvitationAsync(string token, int acceptingUserId)
+    public async Task<AcceptInvitationResult> AcceptInvitationAsync(string token, int acceptingUserId)
     {
         var currentTime = DateTime.UtcNow;
-        var invitation = await _context.InvitationTokens.FirstOrDefaultAsync(i =>
-            i.Token == token && !i.IsAccepted && i.ExpiresAt > currentTime
-        );
+        var invitation = await _context
+            .InvitationTokens.Include(i => i.Account)
+            .FirstOrDefaultAsync(i =>
+                i.Token == token && !i.IsAccepted && i.ExpiresAt > currentTime
+            );
 
         if (invitation == null)
-            return false;
+        {
+            return AcceptInvitationResult.Failed(
+                AcceptInvitationResult.ErrorCodes.InvalidToken,
+                "This invitation is invalid, expired, or has already been used."
+            );
+        }
+
+        // Check if user is already a member of the target account
+        var isAlreadyMember = await HasUserAccessToAccountAsync(acceptingUserId, invitation.AccountId);
+        if (isAlreadyMember)
+        {
+            return AcceptInvitationResult.Failed(
+                AcceptInvitationResult.ErrorCodes.AlreadyMember,
+                "You are already a member of this account."
+            );
+        }
+
+        // Get user's current account and handle leaving it
+        var currentAccount = await GetUserPrimaryAccountAsync(acceptingUserId);
+        if (currentAccount != null)
+        {
+            // Check if there are other members on the account
+            var accountMembers = await GetAccountMembersAsync(currentAccount.Id);
+            var otherMembers = accountMembers.Where(m => m.Id != acceptingUserId).ToList();
+
+            if (otherMembers.Any())
+            {
+                // Other users exist - just remove this user from the account
+                await RemoveUserFromAccountAsync(acceptingUserId, currentAccount.Id);
+                _logger.LogInformation(
+                    "Removed user {UserId} from account {AccountId} (other members remain)",
+                    acceptingUserId,
+                    currentAccount.Id
+                );
+            }
+            else
+            {
+                // No other users - archive the account
+                await ArchiveAccountAsync(currentAccount.Id);
+                _logger.LogInformation(
+                    "Archived account {AccountId} for user {UserId} before switching",
+                    currentAccount.Id,
+                    acceptingUserId
+                );
+            }
+        }
 
         // Mark invitation as accepted
         invitation.IsAccepted = true;
         invitation.AcceptedAt = DateTime.UtcNow;
         invitation.AcceptedByUserId = acceptingUserId;
 
-        // Add user to account
+        // Add user to new account
         await AddUserToAccountAsync(acceptingUserId, invitation.AccountId);
 
         await _context.SaveChangesAsync();
@@ -240,7 +429,65 @@ public class AccountService : IAccountService
             invitation.AccountId
         );
 
-        return true;
+        return AcceptInvitationResult.Succeeded(invitation.Account.Name);
+    }
+
+    public async Task<InvitationDetailsDto?> GetInvitationDetailsAsync(string token, int userId)
+    {
+        var invitation = await GetValidInvitationAsync(token);
+        if (invitation == null)
+        {
+            return null;
+        }
+
+        var isAlreadyMember = await HasUserAccessToAccountAsync(userId, invitation.AccountId);
+
+        return new InvitationDetailsDto(
+            AccountName: invitation.Account.Name,
+            InviterEmail: invitation.InviterUser.Email,
+            PersonalMessage: invitation.PersonalMessage,
+            ExpiresAt: invitation.ExpiresAt,
+            IsAlreadyMember: isAlreadyMember
+        );
+    }
+
+    public async Task ArchiveAccountAsync(int accountId)
+    {
+        var account = await _context.Accounts.FindAsync(accountId);
+        if (account == null)
+        {
+            return;
+        }
+
+        account.IsArchived = true;
+        account.ArchivedAt = DateTime.UtcNow;
+        account.UpdatedAt = DateTime.UtcNow;
+
+        // Unlink the subscription from this account
+        if (account.SubscriptionId.HasValue)
+        {
+            var subscription = await _context.Subscriptions.FindAsync(account.SubscriptionId.Value);
+            if (subscription != null)
+            {
+                // Remove all users from this subscription
+                var usersInSubscription = await _context
+                    .Users.Where(u => u.SubscriptionId == subscription.Id)
+                    .ToListAsync();
+
+                foreach (var user in usersInSubscription)
+                    {
+                        user.SubscriptionId = null;
+                        user.Role = "owner"; // They drop back to default basic role
+                    
+                }
+            }
+
+            account.SubscriptionId = null;
+        }
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Archived account {AccountId}", accountId);
     }
 
     private async Task CreateDefaultCategoriesAndBudgetsAsync(int accountId)

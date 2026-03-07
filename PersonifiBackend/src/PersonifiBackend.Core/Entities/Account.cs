@@ -8,6 +8,10 @@ public class Account
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
+    // Soft delete fields for account archival
+    public bool IsArchived { get; set; } = false;
+    public DateTime? ArchivedAt { get; set; }
+
     // New subscription-based field
     public int? SubscriptionId { get; set; }
 

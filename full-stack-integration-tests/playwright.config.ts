@@ -38,26 +38,34 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
+    // Login/auth tests run first and create shared auth state
     {
       name: "login",
       testMatch: /login\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] },
     },
+    // E2E account switch tests manage their own auth state
+    {
+      name: "account-e2e",
+      testMatch: /account-switch-e2e\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    // Main test suites use shared auth state
     {
       name: "chromium",
-      testIgnore: /login\.spec\.ts/,
+      testIgnore: /(login|account-switch-e2e)\.spec\.ts/,
       dependencies: ["login"],
       use: { ...devices["Desktop Chrome"] },
     },
     {
       name: "firefox",
-      testIgnore: /login\.spec\.ts/,
+      testIgnore: /(login|account-switch-e2e)\.spec\.ts/,
       dependencies: ["login"],
       use: { ...devices["Desktop Firefox"] },
     },
     {
       name: "webkit",
-      testIgnore: /login\.spec\.ts/,
+      testIgnore: /(login|account-switch-e2e)\.spec\.ts/,
       dependencies: ["login"],
       use: { ...devices["Desktop Safari"] },
     },

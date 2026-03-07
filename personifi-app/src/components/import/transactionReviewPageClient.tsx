@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AccountRequiredWrapper } from "@/components/ui/accountRequiredWrapper";
 import { PageHeader } from "@/components/ui/pageHeader";
 import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ChevronUp, Split, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -314,23 +313,20 @@ export default function TransactionReviewPageClient() {
 
   if (isLoading) {
     return (
-      <AccountRequiredWrapper>
-        <div className="container mx-auto px-4 py-6">
-          <PageHeader title="Review Transactions" subTitle="Review and categorize imported transactions" />
-          <Card>
-            <CardContent className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading transactions...</p>
-            </CardContent>
-          </Card>
-        </div>
-      </AccountRequiredWrapper>
+      <div className="container mx-auto px-4 py-6">
+        <PageHeader title="Review Transactions" subTitle="Review and categorize imported transactions" />
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading transactions...</p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <AccountRequiredWrapper>
-      <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="ghost"
@@ -800,6 +796,5 @@ export default function TransactionReviewPageClient() {
           </>
         )}
       </div>
-    </AccountRequiredWrapper>
   );
 }
